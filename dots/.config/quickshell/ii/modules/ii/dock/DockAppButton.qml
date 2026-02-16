@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
+import Quickshell.Hyprland
 
 DockButton {
     id: root
@@ -54,6 +55,48 @@ DockButton {
     }
 
     onClicked: {
+        const specialWorkspaces = {
+            "kitty-special": "term",
+            "kitty-yazi": "yazi",
+            "kitty-update": "update",
+            "kitty-install": "install",
+            "kitty-uninstall": "uninstall",
+            "kitty-btop": "btop",
+            "kitty-english": "english",
+            // "eu.betterbird.betterbird": "betterbird",
+            // "ferdium": "ferdium",
+            // "vesktop": "vesktop",
+            "spotify": "spotify",
+            "chrome-translate.google.com__-default": "translate"
+        };
+
+        if (appToplevel.appId === "chrome-chat.openai.com__-default") {
+            if (appToplevel.toplevels.length === 0) {
+                Hyprland.dispatch('exec chromium --app="https://chat.openai.com"');
+            } else {
+                lastFocused = (lastFocused + 1) % appToplevel.toplevels.length;
+                appToplevel.toplevels[lastFocused].activate();
+            }
+            return;
+        }
+
+        if (appToplevel.appId === "chrome-gemini.google.com__app-default") {
+            if (appToplevel.toplevels.length === 0) {
+                Hyprland.dispatch('exec chromium --app="https://gemini.google.com/app"');
+            } else {
+                lastFocused = (lastFocused + 1) % appToplevel.toplevels.length;
+                appToplevel.toplevels[lastFocused].activate();
+            }
+            return;
+        }
+
+        const workspaceName = specialWorkspaces[appToplevel.appId];
+
+        if (workspaceName) {
+            Hyprland.dispatch(`togglespecialworkspace ${workspaceName}`);
+            return;
+        }
+
         if (appToplevel.toplevels.length === 0) {
             root.desktopEntry?.execute();
             return;
@@ -63,12 +106,16 @@ DockButton {
     }
 
     middleClickAction: () => {
+        if (appToplevel.appId === "chrome-chat.openai.com__-default") {
+            Hyprland.dispatch('exec chromium --app="https://chat.openai.com"');
+            return;
+        }
         root.desktopEntry?.execute();
     }
 
-    altAction: () => {
-        TaskbarApps.togglePin(appToplevel.appId);
-    }
+    // altAction: () => {
+    //     TaskbarApps.togglePin(appToplevel.appId);
+    // }
 
     contentItem: Loader {
         active: !isSeparator

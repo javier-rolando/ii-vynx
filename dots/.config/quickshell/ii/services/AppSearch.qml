@@ -20,6 +20,17 @@ Singleton {
         "wps": "wps-office2019-kprometheus",
         "wpsoffice": "wps-office2019-kprometheus",
         "footclient": "foot",
+        "zen": "zen-browser",
+        "brave-browser": "brave-desktop",
+        "net.lutris.lutris": "net.lutris.Lutris",
+        "org.gnome.texteditor": "org.gnome.TextEditor",
+        "org.kde.kdeconnect.app": "kdeconnect",
+        "opentabletdriver.ux": "otd",
+        "chrome-chat.openai.com__-default": Quickshell.shellPath("assets/dock/ChatGPT.svg"),
+        "chrome-gemini.google.com__app-default": Quickshell.shellPath("assets/dock/gemini.svg"),
+        "chrome-translate.google.com__-default": "google-translate",
+        "kitty-yazi": "yazi",
+        "kitty-btop": "btop"
     })
     property var regexSubstitutions: [
         {

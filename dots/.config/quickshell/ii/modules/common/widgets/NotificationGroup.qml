@@ -160,6 +160,8 @@ MouseArea { // Notification group area
                 summary: root.notificationGroup?.notifications[root.notificationCount - 1]?.summary
                 urgency: root.notifications.some(n => n.urgency === NotificationUrgency.Critical.toString()) ? 
                     NotificationUrgency.Critical : NotificationUrgency.Normal
+                body: notificationGroup?.notifications[root.notificationCount - 1]?.body
+                    notificationBodies: notificationGroup?.notifications.map(n => n.body || "")
             }
 
             ColumnLayout { // Content

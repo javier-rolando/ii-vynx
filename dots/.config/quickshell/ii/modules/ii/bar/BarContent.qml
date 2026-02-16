@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.UPower
+import Quickshell.Hyprland
 import qs
 import qs.services
 import qs.modules.common
@@ -99,9 +100,16 @@ Item { // Bar content region
         onScrollDown: root.brightnessMonitor.setBrightness(root.brightnessMonitor.brightness - 0.05)
         onScrollUp: root.brightnessMonitor.setBrightness(root.brightnessMonitor.brightness + 0.05)
         onMovedAway: GlobalStates.osdBrightnessOpen = false
+
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+
         onPressed: event => {
-            if (event.button === Qt.LeftButton)
-                GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen;
+            if (event.button === Qt.LeftButton) {
+                GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
+            }
+            if (event.button === Qt.RightButton) {
+                Hyprland.dispatch("exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
+            }
         }
 
         ScrollHint {
