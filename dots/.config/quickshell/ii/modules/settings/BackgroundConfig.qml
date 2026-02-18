@@ -576,44 +576,68 @@ ContentPage {
             }
         }
 
+
         ContentSubsection {
             visible: settingsClock.cookiePresent
             title: Translation.tr("Background style")
 
-            ConfigSelectionArray {
-                currentValue: Config.options.background.widgets.clock.cookie.backgroundStyle
-                onSelected: newValue => {
-                    Config.options.background.widgets.clock.cookie.backgroundStyle = newValue;
+            ConfigRow {
+                spacing: 10
+                ConfigSelectionArray {
+                    Layout.fillWidth: false
+                    currentValue: Config.options.background.widgets.clock.cookie.backgroundStyle
+                    onSelected: newValue => {
+                        Config.options.background.widgets.clock.cookie.backgroundStyle = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: "",
+                            icon: "block",
+                            value: "hide"
+                        },
+                        {
+                            displayName: Translation.tr("Sine"),
+                            icon: "waves",
+                            value: "sine"
+                        },
+                        {
+                            displayName: Translation.tr("Cookie"),
+                            icon: "cookie",
+                            value: "cookie"
+                        },
+                        {
+                            displayName: Translation.tr("Shape"),
+                            icon: "shape_line",
+                            value: "shape"
+                        },
+                    ]
                 }
-                options: [
-                    {
-                        displayName: "",
-                        icon: "block",
-                        value: "hide"
-                    },
-                    {
-                        displayName: Translation.tr("Sine"),
-                        icon: "waves",
-                        value: "sine"
-                    },
-                    {
-                        displayName: Translation.tr("Cookie"),
-                        icon: "cookie",
-                        value: "cookie"
-                    },
-                    {
-                        displayName: Translation.tr("Shape"),
-                        icon: "shape_line",
-                        value: "shape"
-                    },
-                ]
-            }
+
+                RippleButtonWithShape {
+                    visible: Config.options.background.widgets.clock.cookie.backgroundStyle == "shape"
+                    Layout.fillWidth: false
+
+                    shapeString: Config.options.background.widgets.clock.cookie.backgroundShape
+                    implicitWidth: 60
+                    extraIcon: "edit"
+
+                    onClicked: {
+                        backgroundShapeLoader.active = !backgroundShapeLoader.active;
+                    }
+                    StyledToolTip {
+                        text: Translation.tr("Edit the material shape")
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+            }   
         }
 
-        
         Loader { 
             id: backgroundShapeLoader
-            active: page.allowHeavyLoads && settingsClock.cookiePresent && Config.options.background.widgets.clock.cookie.backgroundStyle === "shape" && page.contentY > 500 && !page.register
+            active: false
             visible: active
             Layout.fillWidth: true
             sourceComponent: ContentSubsection {
@@ -728,29 +752,32 @@ ContentPage {
                     Config.options.background.widgets.media.enable = checked;
                 }
             }
+            
+            RippleButtonWithShape {
+                shapeString: Config.options.background.widgets.media.backgroundShape
+                implicitWidth: 60
+                extraIcon: "edit"
+
+                onClicked: {
+                    mediaBackgroundShapeLoader.active = !mediaBackgroundShapeLoader.active;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Edit the material shape")
+                }
+            }
+
             Item {
                 Layout.fillWidth: true
             }
 
-            // TODO, FIXME: this is a hack, we have to find a better way to select material shapes in the settings app
-            // And also this is WRONG as a UI component.
             ConfigSelectionArray {
                 register: true
                 Layout.fillWidth: false
                 currentValue: Config.options.background.widgets.media.placementStrategy
                 onSelected: newValue => {
-                    if (newValue === "selectShape") {
-                        mediaBackgroundShapeLoader.active = !mediaBackgroundShapeLoader.active;
-                        return;
-                    }
                     Config.options.background.widgets.media.placementStrategy = newValue;
                 }
                 options: [
-                    {
-                        displayName: "",
-                        icon: "shape_line",
-                        value: "selectShape"
-                    },
                     {
                         displayName: Translation.tr("Draggable"),
                         icon: "drag_pan",
