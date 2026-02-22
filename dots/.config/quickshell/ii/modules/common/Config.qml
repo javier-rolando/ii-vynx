@@ -248,6 +248,7 @@ Singleton {
                 }
                 property JsonObject mediaMode: JsonObject {
                     property bool enable: false
+                    property string backgroundShape: "Square"
                     property bool enableBackgroundAnimation: true // It **may** cause nausea for someone
                     property bool changeShellColor: true // Changes the shell color to the album color
                 }
@@ -716,6 +717,7 @@ Singleton {
             }
 
             property JsonObject updates: JsonObject {
+                property bool enableCheck: true
                 property int checkInterval: 120 // minutes
                 property int adviseUpdateThreshold: 75 // packages
                 property int stronglyAdviseUpdateThreshold: 200 // packages
