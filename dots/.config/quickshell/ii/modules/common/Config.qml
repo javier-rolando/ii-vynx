@@ -11,7 +11,7 @@ Singleton {
     property string filePath: Directories.shellConfigPath
     property alias options: configOptionsJsonAdapter
     property bool ready: false
-    property int readWriteDelay: 50 // milliseconds
+    property int readWriteDelay: 75 // milliseconds
     property bool blockWrites: false
 
     function setNestedValue(nestedKey, value) {
@@ -249,6 +249,10 @@ Singleton {
                 property JsonObject mediaMode: JsonObject {
                     property bool enable: false
                     property string backgroundShape: "Square"
+                    property JsonObject backgroundAnimation: JsonObject {
+                        property bool enable: true
+                        property int speedScale: 10 // 1: very slow, 10: default, 20: 2x speed etc.
+                    }
                     property bool enableBackgroundAnimation: true // It **may** cause nausea for someone
                     property bool changeShellColor: true // Changes the shell color to the album color
                 }
@@ -279,13 +283,11 @@ Singleton {
                 property bool vertical: false
                 
                 property JsonObject mediaPlayer: JsonObject {
-                    property bool useCustomSize: false
                     property int customSize: 250
                     property JsonObject lyrics: JsonObject {
                         property bool enable: true
                         property int customSize: 400
-                        property string style: "scrolling" // Options: "static", "scrolling"
-                        property bool showLoadingIndicator: true
+                        property string style: "scroller" // Options: scroller, static
                         property bool useGradientMask: true
                     }
                 }
