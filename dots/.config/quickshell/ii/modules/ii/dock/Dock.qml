@@ -166,15 +166,19 @@ Scope { // Scope
                                 Layout.bottomMargin: Appearance.sizes.hyprlandGapsOut + dockRow.padding
                                 
                                 function getSpotifyPlayer() {
-                                    if (MprisController.players) {
-                                        for (var i = 0; i < MprisController.players.length; i++) {
-                                            var player = MprisController.players[i];
-                                            if (player.desktopEntry === "spotify") {
-                                                return player;
-                                            }
-                                        }
+                                  var sourceList = MprisController.players;
+
+                                  if (!sourceList || sourceList.length === 0) {
+                                    sourceList = MprisController.allPlayers || [];
+                                  }
+
+                                  for (var i = 0; i < sourceList.length; i++) {
+                                    var player = sourceList[i];
+                                    if (player && (player.desktopEntry === "spotify" || player.dbusName.indexOf("spotify") !== -1)) {
+                                      return player;
                                     }
-                                    return null;
+                                  }
+                                  return null;
                                 }
 
                                 Connections {
