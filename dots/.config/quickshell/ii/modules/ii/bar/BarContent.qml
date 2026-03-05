@@ -264,9 +264,16 @@ Item { // Bar content region
         onScrollDown: Audio.decrementVolume();
         onScrollUp: Audio.incrementVolume();
         onMovedAway: GlobalStates.osdVolumeOpen = false;
+
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+
         onPressed: event => {
             if (event.button === Qt.LeftButton) {
                 GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
+            }
+
+            if (event.button === Qt.RightButton) {
+                Audio.sink.audio.muted = !Audio.sink.audio.muted;
             }
         }
 
