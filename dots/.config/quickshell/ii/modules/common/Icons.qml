@@ -1,9 +1,5 @@
 pragma Singleton
-
-// From https://github.com/caelestia-dots/shell (GPLv3)
-
 import Quickshell
-
 Singleton {
     id: root
 
@@ -21,62 +17,52 @@ Singleton {
         return "bluetooth";
     }
 
-    readonly property var weatherIconMap: ({
-        "113": "clear_day",
-        "116": "partly_cloudy_day",
-        "119": "cloud",
-        "122": "cloud",
-        "143": "foggy",
-        "176": "rainy",
-        "179": "rainy",
-        "182": "rainy",
-        "185": "rainy",
-        "200": "thunderstorm",
-        "227": "cloudy_snowing",
-        "230": "snowing_heavy",
-        "248": "foggy",
-        "260": "foggy",
-        "263": "rainy",
-        "266": "rainy",
-        "281": "rainy",
-        "284": "rainy",
-        "293": "rainy",
-        "296": "rainy",
-        "299": "rainy",
-        "302": "weather_hail",
-        "305": "rainy",
-        "308": "weather_hail",
-        "311": "rainy",
-        "314": "rainy",
-        "317": "rainy",
-        "320": "cloudy_snowing",
-        "323": "cloudy_snowing",
-        "326": "cloudy_snowing",
-        "329": "snowing_heavy",
-        "332": "snowing_heavy",
-        "335": "snowing",
-        "338": "snowing_heavy",
-        "350": "rainy",
-        "353": "rainy",
-        "356": "rainy",
-        "359": "weather_hail",
-        "362": "rainy",
-        "365": "rainy",
-        "368": "cloudy_snowing",
-        "371": "snowing",
-        "374": "rainy",
-        "377": "rainy",
-        "386": "thunderstorm",
-        "389": "thunderstorm",
-        "392": "thunderstorm",
-        "395": "snowing"
-    })
+    function getWeatherIcon(code, iconCode: string): string {
+        const id = Number(code);
+        const isNight = iconCode ? iconCode.endsWith("n") : false;
 
-    
-    function getWeatherIcon(code) {
-        const key = String(code)
-        if (weatherIconMap.hasOwnProperty(key)) {
-            return weatherIconMap[key]
-        }
+        if (id === 800)
+            return isNight ? "bedtime" : "sunny";
+
+        if (id === 801)
+            return isNight ? "partly_cloudy_night" : "partly_cloudy_day";
+
+
+        if (id === 802)
+            return isNight ? "partly_cloudy_night" : "partly_cloudy_day";
+
+
+        if (id >= 803 && id <= 804)
+            return "cloud";
+
+
+        if (id >= 200 && id <= 232)
+            return "thunderstorm";
+
+        if (id >= 300 && id <= 321)
+            return "grain"; 
+
+        if (id >= 500 && id <= 504)
+            return isNight ? "rainy" : "rainy";
+
+        if (id === 511)
+            return "weather_mix"; 
+
+        if (id >= 520 && id <= 531)
+            return "rainy";
+
+        if (id >= 600 && id <= 622)
+            return "ac_unit"; 
+
+        if (id === 781)
+            return "tornado";
+        if (id === 762)
+            return "volcano"; 
+        if (id === 771)
+            return "air"; 
+        if (id >= 700 && id <= 781)
+            return "foggy";
+
+        return "cloud"; 
     }
 }
