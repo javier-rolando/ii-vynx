@@ -119,7 +119,7 @@ test_dots_structure() {
   git commit -m "Add dots structure" -q
 
   cat > test_detection.sh << EOF
-#!/bin/bash
+#!/usr/bin/env bash
 # Mock logging and style functions/variables
 log_info() { :; }
 log_warning() { :; }
@@ -179,7 +179,7 @@ test_flat_structure() {
   git commit -m "Add flat structure" -q
 
   cat > test_detection.sh << EOF
-#!/bin/bash
+#!/usr/bin/env bash
 # Mock logging and style functions/variables
 source "$ORIGINAL_DIR/sdata/lib/environment-variables.sh"
 source "$ORIGINAL_DIR/sdata/lib/functions.sh"
@@ -265,7 +265,7 @@ EOF
   mkdir -p secrets
   
   cat > test_ignore.sh << EOF
-#!/bin/bash
+#!/usr/bin/env bash
 # Suppress all output from sourced script
 source "$ORIGINAL_DIR/sdata/lib/environment-variables.sh"
 source "$ORIGINAL_DIR/sdata/lib/functions.sh"
@@ -536,7 +536,7 @@ EOF
   mkdir -p .config/temp-file
 
   cat > test_substring_ignore.sh << EOF
-#!/bin/bash
+#!/usr/bin/env bash
 # Suppress all output from sourced script
 source "$ORIGINAL_DIR/sdata/lib/environment-variables.sh"
 source "$ORIGINAL_DIR/sdata/lib/functions.sh"
@@ -628,7 +628,7 @@ test_directory_caching() {
   cd "$test_repo" || { log_fail "Failed to cd to test directory"; return 1; }
   
   cat > test_dir_cache.sh << EOF
-#!/bin/bash
+#!/usr/bin/env bash
 source "$ORIGINAL_DIR/sdata/lib/environment-variables.sh"
 source "$ORIGINAL_DIR/sdata/lib/functions.sh"
 log_info() { :; }
@@ -689,7 +689,7 @@ test_safe_read_noninteractive() {
   log_test "Testing safe_read in non-interactive mode"
   
   cat > test_safe_read.sh << 'EOF'
-#!/bin/bash
+#!/usr/bin/env bash
 source "$ORIGINAL_DIR/sdata/lib/environment-variables.sh"
 source "$ORIGINAL_DIR/sdata/lib/functions.sh"
 log_warning() { :; }

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Script para cambiar focus de forma inteligente en Hyprland (v3).
 # Este script captura la salida estándar (stdout) de hyprctl y reacciona

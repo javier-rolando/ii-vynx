@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Get active window information in JSON format
 ACTIVE_WINDOW_INFO=$(hyprctl activewindow -j)
