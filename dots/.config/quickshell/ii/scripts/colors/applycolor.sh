@@ -95,7 +95,7 @@ apply_term() {
   for file in /dev/pts/*; do
     if [[ $file =~ ^/dev/pts/[0-9]+$ ]]; then
       {
-        cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file"
+        cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file" 2>/dev/null
       } &
       disown || true
     fi
