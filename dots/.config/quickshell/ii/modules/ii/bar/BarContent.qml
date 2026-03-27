@@ -97,8 +97,8 @@ Item { // Bar content region
         }
         implicitHeight: Appearance.sizes.baseBarHeight
 
-        onScrollDown: root.brightnessMonitor.setBrightness(root.brightnessMonitor.brightness - 0.05)
-        onScrollUp: root.brightnessMonitor.setBrightness(root.brightnessMonitor.brightness + 0.05)
+        onScrollDown: Brightness.decreaseBrightness()
+        onScrollUp: Brightness.increaseBrightness()
         onMovedAway: GlobalStates.osdBrightnessOpen = false
 
         acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -114,7 +114,7 @@ Item { // Bar content region
 
         ScrollHint {
             reveal: barLeftSideMouseArea.hovered
-            icon: "light_mode"
+            icon: Hyprsunset.gamma === 100 ? "light_mode" : "wb_twilight"
             tooltipText: Translation.tr("Scroll to change brightness")
             side: "left"
             anchors.left: parent.left
