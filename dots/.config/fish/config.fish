@@ -13,9 +13,9 @@ end
 if status is-interactive
     # Commands to run in interactive sessions can go here
     set fish_greeting
-    echo
-    fastfetch --config /home/javier/.config/fastfetch/small.jsonc
-    echo
+    # echo
+    microfetch
+    # echo
 
     starship init fish | source
     # fzf --fish | source
@@ -59,7 +59,7 @@ if status is-interactive
     alias ..... 'cd ../../../..'
 
     # Remove a directory and all files
-    alias rmd '/bin/rm  --recursive --force --verbose '
+    alias rmd 'command rm --recursive --force --verbose '
 
     # Search files in the current folder
     alias f "find . | grep "
@@ -129,15 +129,6 @@ if status is-interactive
             case "*"
                 commandline -i '$'
         end
-    end
-
-    function y
-        set tmp (mktemp -t "yazi-cwd.XXXXXX")
-        yazi $argv --cwd-file="$tmp"
-        if read -z cwd <"$tmp"; and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
-            builtin cd -- "$cwd"
-        end
-        /bin/rm -f -- "$tmp"
     end
 
     function auto_ls --on-variable PWD
