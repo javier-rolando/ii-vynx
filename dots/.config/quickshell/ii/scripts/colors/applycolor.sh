@@ -85,13 +85,16 @@ apply_kitty() {
   # Copy template
   mkdir -p "$STATE_DIR"/user/generated/terminal
   cp "$SCRIPT_DIR/terminal/kitty-theme.conf" "$STATE_DIR"/user/generated/terminal/kitty-theme.conf
+
+  chmod 644 "$STATE_DIR"/user/generated/terminal/kitty-theme.conf
+
   # Apply colors
   for i in "${!colorlist[@]}"; do
     sed -i "s/${colorlist[$i]} #/${colorvalues[$i]#\#}/g" "$STATE_DIR"/user/generated/terminal/kitty-theme.conf
   done
 
   # Reload
-  kill -SIGUSR1 $(pidof kitty)
+  kill -SIGUSR1 $(pidof kitty) 2>/dev/null
 }
 
 # apply_anyterm() {
