@@ -1,0 +1,15 @@
+:root {
+  --m-on-surface: #{{ colors.on_surface.default.hex_stripped }};
+  --m-on-surface-variant: #{{ colors.on_surface_variant.default.hex_stripped }};
+  --m-surface: #{{ colors.surface.default.hex_stripped }};
+  --m-primary: #{{ colors.primary.default.hex_stripped }};
+  --m-outline: #{{ colors.outline.default.hex_stripped }};
+  --m-secondary: #{{ colors.secondary.default.hex_stripped }};
+  --m-error: #{{ colors.error.default.hex_stripped }};
+  --m-shadow: #{{ colors.shadow.default.hex_stripped }};
+  --m-surface-container-high: #{{ colors.surface_container_high.default.hex_stripped }};
+  --m-surface-container-low: #{{ colors.surface_container_low.default.hex_stripped }};
+  --m-surface-container: #{{ colors.surface_container.default.hex_stripped }};
+  --m-secondary-container: #{{ colors.secondary_container.default.hex_stripped }};
+  --m-surface-variant: #{{ colors.surface_variant.default.hex_stripped }};
+}
