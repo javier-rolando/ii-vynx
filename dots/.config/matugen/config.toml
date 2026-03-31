@@ -47,7 +47,7 @@ output_path = "~/.config/vesktop/themes/midnight.theme.css"
 
 [templates.spicetify]
 input_path = "~/.config/matugen/templates/apps/spicetify.ini"
-output_path = "~/.local/state/spicetify/colors-spicetify.ini"
+output_path = "~/nixos-config/themes/matugen-spicetify/color.ini"
 
 [templates.yazi]
 input_path = "~/.config/matugen/templates/apps/yazi-theme.toml"
