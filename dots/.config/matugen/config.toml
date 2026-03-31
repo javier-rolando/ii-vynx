@@ -47,8 +47,7 @@ output_path = "~/.config/vesktop/themes/midnight.theme.css"
 
 [templates.spicetify]
 input_path = "~/.config/matugen/templates/apps/spicetify.ini"
-output_path = "~/.config/spicetify/Themes/caelestia/color.ini"
-post_hook = "~/.config/matugen/scripts/spicetify_theme_apply.sh"
+output_path = "~/.local/state/spicetify/colors-spicetify.css"
 
 [templates.yazi]
 input_path = "~/.config/matugen/templates/apps/yazi-theme.toml"
@@ -64,35 +63,35 @@ output_path = "~/.config/elecwhat/user-css/style.css"
 
 [templates.zenlogo]
 input_path = "~/.config/matugen/templates/apps/zenLogo.svg"
-output_path = "~/.zen/tgde7ap0.Personal/chrome/zen-logo.svg"
+output_path = "~/.zen/cwbhpa62.Default Profile/chrome/zen-logo.svg"
 
 [templates.zencolors]
 input_path = "~/.config/matugen/templates/apps/zenColors.css"
-output_path = "~/.zen/tgde7ap0.Personal/chrome/userChrome.css"
+output_path = "~/.zen/cwbhpa62.Default Profile/chrome/userChrome.css"
 
 [templates.zencontent]
 input_path = "~/.config/matugen/templates/apps/zenContent.css"
-output_path = "~/.zen/tgde7ap0.Personal/chrome/userContent.css"
+output_path = "~/.zen/cwbhpa62.Default Profile/chrome/userContent.css"
 
 [templates.zenlogo2]
 input_path = "~/.config/matugen/templates/apps/zenLogo.svg"
-output_path = "~/.zen/N6zMRIAh.Profile 1/chrome/zen-logo.svg"
+output_path = "~/.zen/Xsq04O6W.Profile 1/chrome/zen-logo.svg"
 
 [templates.zencolors2]
 input_path = "~/.config/matugen/templates/apps/zenColors.css"
-output_path = "~/.zen/N6zMRIAh.Profile 1/chrome/userChrome.css"
+output_path = "~/.zen/Xsq04O6W.Profile 1/chrome/userChrome.css"
 
 [templates.zencontent2]
 input_path = "~/.config/matugen/templates/apps/zenContent.css"
-output_path = "~/.zen/N6zMRIAh.Profile 1/chrome/userContent.css"
+output_path = "~/.zen/Xsq04O6W.Profile 1/chrome/userContent.css"
 
 [templates.betterbirdColors]
 input_path = "~/.config/matugen/templates/apps/betterbirdColors.css"
-output_path = "~/.thunderbird/2figqtoo.default-default/chrome/userChrome.css"
+output_path = "~/.thunderbird/yjakaiu9.default-default/chrome/userChrome.css"
 
 [templates.betterbirdContent]
 input_path = "~/.config/matugen/templates/apps/betterbirdContent.css"
-output_path = "~/.thunderbird/2figqtoo.default-default/chrome/userContent.css"
+output_path = "~/.thunderbird/yjakaiu9.default-default/chrome/userContent.css"
 
 [templates.nvim]
 input_path = "~/.config/matugen/templates/apps/nvim.lua"
