@@ -88,7 +88,8 @@ if status is-interactive
 
     alias specials "hyprctl -j workspaces | jq '.[] | select(.name | startswith(\"special\"))'"
 
-    alias archspin "~/3d-ascii-viewer/3d-ascii-viewer ~/arch-logo.obj"
+    alias nrs "sudo nixos-rebuild switch --flake ~/nixos-config#nixos"
+    alias nrt "sudo nixos-rebuild test --flake ~/nixos-config#nixos"
 
     # function fish_prompt
     #   set_color cyan; echo (pwd)
