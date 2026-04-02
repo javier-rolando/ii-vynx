@@ -4,16 +4,16 @@
     --background: {{colors.background.default.hex}};
     --text-main: {{colors.on_surface.default.hex}};
 
-    --dynamic-background: color-mix(in srgb, var(--background), white 3%);
-    --dynamic-primary-container: color-mix(in oklab, var(--primary-container), white 2.1%);
-    --dynamic-soft-bg: color-mix(in srgb, var(--dynamic-background), color-mix(in srgb, var(--primary-color), white 80%) 8%) !important;
-    --dynamic-softer-bg: color-mix(in srgb, var(--dynamic-background), color-mix(in srgb, var(--primary-color), white 70%) 15%) !important;
-    --dynamic-danger: color-mix(in srgb, var(--primary-color), red 60%);
-    --dynamic-danger-bg: color-mix(in srgb, var(--dynamic-background), red 15%);
-    --dynamic-blue-check: color-mix(in srgb, var(--primary-color), blue 80%);
-    --dynamic-blue-check-bright: color-mix(in srgb, var(--dynamic-blue-check), var(--text-main-strong) 50%);
-    --text-main-strong: color-mix(in srgb, var(--text-main), white 15%);
-    --text-main-deemphasized: color-mix(in srgb, var(--text-main), transparent 30%);
+    --dynamic-background: color-mix(in oklab, var(--background), white 0.3%);
+    --dynamic-primary-container: color-mix(in oklab, var(--primary-container), white 0.21%);
+    --dynamic-soft-bg: color-mix(in oklab, var(--dynamic-background), color-mix(in oklab, var(--primary-color), white 81%) 10%) !important;
+    --dynamic-softer-bg: color-mix(in oklab, var(--dynamic-background), color-mix(in oklab, var(--primary-color), white 70%) 18%) !important;
+    --dynamic-danger: color-mix(in oklab, var(--primary-color), red 60%);
+    --dynamic-danger-bg: color-mix(in oklab, var(--dynamic-background), red 10%);
+    --dynamic-blue-check: color-mix(in oklab, var(--primary-color), blue 80%);
+    --dynamic-blue-check-bright: color-mix(in oklab, var(--dynamic-blue-check), var(--text-main-strong) 50%);
+    --text-main-strong: color-mix(in oklab, var(--text-main), white 1.5%);
+    --text-main-deemphasized: color-mix(in oklab, var(--text-main), transparent 30%);
 }
 
 .message-out ._amk7 {
@@ -545,4 +545,12 @@ span[data-icon="status-filled-refreshed"] svg {
 /* @ when quoted */
 .x1r8hjv8 {
     color: var(--primary-color) !important;
+}
+
+/* "Click here to get older messages from your phone" bubble */
+.x1bvqhpb {
+    color: var(--text-main-deemphasized) !important;
+}
+.x6f6fmj {
+    background: var(--dynamic-soft-bg) !important;
 }
