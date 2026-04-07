@@ -90,6 +90,7 @@ if status is-interactive
 
     alias nrs "sudo nixos-rebuild switch --flake ~/nixos-config#nixos"
     alias nrt "sudo nixos-rebuild test --flake ~/nixos-config#nixos"
+    alias nrb "sudo nixos-rebuild build --flake ~/nixos-config#nixos"
 
     # function fish_prompt
     #   set_color cyan; echo (pwd)
