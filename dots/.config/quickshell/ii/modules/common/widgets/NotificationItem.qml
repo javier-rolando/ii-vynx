@@ -297,12 +297,12 @@ Item { // Notification item area
                                         if (isTwitchNotification) {
                                           const channel = extractStreamer(notificationObject.body);
                                           // Qt.openUrlExternally("https://www.twitch.tv/" + (streamerMap[channel] || channel || ""));
-                                          Quickshell.execDetached(["zen-browser", "--profile=/home/javier/.zen/tgde7ap0.Personal", "https://www.twitch.tv/" + (streamerMap[channel] || channel || "")]);
+                                          Quickshell.execDetached(["zen", "--profile=/home/javier/.zen/cwbhpa62.Default Profile", "https://www.twitch.tv/" + (streamerMap[channel] || channel || "")]);
                                           Notifications.discardNotification(notificationObject.notificationId);
                                         } else if (isKickNotification) {
                                           const channel = extractStreamer(notificationObject.body);
                                           // Qt.openUrlExternally("https://kick.com/" + (channel || ""));
-                                          Quickshell.execDetached(["zen-browser", "--profile=/home/javier/.zen/tgde7ap0.Personal", "https://kick.com/" + (channel || "")]);
+                                          Quickshell.execDetached(["zen", "--profile=/home/javier/.zen/cwbhpa62.Default Profile", "https://kick.com/" + (channel || "")]);
                                           Notifications.discardNotification(notificationObject.notificationId);
                                         } else {
                                           Notifications.attemptInvokeAction(notificationObject.notificationId, modelData.identifier);
