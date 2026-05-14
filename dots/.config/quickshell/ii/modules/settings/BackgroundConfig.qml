@@ -303,11 +303,6 @@ ContentPage {
                             displayName: Translation.tr("Cookie"),
                             icon: "cookie",
                             value: "cookie"
-                        },
-                        {
-                            displayName: Translation.tr("Nagasaki"),
-                            icon: "grid_view",
-                            value: "nagasaki"
                         }
                     ]
                 }
@@ -331,11 +326,6 @@ ContentPage {
                             displayName: Translation.tr("Cookie"),
                             icon: "cookie",
                             value: "cookie"
-                        },
-                        {
-                            displayName: Translation.tr("Nagasaki"),
-                            icon: "grid_view",
-                            value: "nagasaki"
                         }
                     ]
                 }
@@ -938,9 +928,8 @@ ContentPage {
                     Config.options.background.widgets.media.enable = checked;
                 }
             }
-
+            
             RippleButtonWithShape {
-                visible: Config.options.background.widgets.media.style === "circular"
                 shapeString: Config.options.background.widgets.media.backgroundShape
                 implicitWidth: 60
                 extraIcon: "edit"
@@ -983,38 +972,11 @@ ContentPage {
             }
         }
 
-        ConfigRow {
-            Layout.fillWidth: true
-
-            ContentSubsection {
-                title: Translation.tr("Style")
-                Layout.fillWidth: true
-                ConfigSelectionArray {
-                    currentValue: Config.options.background.widgets.media.style
-                    onSelected: newValue => {
-                        Config.options.background.widgets.media.style = newValue;
-                    }
-                    options: [
-                        {
-                            displayName: Translation.tr("Circular"),
-                            icon: "progress_activity",
-                            value: "circular"
-                        },
-                        {
-                            displayName: Translation.tr("Expressive"),
-                            icon: "art_track",
-                            value: "expressive"
-                        }
-                    ]
-                }
-            }
-        }
-
 
         Loader { 
             id: mediaBackgroundShapeLoader
             active: false
-            visible: active && Config.options.background.widgets.media.style === "circular"
+            visible: active
             Layout.fillWidth: true
             sourceComponent: ContentSubsection {
                 title: Translation.tr("Background shape")
@@ -1041,7 +1003,6 @@ ContentPage {
         }
 
         ConfigRow {
-            visible: Config.options.background.widgets.media.style === "circular"
             uniform: true
             ConfigSwitch {
                 buttonIcon: "opacity"
@@ -1062,7 +1023,6 @@ ContentPage {
         }
 
         ConfigRow {
-            visible: Config.options.background.widgets.media.style === "circular"
             uniform: true
             ConfigSwitch {
                 buttonIcon: "block"

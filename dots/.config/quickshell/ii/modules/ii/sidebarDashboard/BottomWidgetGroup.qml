@@ -13,12 +13,10 @@ Rectangle {
     radius: Appearance.rounding.normal
     color: Appearance.colors.colLayer1
     clip: true
-    implicitHeight: effectivelyCollapsed ? collapsedBottomWidgetGroupRow.implicitHeight : 350
+    implicitHeight: collapsed ? collapsedBottomWidgetGroupRow.implicitHeight : 350
     property int selectedTab: Persistent.states.sidebar.bottomGroup.tab
     property int previousIndex: -1
     property bool collapsed: Persistent.states.sidebar.bottomGroup.collapsed
-    property bool forceCollapsed: false
-    readonly property bool effectivelyCollapsed: collapsed || forceCollapsed
     property var tabs: [
         {
             "type": "calendar",
@@ -29,7 +27,7 @@ Rectangle {
         {
             "type": "todo",
             "name": Translation.tr("To Do"),
-            "icon": "check_circle",
+            "icon": "done_outline",
             "widget": "todo/TodoWidget.qml"
         },
         {
@@ -84,7 +82,7 @@ Rectangle {
     // The thing when collapsed
     RowLayout {
         id: collapsedBottomWidgetGroupRow
-        opacity: effectivelyCollapsed ? 1 : 0
+        opacity: collapsed ? 1 : 0
         visible: opacity > 0
         Behavior on opacity {
             NumberAnimation {
@@ -127,7 +125,7 @@ Rectangle {
     RowLayout {
         id: bottomWidgetGroupRow
 
-        opacity: effectivelyCollapsed ? 0 : 1
+        opacity: collapsed ? 0 : 1
         visible: opacity > 0
         Behavior on opacity {
             NumberAnimation {

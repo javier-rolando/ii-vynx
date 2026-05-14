@@ -11,6 +11,8 @@ import Quickshell
 import Quickshell.Widgets
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import Quickshell.Services.Mpris
+import Qt5Compat.GraphicalEffects
 
 pragma ComponentBehavior: Bound
 

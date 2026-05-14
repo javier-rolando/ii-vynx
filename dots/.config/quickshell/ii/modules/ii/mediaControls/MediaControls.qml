@@ -11,7 +11,6 @@ import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import "../bar" as Bar
 
 Scope {
     id: root
@@ -86,7 +85,7 @@ Scope {
             visible: true
             exclusionMode: ExclusionMode.Ignore
             exclusiveZone: 0
-            implicitWidth: playerColumnLayout.implicitWidth
+            implicitWidth: root.widgetWidth
             implicitHeight: playerColumnLayout.implicitHeight
             color: "transparent"
             WlrLayershell.namespace: "quickshell:mediaControls"
@@ -165,29 +164,13 @@ Scope {
                     model: ScriptModel {
                         values: root.meaningfulPlayers
                     }
-                    delegate: Loader {
-                        id: delegateLoader
+                    delegate: PlayerControl {
                         required property MprisPlayer modelData
-                        
-                        sourceComponent: Config.options.bar.mediaPlayer.expressivePopup ? expressiveComp : standardComp
-
-                        Component {
-                            id: expressiveComp
-                            Bar.ExpressiveMediaCard {
-                                player: delegateLoader.modelData
-                            }
-                        }
-
-                        Component {
-                            id: standardComp
-                            PlayerControl {
-                                player: delegateLoader.modelData
-                                visualizerPoints: root.visualizerPoints
-                                implicitWidth: root.widgetWidth
-                                implicitHeight: root.widgetHeight
-                                radius: root.popupRounding
-                            }
-                        }
+                        player: modelData
+                        visualizerPoints: root.visualizerPoints
+                        implicitWidth: root.widgetWidth
+                        implicitHeight: root.widgetHeight
+                        radius: root.popupRounding
                     }
                 }
 

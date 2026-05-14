@@ -579,16 +579,7 @@ MouseArea {
                         }
 
                         model: wallpaperSelectorContent.browserMode ? wallpaperSelectorContent.apiImages : (wallpaperSelectorContent.favMode ? favouritesModel : (wallpaperSelectorContent.activeColorFilter ? colorFilteredModel : Wallpapers.folderModel))
-                        onModelChanged: {
-                            currentIndex = 0
-                            loadedCount = 0
-                            loadTimer.restart()
-                        }
-                        onCountChanged: {
-                            if (count > 0 && loadedCount < count) {
-                                loadTimer.restart()
-                            }
-                        }
+                        onModelChanged: currentIndex = 0
                         delegate: WallpaperDirectoryItem {
                             required property var modelData
                             required property int index

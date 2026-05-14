@@ -4,13 +4,11 @@ import qs.services
 import QtQuick
 import QtQuick.Layouts
 
-MouseArea {
+Item {
     id: root
     property bool showDate: Config.options.bar.verbose
     implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 10
     implicitHeight: Appearance.sizes.barHeight
-
-    hoverEnabled: !Config.options.bar.tooltips.clickToShow
 
     RowLayout {
         id: rowLayout
@@ -38,22 +36,26 @@ MouseArea {
         }
     }
 
-    property bool compactMode: Config.options.bar.tooltips.compactPopups
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: !Config.options.bar.tooltips.clickToShow
 
-    Loader {
-        active: true
-        sourceComponent: root.compactMode ? clockPopupCompact : clockPopup
-    }
-    Component {
-        id: clockPopup
-        ClockWidgetPopup {
-            hoverTarget: root
+        Loader {
+            active: true
+            sourceComponent: Config.options.bar.tooltips.compactPopups ? clockPopupCompact : clockPopup
         }
-    }
-    Component {
-        id: clockPopupCompact
-        ClockWidgetPopupCompact {
-            hoverTarget: root
+        Component {
+            id: clockPopup
+            ClockWidgetPopup {
+                hoverTarget: mouseArea
+            }
+        }
+        Component {
+            id: clockPopupCompact
+            ClockWidgetPopupCompact {
+                hoverTarget: mouseArea
+            }
         }
     }
 }

@@ -23,7 +23,7 @@ Item {
             maskSource: Rectangle {
                 width: listview.width
                 height: listview.height
-                radius: Appearance.rounding.windowRounding
+                radius: Appearance.rounding.normal
             }
         }
 

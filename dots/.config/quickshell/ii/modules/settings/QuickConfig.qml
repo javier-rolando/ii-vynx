@@ -79,7 +79,7 @@ ContentPage {
             Item {
                 implicitWidth: 360
                 implicitHeight: 220
-
+                
                 StyledImage {
                     id: wallpaperPreview
                     anchors.fill: parent
@@ -105,6 +105,7 @@ ContentPage {
                             Quickshell.execDetached(`${Directories.wallpaperSwitchScriptPath}`);
                         }
                     }
+                    
                 }
 
                 MaterialSymbol {
@@ -138,6 +139,7 @@ ContentPage {
                 }
             }
 
+
             ColumnLayout {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
@@ -159,13 +161,15 @@ ContentPage {
                         enabled: Config.options.appearance.palette.type.startsWith("scheme")
                     }
                 }
+                
+                
 
                 Item {
                     id: colorGridItem
                     z: 1
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-
+                    
                     StyledFlickable {
                         id: flickable
                         anchors.fill: parent
@@ -179,35 +183,30 @@ ContentPage {
 
                             Repeater {
                                 model: [
-                                    {
-                                        customTheme: false,
-                                        builtInTheme: false
-                                    },
-                                    {
-                                        customTheme: false,
-                                        builtInTheme: true
-                                    },
-                                    {
-                                        customTheme: true,
-                                        builtInTheme: false
-                                    }
+                                    { customTheme: false, builtInTheme: false },
+                                    { customTheme: false, builtInTheme: true },
+                                    { customTheme: true, builtInTheme: false }
                                 ]
-
+                                
                                 delegate: ColorPreviewGrid {
                                     customTheme: modelData.customTheme
                                     builtInTheme: modelData.builtInTheme
                                 }
                             }
+
                         }
                     }
                 }
+
+                
             }
         }
 
+    
         ConfigRow {
             uniform: true
             Layout.fillWidth: true
-
+            
             RippleButtonWithIcon {
                 enabled: !randomWallProc.running
                 visible: Config.options.policies.weeb === 1
@@ -239,12 +238,25 @@ ContentPage {
                 }
             }
         }
+        ConfigSwitch {
+            buttonIcon: "ev_shadow"
+            text: Translation.tr("Transparency")
+            checked: Config.options.appearance.transparency.enable
+            onCheckedChanged: {
+                Config.options.appearance.transparency.enable = checked;
+            }
+        }
+        
     }
+
+    
 
     ContentSection {
         icon: "screenshot_monitor"
         title: Translation.tr("Bar & screen")
         Layout.topMargin: -25
+
+        
 
         ConfigRow {
             ContentSubsection {
@@ -304,11 +316,6 @@ ContentPage {
                             displayName: Translation.tr("Rect"),
                             icon: "toolbar",
                             value: 2
-                        },
-                        {
-                            displayName: Translation.tr("Dynamic Island"),
-                            icon: "water_drop",
-                            value: 3
                         }
                     ]
                 }
@@ -337,7 +344,7 @@ ContentPage {
                             value: 1
                         },
                         {
-                            displayName: Translation.tr("When not fullscreen"),
+                            displayName: Translation.tr("Not fullscreen"),
                             icon: "fullscreen_exit",
                             value: 2
                         },
@@ -345,15 +352,35 @@ ContentPage {
                             displayName: Translation.tr("Wrapped"),
                             icon: "capture",
                             value: 3
-                        },
-                        {
-                            displayName: Translation.tr("Edge"),
-                            icon: "border_bottom",
-                            value: 4
                         }
                     ]
                 }
             }
+
+            ContentSubsection {
+                title: Translation.tr("Rounding style")
+                Layout.fillWidth: false
+
+                ConfigSelectionArray {
+                    currentValue: Config.options.appearance.sharpMode
+                    onSelected: newValue => {
+                        Config.options.appearance.sharpMode = newValue;
+                        HyprlandSettings.setRounding(newValue ? 0 : Config.options.appearance.defaultBorderRadius);
+                    }
+                    options: [ 
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "rounded_corner",
+                            value: false
+                        }, 
+                        {
+                            displayName: Translation.tr("Sharp"),
+                            icon: "square",
+                            value: true
+                        }
+                    ]
+                }
+            } 
         }
 
         ConfigSpinBox {
@@ -369,7 +396,7 @@ ContentPage {
             }
         }
 
-        ColumnLayout {
+        ConfigRow {
             ContentSubsection {
                 title: Translation.tr("Bar background style")
                 Layout.fillWidth: true
@@ -379,17 +406,17 @@ ContentPage {
                     onSelected: newValue => {
                         Config.options.bar.barBackgroundStyle = newValue;
                     }
-                    options: [
+                    options: [ 
                         {
                             displayName: Translation.tr("Visible"),
                             icon: "visibility",
                             value: 1
-                        },
+                        }, 
                         {
                             displayName: Translation.tr("Adaptive"),
                             icon: "masked_transitions",
                             value: 2
-                        },
+                        },        
                         {
                             displayName: Translation.tr("Transparent"),
                             icon: "opacity",
@@ -398,33 +425,31 @@ ContentPage {
                     ]
                 }
             }
-
+            
             ContentSubsection {
                 title: Translation.tr("Hyprland layout")
                 Layout.fillWidth: false
 
                 ConfigSelectionArray {
                     currentValue: {
-                        if (Persistent.states.hyprland.layout !== "scrolling")
-                            return "default";
-                        else
-                            return "scrolling";
+                        if (Persistent.states.hyprland.layout !== "scrolling") return "default"
+                        else return "scrolling"
                     }
                     onSelected: newValue => {
-                        console.log(newValue);
+                        console.log(newValue)
                         if (newValue === "scrolling") {
-                            HyprlandSettings.setLayout("scrolling");
+                            HyprlandSettings.setLayout("scrolling")
                         } else {
-                            const defaultLayout = Config.options.hyprland.defaultHyprlandLayout;
-                            HyprlandSettings.setLayout(defaultLayout);
+                            const defaultLayout = Config.options.hyprland.defaultHyprlandLayout
+                            HyprlandSettings.setLayout(defaultLayout)
                         }
                     }
-                    options: [
+                    options: [ 
                         {
                             displayName: Translation.tr("Default"),
                             icon: "mobile_layout",
                             value: "default"
-                        },
+                        }, 
                         {
                             displayName: Translation.tr("Scrolling"),
                             icon: "view_carousel",
@@ -432,45 +457,9 @@ ContentPage {
                         }
                     ]
                 }
-            }
-
-            ContentSubsection {
-                title: Translation.tr("Rounding style")
-                tooltip: Translation.tr("Sharp mode is experimental")
-                Layout.fillWidth: false
-
-                ConfigSelectionArray {
-                    currentValue: Config.options.appearance.globalRounding
-                    onSelected: newValue => {
-                        Config.options.appearance.globalRounding = newValue;
-                        Config.options.appearance.sharpMode = (newValue === "sharp");
-                    }
-                    options: [
-                        {
-                            displayName: Translation.tr("Sharp"),
-                            icon: "square",
-                            value: "sharp"
-                        },
-                        {
-                            displayName: Translation.tr("Normal"),
-                            icon: "rounded_corner",
-                            value: "normal"
-                        },
-                        {
-                            displayName: Translation.tr("Large"),
-                            icon: "lens_blur",
-                            value: "large"
-                        },
-                        {
-                            displayName: Translation.tr("V. Large"),
-                            icon: "circle",
-                            value: "verylarge"
-                        }
-                    ]
-                }
-            }
+            }                          
         }
-    }
+    }    
 
     NoticeBox {
         Layout.fillWidth: true
@@ -484,7 +473,7 @@ ContentPage {
             materialIcon: justCopied ? "check" : "content_copy"
             mainText: justCopied ? Translation.tr("Path copied") : Translation.tr("Copy path")
             onClicked: {
-                copyPathButton.justCopied = true;
+                copyPathButton.justCopied = true
                 Quickshell.clipboardText = FileUtils.trimFileProtocol(`${Directories.config}/illogical-impulse/config.json`);
                 revertTextTimer.restart();
             }
@@ -496,68 +485,9 @@ ContentPage {
                 id: revertTextTimer
                 interval: 1500
                 onTriggered: {
-                    copyPathButton.justCopied = false;
+                    copyPathButton.justCopied = false
                 }
             }
-        }
-    }
-
-    Connections {
-        target: Config.options.appearance.palette
-        function onTypeChanged() {
-            page.showRestartFab = true;
-        }
-    }
-
-    Connections {
-        target: Appearance.m3colors
-        function onDarkmodeChanged() {
-            page.showRestartFab = true;
-        }
-    }
-
-    property bool showRestartFab: false
-
-    FloatingActionButton {
-        id: restartFab
-        parent: page.parent
-        anchors {
-            right: parent?.right
-            bottom: parent?.bottom
-            margins: 30
-        }
-        z: 100
-        iconText: "restart_alt"
-        buttonText: Translation.tr("Restart Shell")
-        expanded: false
-        visible: opacity > 0
-        opacity: page.showRestartFab ? 1 : 0
-        scale: opacity
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Appearance.animation.elementMoveFast.duration
-                easing.type: Appearance.animation.elementMoveFast.type
-                easing.bezierCurve: Appearance.animation.elementMoveFast.bezierCurve
-            }
-        }
-
-        colBackground: Appearance.colors.colTertiaryContainer
-        colBackgroundHover: Appearance.colors.colTertiaryContainerHover
-        colRipple: Appearance.colors.colTertiaryContainerActive
-        colOnBackground: Appearance.colors.colOnTertiaryContainer
-
-        onClicked: {
-            Quickshell.execDetached(["bash", "-c", "qs kill -c ii && qs -c ii &"]);
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.NoButton
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: restartFab.expanded = true
-            onExited: restartFab.expanded = false
         }
     }
 }

@@ -30,9 +30,6 @@ Item {
             property bool pendingDoneToggle: false
             property bool pendingDelete: false
             property bool enableHeightAnimation: false
-            
-            property bool _optimisticDone: modelData.done
-            onModelDataChanged: _optimisticDone = modelData.done
 
             implicitHeight: todoItemRectangle.implicitHeight
             width: ListView.view.width
@@ -52,107 +49,59 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                implicitHeight: Math.max(48, todoContentRowLayout.implicitHeight + 16)
-                
-                HoverHandler {
-                    id: cellHover
-                }
-                
-                color: cellHover.hovered ? Appearance.colors.colSurfaceContainerHigh : Appearance.colors.colLayer2
+                implicitHeight: todoContentRowLayout.implicitHeight
+                color: Appearance.colors.colLayer2
                 radius: Appearance.rounding.small
-                
-                Behavior on color { ColorAnimation { duration: 150 } }
 
-                RowLayout {
+                ColumnLayout {
                     id: todoContentRowLayout
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.leftMargin: 8
-                    anchors.rightMargin: 8
-                    spacing: 12
-
-                    TodoItemActionButton {
-                        Layout.alignment: Qt.AlignVCenter
-                        implicitWidth: 32
-                        implicitHeight: 32
-                        onClicked: {
-                            todoItem._optimisticDone = !todoItem._optimisticDone;
-                            checkIconScaleAnim.restart();
-                            
-                            if (!todoItem.modelData.done)
-                                Todo.markDone(todoItem.modelData.originalIndex);
-                            else
-                                Todo.markUnfinished(todoItem.modelData.originalIndex);
-                        }
-                        contentItem: MaterialSymbol {
-                            id: checkIcon
-                            anchors.centerIn: parent
-                            horizontalAlignment: Text.AlignHCenter
-                            text: todoItem._optimisticDone ? "check_circle" : "radio_button_unchecked"
-                            iconSize: Appearance.font.pixelSize.larger
-                            color: todoItem._optimisticDone ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer1
-                            
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            
-                            NumberAnimation {
-                                id: checkIconScaleAnim
-                                target: checkIcon
-                                property: "scale"
-                                from: 0.5
-                                to: 1.0
-                                duration: 400
-                                easing.type: Easing.OutBack
-                            }
-                        }
-                    }
 
                     StyledText {
                         id: todoContentText
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
+                        Layout.fillWidth: true // Needed for wrapping
+                        Layout.leftMargin: 10
+                        Layout.rightMargin: 10
+                        Layout.topMargin: todoListItemPadding
                         text: todoItem.modelData.content
                         wrapMode: Text.Wrap
-                        color: todoItem._optimisticDone ? Appearance.colors.colOnSurfaceVariant : Appearance.colors.colOnSurface
-                        font.strikeout: todoItem._optimisticDone
                     }
-
-                    Rectangle {
-                        id: dateChip
-                        visible: todoItem.modelData.hasDate
-                        Layout.alignment: Qt.AlignVCenter
-                        implicitWidth: dateText.implicitWidth + 16
-                        implicitHeight: dateText.implicitHeight + 4
-                        color: Appearance.m3colors.m3tertiaryContainer
-                        radius: Appearance.rounding.full
-
-                        StyledText {
-                            id: dateText
-                            anchors.centerIn: parent
-                            text: todoItem.modelData.hasDate ? Qt.formatDateTime(todoItem.modelData.date, "dd/MM") : ""
-                            color: Appearance.m3colors.m3onTertiaryContainer
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            font.weight: Font.Medium
+                    RowLayout {
+                        Layout.leftMargin: 10
+                        Layout.rightMargin: 10
+                        Layout.bottomMargin: todoListItemPadding
+                        Item {
+                            Layout.fillWidth: true
                         }
-                    }
-
-                    TodoItemActionButton {
-                        Layout.alignment: Qt.AlignVCenter
-                        implicitWidth: 32
-                        implicitHeight: 32
-                        opacity: cellHover.hovered ? 1 : 0
-                        
-                        Behavior on opacity { NumberAnimation { duration: Appearance.animation.elementMoveFast.duration } }
-                        
-                        onClicked: {
-                            Todo.deleteItem(todoItem.modelData.originalIndex);
+                        TodoItemActionButton {
+                            Layout.fillWidth: false
+                            onClicked: {
+                                if (!todoItem.modelData.done)
+                                    Todo.markDone(todoItem.modelData.originalIndex);
+                                else
+                                    Todo.markUnfinished(todoItem.modelData.originalIndex);
+                            }
+                            contentItem: MaterialSymbol {
+                                anchors.centerIn: parent
+                                horizontalAlignment: Text.AlignHCenter
+                                text: todoItem.modelData.done ? "remove_done" : "check"
+                                iconSize: Appearance.font.pixelSize.larger
+                                color: Appearance.colors.colOnLayer1
+                            }
                         }
-                        contentItem: MaterialSymbol {
-                            anchors.centerIn: parent
-                            horizontalAlignment: Text.AlignHCenter
-                            text: "close"
-                            iconSize: Appearance.font.pixelSize.larger
-                            color: cellHover.hovered ? Appearance.m3colors.m3error : Appearance.colors.colOnLayer1
+                        TodoItemActionButton {
+                            Layout.fillWidth: false
+                            onClicked: {
+                                Todo.deleteItem(todoItem.modelData.originalIndex);
+                            }
+                            contentItem: MaterialSymbol {
+                                anchors.centerIn: parent
+                                horizontalAlignment: Text.AlignHCenter
+                                text: "delete_forever"
+                                iconSize: Appearance.font.pixelSize.larger
+                                color: Appearance.colors.colOnLayer1
+                            }
                         }
                     }
                 }

@@ -39,11 +39,6 @@ Scope {
                 property bool hasActiveWindows: false
                 property bool showBarBackground: barRoot.hasActiveWindows && Config.options.bar.barBackgroundStyle === 2 || Config.options.bar.barBackgroundStyle === 1
 
-                BarThemes {
-                    id: barThemes
-                }
-                property var activeTheme: barThemes.getTheme(Config.options.bar.expressiveColorTheme)
-
                 Connections {
                     enabled: Config.options.bar.barBackgroundStyle === 2
                     target: HyprlandData
@@ -53,25 +48,24 @@ Scope {
 
                         const hasWindow = wsId ? HyprlandData.windowList.some(w => w.workspace.id === wsId && !w.floating) : false;
 
-                        barRoot.hasActiveWindows = hasWindow;
+                        barRoot.hasActiveWindows = hasWindow
                     }
                 }
+                
 
                 Timer {
                     id: showBarTimer
                     interval: (Config?.options.bar.autoHide.showWhenPressingSuper.delay ?? 100)
                     repeat: false
                     onTriggered: {
-                        barRoot.superShow = true;
+                        barRoot.superShow = true
                     }
                 }
                 Connections {
                     target: GlobalStates
                     function onSuperDownChanged() {
-                        if (!Config?.options.bar.autoHide.showWhenPressingSuper.enable)
-                            return;
-                        if (GlobalStates.superDown)
-                            showBarTimer.restart();
+                        if (!Config?.options.bar.autoHide.showWhenPressingSuper.enable) return;
+                        if (GlobalStates.superDown) showBarTimer.restart();
                         else {
                             showBarTimer.stop();
                             barRoot.superShow = false;
@@ -81,7 +75,8 @@ Scope {
                 property bool superShow: false
                 property bool mustShow: hoverRegion.containsMouse || superShow
                 exclusionMode: ExclusionMode.Ignore
-                exclusiveZone: (Config?.options.bar.autoHide.enable && (!mustShow || !Config?.options.bar.autoHide.pushWindows)) ? 0 : Appearance.sizes.baseBarHeight + (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0)
+                exclusiveZone: (Config?.options.bar.autoHide.enable && (!mustShow || !Config?.options.bar.autoHide.pushWindows)) ? 0 :
+                    Appearance.sizes.baseBarHeight + (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0)
                 WlrLayershell.namespace: "quickshell:bar"
                 implicitHeight: Appearance.sizes.barHeight + Appearance.rounding.screenRounding
                 mask: Region {
@@ -110,7 +105,7 @@ Scope {
                     GlobalFocusGrab.removePersistent(barRoot);
                 }
 
-                MouseArea {
+                MouseArea  {
                     id: hoverRegion
                     hoverEnabled: true
                     anchors {
@@ -130,7 +125,7 @@ Scope {
 
                     BarContent {
                         id: barContent
-
+                        
                         implicitHeight: Appearance.sizes.barHeight
                         anchors {
                             right: parent.right
@@ -205,7 +200,7 @@ Scope {
                                 }
 
                                 implicitSize: Appearance.rounding.screenRounding
-                                color: showBarBackground ? (Config.options.bar.expressiveColors ? activeTheme.barBackground : Appearance.colors.colLayer0) : "transparent"
+                                color: showBarBackground ? Appearance.colors.colLayer0 : "transparent"
 
                                 corner: RoundCorner.CornerEnum.TopLeft
                                 states: State {
@@ -224,7 +219,7 @@ Scope {
                                     bottom: Config.options.bar.bottom ? parent.bottom : undefined
                                 }
                                 implicitSize: Appearance.rounding.screenRounding
-                                color: showBarBackground ? (Config.options.bar.expressiveColors ? activeTheme.barBackground : Appearance.colors.colLayer0) : "transparent"
+                                color: showBarBackground ? Appearance.colors.colLayer0 : "transparent"
 
                                 corner: RoundCorner.CornerEnum.TopRight
                                 states: State {
@@ -246,15 +241,15 @@ Scope {
         target: "bar"
 
         function toggle(): void {
-            GlobalStates.barOpen = !GlobalStates.barOpen;
+            GlobalStates.barOpen = !GlobalStates.barOpen
         }
 
         function close(): void {
-            GlobalStates.barOpen = false;
+            GlobalStates.barOpen = false
         }
 
         function open(): void {
-            GlobalStates.barOpen = true;
+            GlobalStates.barOpen = true
         }
     }
 

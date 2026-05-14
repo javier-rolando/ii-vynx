@@ -125,7 +125,6 @@ Singleton {
                 property int fakeScreenRounding: 2 // 0: None | 1: Always | 2: When not fullscreen | 3: Wrapped
                 property int wrappedFrameThickness: 10
                 property bool sharpMode: false
-                property string globalRounding: "large" // Options: "sharp", "normal", "large", "verylarge"
                 property int defaultBorderRadius: 18
                 property bool toggleWindowRounding: true // Changes Hyprland window rounding to 0 if sharpMode is true
                 property JsonObject fonts: JsonObject {
@@ -141,17 +140,13 @@ Singleton {
                 property JsonObject transparency: JsonObject {
                     property bool enable: false
                     property bool automatic: true
-                    property bool popups: true
                     property real backgroundTransparency: 0.11
                     property real contentTransparency: 0.57
                 }
-                property int blurSize: 10
-                property real ignoreAlpha: 0.2
                 property JsonObject wallpaperTheming: JsonObject {
                     property bool enableAppsAndShell: true
                     property bool enableQtApps: true
                     property bool enableTerminal: true
-                    property bool autoRestartQuickshell: false
                     property JsonObject terminalGenerationProps: JsonObject {
                         property real harmony: 0.6
                         property real harmonizeThreshold: 100
@@ -159,13 +154,6 @@ Singleton {
                         property bool forceDarkMode: false
                     }
                 }
-                property JsonObject icons: JsonObject {
-                    property bool enableThemed: false
-                    property bool enableShapeMask: false
-                    property string shapeMask: "Circle"
-                }
-                property string borderColorType: "primary" // Options: primary, secondary, tertiary, primaryContainer, surface
-                property string iconTheme: "Papirus"
                 property JsonObject palette: JsonObject {
                     property string type: "auto" // Allowed: auto, scheme-content, scheme-expressive, scheme-fidelity, scheme-fruit-salad, scheme-monochrome, scheme-neutral, scheme-rainbow, scheme-tonal-spot
                     property string accentColor: ""
@@ -193,21 +181,6 @@ Singleton {
                 property string terminal: "kitty -1" // This is only for shell actions
                 property string update: "kitty -1 --hold=yes fish -i -c 'pkexec pacman -Syu'"
                 property string volumeMixer: `~/.config/hypr/hyprland/scripts/launch_first_available.sh "pavucontrol-qt" "pavucontrol"`
-
-                property var bluetoothDeviceImages: [
-                    {
-                        "mac": "E8:EE:CC:96:31:3A",
-                        "image": "anker_q30_.png"
-                    },
-                    {
-                        "mac": "40:35:E6:31:8B:AC",
-                        "image": "galaxy_buds_3.png"
-                    },
-                    {
-                        "mac": "64:1B:2F:9B:95:CE",
-                        "image": "samsung_s23.png"
-                    }
-                ]
             }
 
             property JsonObject background: JsonObject {
@@ -259,7 +232,6 @@ Singleton {
                     }
                     property JsonObject media: JsonObject {
                         property bool enable: true
-                        property string style: "circular" // circular, expressive
                         property string placementStrategy: "free" // "free", "leastBusy", "mostBusy"
                         property real x: 800
                         property real y: 100
@@ -316,25 +288,6 @@ Singleton {
             }
 
             property JsonObject bar: JsonObject {
-                property bool borderless: false
-                property JsonObject styles: JsonObject {
-                    property string clock: "default" // default, expressive
-                    property string media: "default"
-                    property string notification: "default"
-                    property string utilButtons: "default"
-                    property string workspaces: "default"
-                    property string weather: "default"
-                    property string dashboard: "default"
-                    property string resources: "default"
-                    property string policies: "default"
-                    property string power: "default"
-                    property string battery: "default"
-                    property string systray: "default"
-                    property string bluetooth: "default"
-                    property string keyboard: "default"
-                    property string sports: "default"
-                }
-
                 property JsonObject activeWindow: JsonObject {
                     property bool fixedSize: false
                 }
@@ -355,13 +308,10 @@ Singleton {
                 property int barGroupStyle: 0 // 0: Pills | 1: Island (opaque) | 2: Transparent (or maybe line-separated in the future)
                 property string topLeftIcon: "spark" // Options: "distro" or any icon name in ~/.config/quickshell/ii/assets/icons
                 property int barBackgroundStyle: 1 // 0: Transparent | 1: Visible | 2: Adaptive
-                property bool expressiveColors: false
-                property string expressiveColorTheme: "content"
                 property bool verbose: true
                 property bool vertical: false
 
                 property JsonObject mediaPlayer: JsonObject {
-                    property bool expressivePopup: true
                     property bool useFixedSize: false
                     property int customSize: 250
                     property int maxSize: 400
@@ -377,37 +327,9 @@ Singleton {
                 }
 
                 property JsonObject resources: JsonObject {
-                    property bool showPercentageText: true
-                    property bool alwaysShowRam: true
-                    property bool alwaysShowCpu: true
-                    property bool alwaysShowCpuTemp: false
-                    property bool alwaysShowDisk: false
-                    property bool alwaysShowSwap: false
                     property int memoryWarningThreshold: 95
                     property int swapWarningThreshold: 85
                     property int cpuWarningThreshold: 90
-                    property bool expressivePopup: true
-                }
-
-                property JsonObject sports: JsonObject {
-                    property bool enable: false
-                    property bool showBRA: false
-                    property bool showBUND: false
-                    property bool showCL: true
-                    property bool showCLA: true
-                    property bool showEPL: true
-                    property bool showLIGA: false
-                    property bool showLIG1: false
-                    property bool showSERA: false
-                    property bool showUECL: false
-                    property bool showUEL: false
-                    property bool showWC: false
-                    property bool showWWC: false
-                    property string teamFilter: ""
-                    property int updateInterval: 60
-                    property int maxCardsPopup: 4
-                    property int showBeforeHours: 12
-                    property int showAfterMinutes: 180
                 }
                 property list<string> screenList: [] // List of names, like "eDP-1", find out with 'hyprctl monitors' command
 
@@ -423,8 +345,6 @@ Singleton {
                     property bool showDarkModeToggle: true
                     property bool showPerformanceProfileToggle: false
                     property bool showScreenRecord: false
-                    property bool isRecording: false
-                    property bool showWallpaperToggle: true
                 }
                 property JsonObject workspaces: JsonObject {
                     property bool monochromeIcons: true
@@ -439,8 +359,6 @@ Singleton {
                     property bool useNerdFont: false
                     property int activeIndicatorOpacity: 100 // 0-100
                     property bool dynamicWorkspaces: false
-                    property bool useMaterialShapeForActiveIndicator: false
-                    property string activeIndicatorShape: "Circle"
                 }
                 property JsonObject weather: JsonObject {
                     property bool enable: false
@@ -482,6 +400,15 @@ Singleton {
                     ]
                     property list<var> right: [
                         {
+                            id: "screen_share_indicator"
+                        },
+                        {
+                            id: "record_indicator"
+                        },
+                        {
+                            id: "weather"
+                        },
+                        {
                             id: "clock"
                         },
                         {
@@ -495,10 +422,8 @@ Singleton {
                 property JsonObject tooltips: JsonObject {
                     property bool clickToShow: false
                     property bool compactPopups: false
-                    property bool enableColorPickerPopup: true
-                    property bool enableBluetoothConnectionPopup: true
+                    property bool showSwap: false
                 }
-                property string bluetoothDevicesLayout: "classic" // Options: classic, expressive
                 property JsonObject sizes: JsonObject {
                     property int height: 40 // horizontal mode
                     property int width: 46 // vertical mode
@@ -506,7 +431,6 @@ Singleton {
             }
 
             property JsonObject battery: JsonObject {
-                property string style: "default"
                 property int low: 20
                 property int critical: 5
                 property int full: 101
@@ -528,12 +452,6 @@ Singleton {
                 property bool splitButtons: false
                 property bool useMouseSymbol: false
                 property bool useFnSymbol: false
-                property bool filterUnbinds: false
-                property bool enableGmail: false
-                property bool enableTimetable: true
-                property bool enablePeriodicTable: true
-                property bool enableCommands: true
-                property bool commandsTagsSidebar: false
                 property JsonObject fontSize: JsonObject {
                     property int key: Appearance.font.pixelSize.smaller
                     property int comment: Appearance.font.pixelSize.smaller
@@ -748,11 +666,9 @@ Singleton {
                 property int nonAppResultDelay: 30 // This prevents lagging when typing
                 property string engineBaseUrl: "https://www.google.com/search?q="
                 property list<string> excludedSites: ["quora.com", "facebook.com"]
-                property bool sloppy: false // DEPRECATED: use levenshtein instead
-                property bool levenshtein: sloppy // Use Levenshtein distance (typo-tolerant) instead of fuzzy matching
-                property bool frecency: false // Rank results by app launch frequency
                 property string fileSearchDirectory: "/home"
                 property bool blurFileSearchResultPreviews: false
+                property bool sloppy: false // Uses levenshtein distance based scoring instead of fuzzy sort. Very weird.
                 property JsonObject prefix: JsonObject {
                     property bool showDefaultActionsWithoutPrefix: true
                     property string action: "/"
@@ -771,12 +687,6 @@ Singleton {
             }
 
             property JsonObject sidebar: JsonObject {
-                property JsonObject dashboardHeader: JsonObject {
-                    property string profileImageType: "custom" // "custom", "distro", "none"
-                    property string profileImagePath: "file://" + Directories.home + "/.config/quickshell/ii/assets/profile.png"
-                    property string textMode: "username" // "username", "uptime", "none", "custom"
-                    property string customText: ""
-                }
                 property string position: "default"
                 property bool keepRightSidebarLoaded: true
                 property JsonObject translator: JsonObject {
@@ -811,44 +721,37 @@ Singleton {
                     property string style: "android" // Options: classic, android
                     property JsonObject android: JsonObject {
                         property int columns: 5
-                        property list<var> pages: [
-                            [
-                                {
-                                    "size": 2,
-                                    "type": "network"
-                                },
-                                {
-                                    "size": 1,
-                                    "type": "idleInhibitor"
-                                },
-                                {
-                                    "size": 2,
-                                    "type": "darkMode"
-                                },
-                                {
-                                    "size": 1,
-                                    "type": "mic"
-                                },
-                                {
-                                    "size": 2,
-                                    "type": "audio"
-                                },
-                                {
-                                    "size": 2,
-                                    "type": "nightLight"
-                                },
-                                {
-                                    "size": 1,
-                                    "type": "soundcoreAnc"
-                                }
-                            ]
+                        property list<var> toggles: [
+                            {
+                                "size": 2,
+                                "type": "network"
+                            },
+                            {
+                                "size": 1,
+                                "type": "idleInhibitor"
+                            },
+                            {
+                                "size": 2,
+                                "type": "darkMode"
+                            },
+                            {
+                                "size": 1,
+                                "type": "mic"
+                            },
+                            {
+                                "size": 2,
+                                "type": "audio"
+                            },
+                            {
+                                "size": 2,
+                                "type": "nightLight"
+                            }
                         ]
                     }
                 }
 
                 property JsonObject quickSliders: JsonObject {
                     property bool enable: true
-                    property bool vertical: false
                     property bool showMic: true
                     property bool showGamma: true
                     property bool showVolume: true
@@ -870,11 +773,6 @@ Singleton {
                 property string theme: "freedesktop"
             }
 
-            property JsonObject soundcore: JsonObject {
-                property string macAddress: "E8:EE:CC:96:31:3A"
-                property string model: "SoundcoreA3028"
-            }
-
             property JsonObject time: JsonObject {
                 // https://doc.qt.io/qt-6/qtime.html#toString
                 property string format: "hh:mm"
@@ -882,7 +780,7 @@ Singleton {
                 property string longDateFormat: "dd/MM/yyyy"
                 property string dateWithYearFormat: "dd/MM/yyyy"
                 property string dateFormat: "ddd, dd/MM"
-                property int firstDayOfWeek: 6 // 0: Monday, 1: Tuesday, 2: Wednesday, 3: Thursday, 4: Friday, 5: Saturday, 6: Sunday
+                property int firstDayOfWeek: 0 // 0: Monday, 1: Tuesday, 2: Wednesday, 3: Thursday, 4: Friday, 5: Saturday, 6: Sunday
 
                 property JsonObject pomodoro: JsonObject {
                     property int breakTime: 300
@@ -904,7 +802,9 @@ Singleton {
                 property bool useSystemFileDialog: false
                 property list<var> directories: [
                     {
-                        "path": FileUtils.trimFileProtocol(`${Directories.home}/Pictures/Wallpapers`)
+                        "icon": "wallpaper",
+                        "name": "Wallpapers",
+                        "path": `${Directories.pictures}/Wallpapers`
                     }
                 ]
             }

@@ -19,25 +19,28 @@ import Quickshell.Hyprland
 ShellRoot {
     id: root
 
+    
+
     // Stuff for every panel family
     ReloadPopup {}
 
     Component.onCompleted: {
-        MaterialThemeLoader.reapplyTheme();
-        Hyprsunset.load();
-        FirstRunExperience.load();
-        ConflictKiller.load();
-        Cliphist.refresh();
-        Wallpapers.load();
-        Updates.load();
+        MaterialThemeLoader.reapplyTheme()
+        Hyprsunset.load()
+        FirstRunExperience.load()
+        ConflictKiller.load()
+        Cliphist.refresh()
+        Wallpapers.load()
+        Updates.load()
     }
+
 
     // Panel families
     property list<string> families: ["ii", "waffle"]
     function cyclePanelFamily() {
-        const currentIndex = families.indexOf(Config.options.panelFamily);
-        const nextIndex = (currentIndex + 1) % families.length;
-        Config.options.panelFamily = families[nextIndex];
+        const currentIndex = families.indexOf(Config.options.panelFamily)
+        const nextIndex = (currentIndex + 1) % families.length
+        Config.options.panelFamily = families[nextIndex]
     }
 
     component PanelFamilyLoader: LazyLoader {
@@ -45,7 +48,7 @@ ShellRoot {
         property bool extraCondition: true
         active: Config.ready && Config.options.panelFamily === identifier && extraCondition
     }
-
+    
     PanelFamilyLoader {
         identifier: "ii"
         component: IllogicalImpulseFamily {}
@@ -56,12 +59,13 @@ ShellRoot {
         component: WaffleFamily {}
     }
 
+
     // Shortcuts
     IpcHandler {
         target: "panelFamily"
 
         function cycle(): void {
-            root.cyclePanelFamily();
+            root.cyclePanelFamily()
         }
     }
 
@@ -71,4 +75,14 @@ ShellRoot {
 
         onPressed: root.cyclePanelFamily()
     }
+
+    GlobalShortcut {
+        name: "barDockToggle"
+
+        onPressed: {
+            Config.options.dock.enable = !Config.options.dock.enable;
+            GlobalStates.barOpen = !GlobalStates.barOpen;
+        }
+    }
 }
+

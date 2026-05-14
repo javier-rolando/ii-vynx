@@ -46,14 +46,8 @@ Scope {
                 color: "transparent"
 
                 property var zoomLevels: {  // has to be reverted compared to background
-                    "in": {
-                        default: 1,
-                        zoomed: 1.04
-                    },
-                    "out": {
-                        default: 1.04,
-                        zoomed: 1
-                    }
+                    "in": { default: 1, zoomed: 1.04 },
+                    "out": { default: 1.04, zoomed: 1 }
                 }
 
                 readonly property bool isZoomInStyle: Config.options.overview.scrollingStyle.zoomStyle === "in"
@@ -62,25 +56,23 @@ Scope {
                 property real defaultRatio: isZoomInStyle ? zoomLevels.in.default : zoomLevels.out.default
                 property real zoomedRatio: isZoomInStyle ? zoomLevels.in.zoomed : zoomLevels.out.zoomed
 
-                property bool isResettingZoom: false
+                property bool isResettingZoom: false 
                 property real scaleAnimated: showOpeningAnimation ? GlobalStates.overviewOpen ? zoomedRatio : defaultRatio : 1
 
-                property real effectiveScale: showOpeningAnimation ? zoomedRatio - scaleAnimated + 1 : 1
+                property real effectiveScale: showOpeningAnimation ? zoomedRatio - scaleAnimated + 1 : 1 
 
                 onIsZoomInStyleChanged: isResettingZoom = true
                 onScaleAnimatedChanged: {
                     if (scaleAnimated === defaultRatio) {
-                        isResettingZoom = false;
+                        isResettingZoom = false
                     }
                 }
 
                 visible: {
-                    if (isResettingZoom)
-                        return false; // not showing when we are resetting
-                    if (!showOpeningAnimation)
-                        return GlobalStates.overviewOpen; // no anim
-
-                    return isZoomInStyle ? scaleAnimated > defaultRatio : scaleAnimated < defaultRatio;
+                    if (isResettingZoom) return false // not showing when we are resetting 
+                    if (!showOpeningAnimation) return GlobalStates.overviewOpen // no anim
+                    
+                    return isZoomInStyle ? scaleAnimated > defaultRatio : scaleAnimated < defaultRatio
                 }
 
                 Behavior on scaleAnimated {
@@ -95,7 +87,7 @@ Scope {
                 }
                 property int barSize: Config.options.bar.vertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight
                 property int margin: isZoomInStyle ? barSize : barSize * 2
-                margins {
+                margins { 
                     top: -margin * 2
                     bottom: -margin * 2
                     left: -margin * 2
@@ -134,6 +126,8 @@ Scope {
                     }
                 }
 
+                
+
                 Timer {
                     id: delayedGrabTimer
                     interval: Config.options.hacks.arbitraryRaceConditionDelay
@@ -152,6 +146,7 @@ Scope {
                     }
                 }
 
+
                 function setSearchingText(text) {
                     searchWidget.setSearchingText(text);
                     searchWidget.focusFirstItem();
@@ -163,10 +158,10 @@ Scope {
 
                     MouseArea { // We could have used PanelWindow.mask to detect this, but this is more stable
                         anchors.fill: parent
-                        onClicked: GlobalStates.overviewOpen = false
+                        onClicked: GlobalStates.overviewOpen = false;
                     }
 
-                    Item { // Wrapper for animation
+                    Item { // Wrapper for animation 
                         id: searchWidgetWrapper
                         implicitHeight: searchWidget.implicitHeight
                         implicitWidth: searchWidget.implicitWidth
@@ -192,6 +187,7 @@ Scope {
                             }
                         }
                     }
+                    
 
                     Loader { // Classic overview
                         id: overviewLoader
@@ -218,10 +214,12 @@ Scope {
                             monitorIndex: root.monitorIndex
                         }
                     }
-                }
-            }
+                }   
+            }   
         }
     }
+    
+    
 
     function toggleClipboard() {
         if (GlobalStates.overviewOpen && overviewScope.dontAutoCancelSearch) {

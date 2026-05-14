@@ -70,14 +70,6 @@ AbstractBackgroundWidget {
                 textHorizontalAlignment: root.textHorizontalAlignment
             }
         }
-
-        FadeLoader {
-            id: nagasakiClockLoader
-            anchors.horizontalCenter: parent.horizontalCenter
-            shown: root.clockStyle === "nagasaki" && (root.shouldShow)
-            fade: false
-            sourceComponent: NagasakiClock {}
-        }
         StatusRow {
             anchors.horizontalCenter: parent.horizontalCenter
         }

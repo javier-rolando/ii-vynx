@@ -28,7 +28,6 @@ Singleton {
     property string barConfigPath: FileUtils.trimFileProtocol(`${Directories.config}/quickshell/ii/modules/settings/BarConfig.qml`)
     property string backgroundConfigPath: FileUtils.trimFileProtocol(`${Directories.config}/quickshell/ii/modules/settings/BackgroundConfig.qml`)
     property string interfaceConfigPath: FileUtils.trimFileProtocol(`${Directories.config}/quickshell/ii/modules/settings/InterfaceConfig.qml`)
-    property string hyprlandConfigPath: FileUtils.trimFileProtocol(`${Directories.config}/quickshell/ii/modules/settings/HyprlandConfig.qml`)
     property string servicesConfigPath: FileUtils.trimFileProtocol(`${Directories.config}/quickshell/ii/modules/settings/ServicesConfig.qml`)
     property string advancedConfigPath: FileUtils.trimFileProtocol(`${Directories.config}/quickshell/ii/modules/settings/AdvancedConfig.qml`)
 
@@ -39,17 +38,15 @@ Singleton {
     property string coverArt: FileUtils.trimFileProtocol(`${Directories.cache}/media/coverart`)
     property string tempImages: "/tmp/quickshell/media/images"
     property string booruPreviews: FileUtils.trimFileProtocol(`${Directories.cache}/media/boorus`)
-    property string booruDownloads: FileUtils.trimFileProtocol(Directories.pictures + "/homework")
+    property string booruDownloads: FileUtils.trimFileProtocol(Directories.pictures  + "/homework")
     property string booruDownloadsNsfw: FileUtils.trimFileProtocol(Directories.pictures + "/homework/🌶️")
     property string latexOutput: FileUtils.trimFileProtocol(`${Directories.cache}/media/latex`)
     property string shellConfig: FileUtils.trimFileProtocol(`${Directories.config}/illogical-impulse`)
     property string shellConfigName: "config.json"
     property string shellConfigPath: `${Directories.shellConfig}/${Directories.shellConfigName}`
-    property string todoPath: FileUtils.trimFileProtocol(`${Directories.state}/user/todo.json`)
-    property string appUsagePath: FileUtils.trimFileProtocol(`${Directories.state}/user/app_usage.json`)
-    property string commandsPath: FileUtils.trimFileProtocol(`${Directories.state}/user/commands.json`)
-    property string notesPath: FileUtils.trimFileProtocol(`${Directories.state}/user/notes.json`)
-    property string conflictCachePath: FileUtils.trimFileProtocol(`${Directories.cache}/conflict-killer`)
+	property string todoPath: FileUtils.trimFileProtocol(`${Directories.state}/user/todo.json`)
+	property string notesPath: FileUtils.trimFileProtocol(`${Directories.state}/user/notes.json`)
+	property string conflictCachePath: FileUtils.trimFileProtocol(`${Directories.cache}/conflict-killer`)
     property string notificationsPath: FileUtils.trimFileProtocol(`${Directories.cache}/notifications/notifications.json`)
     property string lyricsPath: FileUtils.trimFileProtocol(`${Directories.cache}/lyrics/lyrics.json`)
     property string generatedMaterialThemePath: FileUtils.trimFileProtocol(`${Directories.state}/user/generated/colors.json`)
@@ -65,7 +62,6 @@ Singleton {
     property string aiChats: FileUtils.trimFileProtocol(`${Directories.state}/user/ai/chats`)
     property string aiTranslationScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/ai/gemini-translate.sh`)
     property string recordScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/videos/record.sh`)
-    property string processVideoScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/videos/process_video.sh`)
     property string extractColorsScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/wallpapers/extract-colors.sh`)
     property string colorCachePath: FileUtils.trimFileProtocol(`${Directories.cache}/wallpapers/colors.json`)
     property string userAvatarPathAccountsService: FileUtils.trimFileProtocol(`/var/lib/AccountsService/icons/${SystemInfo.username}`)
@@ -76,14 +72,14 @@ Singleton {
     property string geniusLyricsScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/lyrics/genius-lyrics.js`)
     // Cleanup on init
     Component.onCompleted: {
-        Quickshell.execDetached(["mkdir", "-p", `${shellConfig}`]);
-        Quickshell.execDetached(["mkdir", "-p", `${favicons}`]);
-        Quickshell.execDetached(["bash", "-c", `rm -rf '${coverArt}'; mkdir -p '${coverArt}'`]);
-        Quickshell.execDetached(["bash", "-c", `rm -rf '${booruPreviews}'; mkdir -p '${booruPreviews}'`]);
-        Quickshell.execDetached(["bash", "-c", `rm -rf '${latexOutput}'; mkdir -p '${latexOutput}'`]);
-        Quickshell.execDetached(["bash", "-c", `rm -rf '${cliphistDecode}'; mkdir -p '${cliphistDecode}'`]);
-        Quickshell.execDetached(["mkdir", "-p", `${aiChats}`]);
-        Quickshell.execDetached(["mkdir", "-p", `${userActions}`]);
-        Quickshell.execDetached(["rm", "-rf", `${tempImages}`]);
+        Quickshell.execDetached(["mkdir", "-p", `${shellConfig}`])
+        Quickshell.execDetached(["mkdir", "-p", `${favicons}`])
+        Quickshell.execDetached(["bash", "-c", `rm -rf '${coverArt}'; mkdir -p '${coverArt}'`])
+        Quickshell.execDetached(["bash", "-c", `rm -rf '${booruPreviews}'; mkdir -p '${booruPreviews}'`])
+        Quickshell.execDetached(["bash", "-c", `rm -rf '${latexOutput}'; mkdir -p '${latexOutput}'`])
+        Quickshell.execDetached(["bash", "-c", `rm -rf '${cliphistDecode}'; mkdir -p '${cliphistDecode}'`])
+        Quickshell.execDetached(["mkdir", "-p", `${aiChats}`])
+        Quickshell.execDetached(["mkdir", "-p", `${userActions}`])
+        Quickshell.execDetached(["rm", "-rf", `${tempImages}`])
     }
 }

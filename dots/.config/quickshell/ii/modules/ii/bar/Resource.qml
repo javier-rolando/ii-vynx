@@ -17,7 +17,7 @@ Item {
 
     RowLayout {
         id: resourceRowLayout
-        spacing: 4
+        spacing: 2
         x: shown ? 0 : -resourceRowLayout.width
         anchors {
             verticalCenter: parent.verticalCenter
@@ -50,12 +50,9 @@ Item {
         }
 
         Item {
-            id: percentageTextContainer
             Layout.alignment: Qt.AlignVCenter
-            implicitWidth: Config.options.bar.resources.showPercentageText ? (fullPercentageTextMetrics.width + 5) : 0
+            implicitWidth: fullPercentageTextMetrics.width
             implicitHeight: percentageText.implicitHeight
-            visible: Config.options.bar.resources.showPercentageText
-            clip: true
 
             TextMetrics {
                 id: fullPercentageTextMetrics
@@ -68,14 +65,7 @@ Item {
                 anchors.centerIn: parent
                 color: Appearance.colors.colOnLayer1
                 font.pixelSize: Appearance.font.pixelSize.small
-                text: `${Math.round(percentage * 100).toString()}%`
-            }
-            
-            Behavior on implicitWidth {
-                NumberAnimation {
-                    duration: Appearance.animation.elementMoveFast.duration
-                    easing.type: Appearance.animation.elementMoveFast.type
-                }
+                text: `${Math.round(percentage * 100).toString()}`
             }
         }
 

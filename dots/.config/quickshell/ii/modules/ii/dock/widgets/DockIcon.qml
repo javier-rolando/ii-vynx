@@ -12,20 +12,14 @@ Item {
     property string appId: ""
     property bool isRunning: true
     property real iconOpacity: isRunning ? 1.0 : (Config.options.dock.dimInactiveIcons ? 0.55 : 1.0)
-
+    
     IconImage {
         id: baseIcon
         anchors.fill: parent
-        source: {
-            const _ = TaskbarApps.iconThemeRevision;
-            return Quickshell.iconPath(TaskbarApps.getCachedIcon(root.appId), "image-missing");
-        }
+        source: Quickshell.iconPath(TaskbarApps.getCachedIcon(root.appId), "image-missing")
         visible: !Config.options.dock.monochromeIcons
         opacity: root.iconOpacity
-
-        // Force reload when icon theme regenerates (same pattern as DockFileButton)
-        backer.sourceSize: Qt.size(parent.width + TaskbarApps.iconThemeRevision, parent.height + TaskbarApps.iconThemeRevision)
-
+        
         Behavior on opacity {
             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
         }

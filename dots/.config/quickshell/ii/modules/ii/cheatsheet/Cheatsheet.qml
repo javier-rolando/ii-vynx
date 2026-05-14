@@ -10,59 +10,32 @@ import Quickshell.Io
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import "commands"
 
-Scope {
+Scope { // Scope
     id: root
-    property var tabButtonList: {
-        let list = [];
-        if (Config.options.cheatsheet.enableTimetable) {
-            list.push({
-                "icon": "calendar_month",
-                "name": Translation.tr("Timetable")
-            });
-        }
-        list.push({
+    property var tabButtonList: [
+        {
+            "icon": "calendar_month",
+            "name": Translation.tr("Timetable")
+        },
+        {
             "icon": "keyboard",
             "name": Translation.tr("Keybinds")
-        });
-        if (Config.options.cheatsheet.enablePeriodicTable) {
-            list.push({
-                "icon": "experiment",
-                "name": Translation.tr("Elements")
-            });
-        }
-        if (Config.options.cheatsheet.enableCommands) {
-            list.push({
-                "icon": "terminal",
-                "name": Translation.tr("Commands")
-            });
-        }
-        if (Config.options.cheatsheet.enableGmail) {
-            list.push({
-                "icon": "mail",
-                "name": Translation.tr("Email")
-            });
-        }
-        return list;
-    }
+        },
+        {
+            "icon": "experiment",
+            "name": Translation.tr("Elements")
+          },
+        
+    ]
 
     Loader {
         id: cheatsheetLoader
         active: false
 
-        sourceComponent: PanelWindow {
+        sourceComponent: PanelWindow { // Window
             id: cheatsheetRoot
             visible: cheatsheetLoader.active
-
-            Connections {
-                target: root
-                function onTabButtonListChanged() {
-                    if (swipeView.currentIndex >= root.tabButtonList.length) {
-                        swipeView.currentIndex = 0;
-                    }
-                }
-            }
 
             anchors {
                 top: true
@@ -78,29 +51,28 @@ Scope {
             implicitWidth: cheatsheetBackground.width + Appearance.sizes.elevationMargin * 2
             implicitHeight: cheatsheetBackground.height + Appearance.sizes.elevationMargin * 2
             WlrLayershell.namespace: "quickshell:cheatsheet"
-            WlrLayershell.keyboardFocus: {
-                // currentItem is the Loader delegate; .item is the loaded CheatsheetTimetable
-                const cur = swipeView.currentItem;
-                if (cur && cur.item && cur.item.eventPopupVisible)
-                    return WlrKeyboardFocus.OnDemand;
-                return WlrKeyboardFocus.None;
-            }
+            // Hyprland 0.49: Focus is always exclusive and setting this breaks mouse focus grab
+            // WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
             color: "transparent"
 
             mask: Region {
                 item: cheatsheetBackground
             }
 
-            HyprlandFocusGrab {
-                id: grab
-                windows: [cheatsheetRoot]
-                active: cheatsheetRoot.visible
-                onCleared: () => {
-                    if (!active)
-                        cheatsheetRoot.hide();
+            Component.onCompleted: {
+                GlobalFocusGrab.addDismissable(cheatsheetRoot);
+            }
+            Component.onDestruction: {
+                GlobalFocusGrab.removeDismissable(cheatsheetRoot);
+            }
+            Connections {
+                target: GlobalFocusGrab
+                function onDismissed() {
+                    cheatsheetRoot.hide();
                 }
             }
 
+            // Background
             StyledRectangularShadow {
                 target: cheatsheetBackground
             }
@@ -112,16 +84,12 @@ Scope {
                 border.color: Appearance.colors.colLayer0Border
                 radius: Appearance.rounding.windowRounding
                 property real padding: 20
-
                 implicitWidth: cheatsheetColumnLayout.implicitWidth + padding * 2
                 implicitHeight: cheatsheetColumnLayout.implicitHeight + padding * 2
 
-                Keys.onPressed: event => {
+                Keys.onPressed: event => { // Esc to close
                     if (event.key === Qt.Key_Escape) {
                         cheatsheetRoot.hide();
-                    } else if (event.key === Qt.Key_Slash) {
-                        swipeView.currentItem.forceActiveFocus();
-                        event.accepted = true;
                     }
                     if (event.modifiers === Qt.ControlModifier) {
                         if (event.key === Qt.Key_PageDown) {
@@ -140,7 +108,7 @@ Scope {
                     }
                 }
 
-                RippleButton {
+                RippleButton { // Close button
                     id: closeButton
                     focus: cheatsheetRoot.visible
                     implicitWidth: 40
@@ -165,7 +133,7 @@ Scope {
                     }
                 }
 
-                ColumnLayout {
+                ColumnLayout { // Real content
                     id: cheatsheetColumnLayout
                     anchors.centerIn: parent
                     spacing: 10
@@ -183,13 +151,11 @@ Scope {
                         }
                     }
 
-                    SwipeView {
+                    SwipeView { // Content pages
                         id: swipeView
                         Layout.topMargin: 5
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        Layout.preferredWidth: 1600
-                        Layout.preferredHeight: 750
                         spacing: 10
                         currentIndex: Persistent.states.cheatsheet.tabIndex
                         onCurrentIndexChanged: {
@@ -200,8 +166,7 @@ Scope {
                         implicitHeight: Math.max.apply(null, contentChildren.map(child => child.implicitHeight || 0))
 
                         clip: true
-                        // Disable expensive layer compositing while animating to prevent lag
-                        layer.enabled: !swipeView.moving
+                        layer.enabled: true
                         layer.effect: OpacityMask {
                             maskSource: Rectangle {
                                 width: swipeView.width
@@ -210,49 +175,10 @@ Scope {
                             }
                         }
 
-                        Repeater {
-                            model: root.tabButtonList
-                            delegate: Loader {
-                                id: tabDelegate
-                                required property var modelData
-                                required property int index
-
-                                // Timetable & Email: lazy — load only when first visited
-                                property bool _lazy: modelData.icon === "calendar_month" || modelData.icon === "mail"
-                                property bool _wasSeen: false
-                                active: !_lazy || swipeView.currentIndex === index || _wasSeen
-                                onActiveChanged: if (active)
-                                    _wasSeen = true
-
-                                asynchronous: _lazy
-                                source: {
-                                    switch (modelData.icon) {
-                                    case "calendar_month":
-                                        return "CheatsheetTimetable.qml";
-                                    case "keyboard":
-                                        return "CheatsheetKeybinds.qml";
-                                    case "experiment":
-                                        return "CheatsheetPeriodicTable.qml";
-                                    case "terminal":
-                                        return "commands/CheatsheetCommands.qml";
-                                    case "mail":
-                                        return "CheatsheetEmail.qml";
-                                    default:
-                                        return "";
-                                    }
-                                }
-
-                                // Loading indicator for async tabs
-                                Rectangle {
-                                    anchors.fill: parent
-                                    color: "transparent"
-                                    visible: tabDelegate._lazy && tabDelegate.status !== Loader.Ready
-                                    MaterialLoadingIndicator {
-                                        anchors.centerIn: parent
-                                    }
-                                }
-                            }
-                        }
+                        CheatsheetTimetable {}
+                        CheatsheetKeybinds {}
+                        CheatsheetPeriodicTable {}
+                        
                     }
                 }
             }
@@ -261,12 +187,15 @@ Scope {
 
     IpcHandler {
         target: "cheatsheet"
+
         function toggle(): void {
             cheatsheetLoader.active = !cheatsheetLoader.active;
         }
+
         function close(): void {
             cheatsheetLoader.active = false;
         }
+
         function open(): void {
             cheatsheetLoader.active = true;
         }
@@ -275,6 +204,7 @@ Scope {
     GlobalShortcut {
         name: "cheatsheetToggle"
         description: "Toggles cheatsheet on press"
+
         onPressed: {
             cheatsheetLoader.active = !cheatsheetLoader.active;
         }
@@ -283,6 +213,7 @@ Scope {
     GlobalShortcut {
         name: "cheatsheetOpen"
         description: "Opens cheatsheet on press"
+
         onPressed: {
             cheatsheetLoader.active = true;
         }
@@ -291,6 +222,7 @@ Scope {
     GlobalShortcut {
         name: "cheatsheetClose"
         description: "Closes cheatsheet on press"
+
         onPressed: {
             cheatsheetLoader.active = false;
         }

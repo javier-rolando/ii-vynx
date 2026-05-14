@@ -21,7 +21,7 @@ QuickToggleModel {
         interval: 300
         repeat: false
         onTriggered: {
-            GlobalStates.launchColorPicker();
+            Quickshell.execDetached(["hyprpicker", "-a"]);
         }
     }
 

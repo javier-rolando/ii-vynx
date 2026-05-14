@@ -14,25 +14,15 @@ MouseArea {
     required property SystemTrayItem item
     property bool targetMenuOpen: false
 
-    Rectangle {
-        anchors.centerIn: parent
-        width: parent.width + 12
-        height: parent.height + 12
-        visible: root.containsMouse || root.pressed
-        color: Appearance.colors.colLayer1Hover
-        radius: Config.options.bar.barGroupStyle === 0 ? Appearance.rounding.full : Appearance.rounding.small
-        z: -1
-    }
-
     signal menuOpened(qsWindow: var)
-    signal menuClosed
+    signal menuClosed()
 
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     cursorShape: Qt.PointingHandCursor
     implicitWidth: 20
     implicitHeight: 20
-    onPressed: event => {
+    onPressed: (event) => {
         switch (event.button) {
         case Qt.LeftButton:
             item.activate();
@@ -41,7 +31,7 @@ MouseArea {
             if (item.hasMenu)
                 if (menu.active && menu.item && typeof menu.item.close === "function")
                     menu.item.close();
-                else
+                else 
                     menu.open();
             break;
         }
@@ -53,27 +43,35 @@ MouseArea {
 
     Loader {
         id: menu
-        function open() {
-            menu.active = true;
-        }
+        function open() { menu.active = true; }
         active: false
 
         sourceComponent: SysTrayMenu {
-            Component.onCompleted: this.open()
+            Component.onCompleted: this.open();
             trayItemMenuHandle: root.item.menu
             trayItemId: root.item.id
-
+            
             anchor {
                 window: root.QsWindow.window
-
+                
                 rect: {
                     var gap = Appearance.sizes.elevationMargin; // SysTrayItem menu gap
-                    var pos = root.mapToItem(null, 0, 0);
-
+                    var pos = root.mapToItem(null, 0, 0); 
+                    
                     if (Config.options.bar.vertical) {
-                        return Qt.rect(Config.options.bar.bottom ? pos.x - gap : pos.x + gap, pos.y, root.width, root.height);
+                        return Qt.rect(
+                            Config.options.bar.bottom ? pos.x - gap : pos.x + gap, 
+                            pos.y, 
+                            root.width, 
+                            root.height
+                        );
                     } else {
-                        return Qt.rect(pos.x, Config.options.bar.bottom ? pos.y - gap : pos.y + gap, root.width, root.height);
+                        return Qt.rect(
+                            pos.x, 
+                            Config.options.bar.bottom ? pos.y - gap : pos.y + gap, 
+                            root.width, 
+                            root.height
+                        );
                     }
                 }
 
@@ -84,7 +82,7 @@ MouseArea {
                         return Config.options.bar.bottom ? (Edges.Top | Edges.Center) : (Edges.Bottom | Edges.Center);
                     }
                 }
-
+                
                 gravity: {
                     if (Config.options.bar.vertical) {
                         return Config.options.bar.bottom ? Edges.Left : Edges.Right;
@@ -94,13 +92,14 @@ MouseArea {
                 }
             }
 
-            onMenuOpened: window => root.menuOpened(window)
+            onMenuOpened: (window) => root.menuOpened(window);
             onMenuClosed: {
                 root.menuClosed();
                 menu.active = false;
             }
         }
     }
+
 
     IconImage {
         id: trayIcon
@@ -136,4 +135,5 @@ MouseArea {
         alternativeVisibleCondition: extraVisibleCondition
         anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
     }
+
 }

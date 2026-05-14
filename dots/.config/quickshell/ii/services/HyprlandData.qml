@@ -113,7 +113,7 @@ Singleton {
 
     Process {
         id: getMonitors
-        command: ["hyprctl", "monitors", "all", "-j"]
+        command: ["hyprctl", "monitors", "-j"]
         stdout: StdioCollector {
             id: monitorsCollector
             onStreamFinished: {

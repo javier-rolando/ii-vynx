@@ -22,9 +22,9 @@ Rectangle {
     property color symbolColor: Appearance.colors.colOnSecondary
     property color textColor: Appearance.colors.colOnSecondaryContainer
 
-    default property alias shapeContent: shapeItem.children
+    property alias shapeContent: shapeItem.children
+    property alias textContent: pillText.children
     property alias text: pillText.text
-    property alias textContent: textContainer.children
 
     MaterialShape {
         id: shapeItem
@@ -42,28 +42,22 @@ Rectangle {
             visible: root.icon !== "" && shapeItem.children.length <= 1
             anchors.centerIn: parent
             text: root.icon
-            iconSize: Appearance.font.pixelSize.large
+            iconSize: Appearance.font.pixelSize.huge
             color: root.symbolColor
+            fill: 1
         }
     }
 
-    Item {
-        id: textContainer
+    StyledText {
+        id: pillText
         anchors {
             verticalCenter: parent.verticalCenter
             horizontalCenter: parent.horizontalCenter
             horizontalCenterOffset: 9
         }
-
-        StyledText {
-            id: pillText
-            anchors.centerIn: parent
-            font.pixelSize: Appearance.font.pixelSize.large
-            font.family: Appearance.font.family.title
-            font.weight: Font.Bold
-            color: root.textColor
-            visible: text !== "" && textContainer.children.length <= 1
-        }
+        font.pixelSize: Appearance.font.pixelSize.large
+        font.family: Appearance.font.family.title
+        font.weight: Font.Bold
+        color: root.textColor
     }
 }
-

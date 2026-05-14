@@ -14,7 +14,6 @@ Rectangle {
     property bool loading: false
     property string loadingText: ""
     property string emptyText: ""
-    property double indicatorSize: 48
 
     Layout.preferredHeight: implicitHeight
 
@@ -27,7 +26,6 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
             loading: root.loading
             visible: root.loading
-            implicitSize: root.indicatorSize
         }
 
         StyledText {

@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
 import qs
 import qs.services
 import qs.modules.common
@@ -10,11 +9,9 @@ import Quickshell.Io
 
 ContentPage {
     id: page
-    readonly property int index: 5
+    readonly property int index: 4
     property bool register: parent.register ?? false
     forceWidth: true
-
-    property bool showRestartFab: false
 
     ContentSection {
         icon: "keyboard"
@@ -29,11 +26,13 @@ ContentPage {
                     Config.options.cheatsheet.superKey = newValue;
                 }
                 // Use a nerdfont to see the icons
-                options: (["󰖳", "", "󰨡", "", "󰌽", "󰣇", "", "", "", "", "", "󱄛", "", "", "", "⌘", "󰀲", "󰟍", ""]).map(icon => {
-                    return {
-                        displayName: icon,
-                        value: icon
-                    };
+                options: ([
+                  "󰖳", "", "󰨡", "", "󰌽", "󰣇", "", "", "", 
+                  "", "", "󱄛", "", "", "", "⌘", "󰀲", "󰟍", ""
+                ]).map(icon => { return {
+                  displayName: icon,
+                  value: icon
+                  }
                 })
             }
         }
@@ -58,7 +57,7 @@ ContentPage {
                 Config.options.cheatsheet.useFnSymbol = checked;
             }
             StyledToolTip {
-                text: Translation.tr("e.g. 󱊫 for F1, 󱊶  for F12")
+              text: Translation.tr("e.g. 󱊫 for F1, 󱊶  for F12")
             }
         }
         ConfigSwitch {
@@ -69,7 +68,7 @@ ContentPage {
                 Config.options.cheatsheet.useMouseSymbol = checked;
             }
             StyledToolTip {
-                text: Translation.tr("Replace 󱕐   for \"Scroll ↓\", 󱕑   \"Scroll ↑\", L󰍽   \"LMB\", R󰍽   \"RMB\", 󱕒   \"Scroll ↑/↓\" and ⇞/⇟ for \"Page_↑/↓\"")
+              text: Translation.tr("Replace 󱕐   for \"Scroll ↓\", 󱕑   \"Scroll ↑\", L󰍽   \"LMB\", R󰍽   \"RMB\", 󱕒   \"Scroll ↑/↓\" and ⇞/⇟ for \"Page_↑/↓\"")
             }
         }
         ConfigSwitch {
@@ -82,6 +81,7 @@ ContentPage {
             StyledToolTip {
                 text: Translation.tr("Display modifiers and keys in multiple keycap (e.g., \"Ctrl + A\" instead of \"Ctrl A\" or \"󰘴 + A\" instead of \"󰘴 A\")")
             }
+
         }
 
         ConfigSpinBox {
@@ -104,56 +104,7 @@ ContentPage {
                 Config.options.cheatsheet.fontSize.comment = value;
             }
         }
-        ConfigRow {
-            uniform: true
-            ConfigSwitch {
-                buttonIcon: "mail"
-                text: Translation.tr("Enable Gmail")
-                checked: Config.options.cheatsheet.enableGmail
-                onCheckedChanged: {
-                    Config.options.cheatsheet.enableGmail = checked;
-                }
-            }
-            ConfigSwitch {
-                buttonIcon: "calendar_month"
-                text: Translation.tr("Enable Timetable")
-                checked: Config.options.cheatsheet.enableTimetable
-                onCheckedChanged: {
-                    Config.options.cheatsheet.enableTimetable = checked;
-                }
-            }
-        }
-        ConfigRow {
-            uniform: true
-            ConfigSwitch {
-                buttonIcon: "experiment"
-                text: Translation.tr("Enable Elements")
-                checked: Config.options.cheatsheet.enablePeriodicTable
-                onCheckedChanged: {
-                    Config.options.cheatsheet.enablePeriodicTable = checked;
-                }
-            }
-            ConfigSwitch {
-                buttonIcon: "terminal"
-                text: Translation.tr("Enable Commands")
-                checked: Config.options.cheatsheet.enableCommands
-                onCheckedChanged: {
-                    Config.options.cheatsheet.enableCommands = checked;
-                }
-            }
-        }
-        ConfigSwitch {
-            buttonIcon: "table_rows_narrow"
-            enabled: Config.options.cheatsheet.enableCommands
-            text: Translation.tr("Commands: sidebar tag layout")
-            checked: Config.options.cheatsheet.commandsTagsSidebar
-            onCheckedChanged: {
-                Config.options.cheatsheet.commandsTagsSidebar = checked;
-            }
-        }
     }
-
-
 
     ContentSection {
         icon: "call_to_action"
@@ -163,27 +114,21 @@ ContentPage {
             buttonIcon: "check"
             text: Translation.tr("Enable")
             checked: Config.options.dock.enable
-            onCheckedChanged: {
-                Config.options.dock.enable = checked;
-            }
+            onCheckedChanged: { Config.options.dock.enable = checked; }
         }
 
         ConfigSwitch {
             buttonIcon: "desktop_windows"
             text: Translation.tr("Isolate monitors")
             checked: Config.options.dock.isolateMonitors ?? false
-            onCheckedChanged: {
-                Config.options.dock.isolateMonitors = checked;
-            }
+            onCheckedChanged: { Config.options.dock.isolateMonitors = checked; }
         }
 
         ConfigSwitch {
             buttonIcon: "ad"
             text: Translation.tr("Enable windows preview")
             checked: Config.options.dock.enablePreview
-            onCheckedChanged: {
-                Config.options.dock.enablePreview = checked;
-            }
+            onCheckedChanged: { Config.options.dock.enablePreview = checked; }
         }
 
         ConfigRow {
@@ -192,29 +137,41 @@ ContentPage {
                 buttonIcon: "highlight_mouse_cursor"
                 text: Translation.tr("Hover to reveal")
                 checked: Config.options.dock.hoverToReveal
-                onCheckedChanged: {
-                    Config.options.dock.hoverToReveal = checked;
-                }
+                onCheckedChanged: { Config.options.dock.hoverToReveal = checked; }
             }
             ConfigSwitch {
                 buttonIcon: "keep"
                 text: Translation.tr("Pinned on startup")
                 checked: Config.options.dock.pinnedOnStartup
-                onCheckedChanged: {
-                    Config.options.dock.pinnedOnStartup = checked;
-                }
+                onCheckedChanged: { Config.options.dock.pinnedOnStartup = checked; }
             }
         }
 
-
+        ConfigRow {
+            uniform: true
+            ConfigSwitch {
+                buttonIcon: "colors"
+                text: Translation.tr("Tint app icons")
+                checked: Config.options.dock.monochromeIcons
+                onCheckedChanged: { Config.options.dock.monochromeIcons = checked; }
+            }
+            ConfigSwitch {
+                buttonIcon: "contrast"
+                text: Translation.tr("Dim inactive app icons")
+                enabled: !Config.options.dock.monochromeIcons
+                checked: Config.options.dock.dimInactiveIcons
+                onCheckedChanged: { Config.options.dock.dimInactiveIcons = checked; }
+                StyledToolTip {
+                    text: Translation.tr("Greyscale icons for pinned apps that are not running.\nDisabled when 'Tint app icons' is active.")
+                }
+            }
+        }
 
         ConfigSwitch {
             buttonIcon: "play_pause"
             text: Translation.tr("Enable media widget")
             checked: Config.options.dock.enableMediaWidget
-            onCheckedChanged: {
-                Config.options.dock.enableMediaWidget = checked;
-            }
+            onCheckedChanged: { Config.options.dock.enableMediaWidget = checked; }
         }
 
         ConfigSpinBox {
@@ -224,11 +181,9 @@ ContentPage {
             from: 40
             to: 80
             stepSize: 1
-            onValueChanged: {
-                Config.options.dock.height = value;
-            }
+            onValueChanged: { Config.options.dock.height = value; }
         }
-
+        
         ConfigRow {
             ContentSubsection {
                 title: Translation.tr("Dock position")
@@ -238,177 +193,15 @@ ContentPage {
                         Config.options.dock.position = newValue;
                     }
                     options: [
-                        {
-                            displayName: Translation.tr("Auto"),
-                            icon: "expand",
-                            value: "auto"
-                        },
-                        {
-                            displayName: Translation.tr("Bottom"),
-                            icon: "vertical_align_bottom",
-                            value: "bottom"
-                        },
-                        {
-                            displayName: Translation.tr("Top"),
-                            icon: "vertical_align_top",
-                            value: "top"
-                        },
-                        {
-                            displayName: Translation.tr("Left"),
-                            icon: "keyboard_tab_rtl",
-                            value: "left"
-                        },
-                        {
-                            displayName: Translation.tr("Right"),
-                            icon: "keyboard_tab",
-                            value: "right"
-                        }
+                        { displayName: Translation.tr("Auto"), icon: "expand", value: "auto" },
+                        { displayName: Translation.tr("Bottom"), icon: "vertical_align_bottom", value: "bottom" },
+                        { displayName: Translation.tr("Top"), icon: "vertical_align_top", value: "top" },
+                        { displayName: Translation.tr("Left"), icon: "keyboard_tab_rtl", value: "left" },
+                        { displayName: Translation.tr("Right"), icon: "keyboard_tab", value: "right" }
                     ]
                 }
             }
         }
-    }
-
-    ContentSection {
-        icon: "category"
-        title: Translation.tr("Icons")
-
-        ConfigSwitch {
-            buttonIcon: "magic_button"
-            text: Translation.tr("Themed icons (Experimental)")
-            checked: Config.options.appearance.icons.enableThemed
-            onCheckedChanged: {
-                Config.options.appearance.icons.enableThemed = checked;
-            }
-            StyledToolTip {
-                text: Translation.tr("When enabled, uses the dynamic Matugen generated icon pack. Fallbacks to Tint Icons.")
-            }
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            visible: Config.options.appearance.icons.enableThemed
-
-            ContentSubsection {
-                title: Translation.tr("Base icon theme")
-                tooltip: Translation.tr("Select the base icon theme to be recolored by Matugen.\nRequires generating colors again to apply.")
-
-                ConfigSelectionArray {
-                    currentValue: Config.options.appearance.iconTheme
-                    onSelected: newValue => {
-                        Config.options.appearance.iconTheme = newValue;
-                    }
-                    options: IconThemes.availableThemes.map(theme => ({
-                                displayName: theme,
-                                value: theme,
-                                icon: "category"
-                            }))
-                }
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.topMargin: 10
-                spacing: 12
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 50
-                    radius: Appearance.rounding.large
-                    color: Appearance.colors.colPrimary
-
-                    RippleButton {
-                        anchors.fill: parent
-                        onClicked: {
-                            IconThemes.applyTheme(false);
-                            page.showRestartFab = true;
-                        }
-
-                        RowLayout {
-                            anchors.centerIn: parent
-                            spacing: 8
-                            MaterialSymbol {
-                                text: "magic_button"
-                                color: Appearance.m3colors.m3onPrimary
-                                iconSize: 24
-                            }
-                            StyledText {
-                                text: Translation.tr("Apply Theme")
-                                font.weight: Font.Bold
-                                font.pixelSize: Appearance.font.pixelSize.medium
-                                color: Appearance.m3colors.m3onPrimary
-                            }
-                        }
-                    }
-                }
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.topMargin: 4
-                StyledText {
-                    text: Translation.tr("DynamicTheme will be generated from the selected base theme.")
-                    color: Appearance.colors.colSubtext
-                    font.pixelSize: Appearance.font.pixelSize.smallie
-                }
-            }
-
-            ConfigSwitch {
-                buttonIcon: "restart_alt"
-                text: Translation.tr("Automatically restart Quickshell on theme change")
-                checked: Config.options.appearance.wallpaperTheming.autoRestartQuickshell
-                onCheckedChanged: {
-                    Config.options.appearance.wallpaperTheming.autoRestartQuickshell = checked;
-                }
-                StyledToolTip {
-                    text: Translation.tr("Experimental: Automatically reloads the shell when the wallpaper or color scheme changes.")
-                }
-            }
-        }
-
-        ContentSubsection {
-            title: Translation.tr("Tint Icons (Fallback)")
-            tooltip: Translation.tr("Used when themed icons are disabled or as a fallback")
-            ConfigRow {
-                uniform: true
-                ConfigSwitch {
-                    buttonIcon: "colors"
-                    text: Translation.tr("Tint workspace icons")
-                    checked: Config.options.bar.workspaces.monochromeIcons
-                    onCheckedChanged: {
-                        Config.options.bar.workspaces.monochromeIcons = checked;
-                    }
-                    StyledToolTip {
-                        text: Translation.tr("Applies monochrome tint to workspace icons")
-                    }
-                }
-                ConfigSwitch {
-                    buttonIcon: "colors"
-                    text: Translation.tr("Tint dock icons")
-                    checked: Config.options.dock.monochromeIcons
-                    onCheckedChanged: {
-                        Config.options.dock.monochromeIcons = checked;
-                    }
-                    StyledToolTip {
-                        text: Translation.tr("Applies monochrome tint to dock icons")
-                    }
-                }
-            }
-            ConfigSwitch {
-                buttonIcon: "contrast"
-                text: Translation.tr("Dim inactive dock icons")
-                enabled: !Config.options.dock.monochromeIcons
-                checked: Config.options.dock.dimInactiveIcons
-                onCheckedChanged: {
-                    Config.options.dock.dimInactiveIcons = checked;
-                }
-                StyledToolTip {
-                    text: Translation.tr("Greyscale icons for pinned apps that are not running.\nDisabled when 'Tint dock icons' is active.")
-                }
-            }
-        }
-
-
     }
 
     ContentSection {
@@ -422,7 +215,7 @@ ContentPage {
             onCheckedChanged: {
                 Config.options.sidebar.ai.showProviderAndModelButtons = checked;
             }
-        }
+        }    
     }
 
     ContentSection {
@@ -652,13 +445,14 @@ ContentPage {
                     Config.options.overlay.notes.allowEditingIcon = checked;
                 }
             }
+            
         }
     }
 
     ContentSection {
         icon: "music_note"
         title: Translation.tr("Overlay: Media")
-
+    
         ConfigSwitch {
             buttonIcon: "sliders"
             text: Translation.tr("Show slider")
@@ -704,6 +498,7 @@ ContentPage {
                 }
             }
         }
+
     }
 
     ContentSection {
@@ -751,26 +546,18 @@ ContentPage {
                 }
             }
         }
-
+        
         ContentSubsection {
             title: Translation.tr("Google Lens")
-
+            
             ConfigSelectionArray {
                 currentValue: Config.options.search.imageSearch.useCircleSelection ? "circle" : "rectangles"
                 onSelected: newValue => {
                     Config.options.search.imageSearch.useCircleSelection = (newValue === "circle");
                 }
                 options: [
-                    {
-                        icon: "activity_zone",
-                        value: "rectangles",
-                        displayName: Translation.tr("Rectangular selection")
-                    },
-                    {
-                        icon: "gesture",
-                        value: "circle",
-                        displayName: Translation.tr("Circle to Search")
-                    }
+                    { icon: "activity_zone", value: "rectangles", displayName: Translation.tr("Rectangular selection") },
+                    { icon: "gesture", value: "circle", displayName: Translation.tr("Circle to Search") }
                 ]
             }
         }
@@ -790,7 +577,7 @@ ContentPage {
 
         ContentSubsection {
             title: Translation.tr("Circle selection")
-
+            
             ConfigSpinBox {
                 icon: "eraser_size_3"
                 text: Translation.tr("Stroke width")
@@ -870,7 +657,7 @@ ContentPage {
 
         ContentSubsection {
             title: Translation.tr("Quick toggles")
-
+            
             ConfigSelectionArray {
                 Layout.fillWidth: false
                 currentValue: Config.options.sidebar.quickToggles.style
@@ -916,7 +703,7 @@ ContentPage {
                     Config.options.sidebar.quickSliders.enable = checked;
                 }
             }
-
+            
             ConfigSwitch {
                 buttonIcon: "brightness_6"
                 text: Translation.tr("Brightness")
@@ -954,15 +741,6 @@ ContentPage {
                 checked: Config.options.sidebar.quickSliders.showMic
                 onCheckedChanged: {
                     Config.options.sidebar.quickSliders.showMic = checked;
-                }
-            }
-            ConfigSwitch {
-                buttonIcon: "vertical_align_center"
-                enabled: Config.options.sidebar.quickSliders.enable
-                text: Translation.tr("Vertical layout")
-                checked: Config.options.sidebar.quickSliders.vertical
-                onCheckedChanged: {
-                    Config.options.sidebar.quickSliders.vertical = checked;
                 }
             }
         }
@@ -1018,7 +796,7 @@ ContentPage {
                     }
                 }
             }
-
+            
             ConfigRow {
                 uniform: true
                 ConfigSwitch {
@@ -1112,7 +890,7 @@ ContentPage {
                 }
             }
         }
-
+        
         ConfigRow {
             uniform: true
             ConfigSwitch {
@@ -1133,7 +911,7 @@ ContentPage {
                 }
             }
         }
-
+        
         ConfigSwitch {
             buttonIcon: "grid_3x3"
             text: Translation.tr("Use workspace map")
@@ -1178,7 +956,7 @@ ContentPage {
                 enabled: Config.options.overview.showOpeningAnimation
                 currentValue: Config.options.overview.scrollingStyle.zoomStyle
                 onSelected: newValue => {
-                    Config.options.overview.scrollingStyle.zoomStyle = newValue;
+                    Config.options.overview.scrollingStyle.zoomStyle = newValue
                 }
                 options: [
                     {
@@ -1194,7 +972,7 @@ ContentPage {
                 ]
             }
         }
-
+        
         ContentSubsection {
             title: Translation.tr("Classic overview style")
             ConfigRow {
@@ -1228,7 +1006,7 @@ ContentPage {
                 ConfigSelectionArray {
                     currentValue: Config.options.overview.orderRightLeft
                     onSelected: newValue => {
-                        Config.options.overview.orderRightLeft = newValue;
+                        Config.options.overview.orderRightLeft = newValue
                     }
                     options: [
                         {
@@ -1247,7 +1025,7 @@ ContentPage {
                     Layout.leftMargin: 50
                     currentValue: Config.options.overview.orderBottomUp
                     onSelected: newValue => {
-                        Config.options.overview.orderBottomUp = newValue;
+                        Config.options.overview.orderBottomUp = newValue
                     }
                     options: [
                         {
@@ -1278,12 +1056,13 @@ ContentPage {
             }
         }
 
+
         ContentSubsection {
             title: Translation.tr("Scrolling overview style")
             ConfigSelectionArray {
                 currentValue: Config.options.overview.scrollingStyle.backgroundStyle
                 onSelected: newValue => {
-                    Config.options.overview.scrollingStyle.backgroundStyle = newValue;
+                    Config.options.overview.scrollingStyle.backgroundStyle = newValue
                 }
                 options: [
                     {
@@ -1320,57 +1099,6 @@ ContentPage {
         }
     }
 
-    Connections {
-        target: Config.options.appearance.palette
-        function onTypeChanged() { page.showRestartFab = true }
-    }
+    
 
-    Connections {
-        target: Appearance.m3colors
-        function onDarkmodeChanged() { page.showRestartFab = true }
-    }
-
-    FloatingActionButton {
-        id: restartFab
-        parent: page.parent
-        anchors {
-            right: parent?.right
-            bottom: parent?.bottom
-            margins: 30
-        }
-        z: 100
-        iconText: "restart_alt"
-        buttonText: Translation.tr("Restart Shell")
-        expanded: false
-        visible: opacity > 0
-        opacity: page.showRestartFab ? 1 : 0
-        scale: opacity
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Appearance.animation.elementMoveFast.duration
-                easing.type: Appearance.animation.elementMoveFast.type
-                easing.bezierCurve: Appearance.animation.elementMoveFast.bezierCurve
-            }
-        }
-
-        colBackground: Appearance.colors.colTertiaryContainer
-        colBackgroundHover: Appearance.colors.colTertiaryContainerHover
-        colRipple: Appearance.colors.colTertiaryContainerActive
-        colOnBackground: Appearance.colors.colOnTertiaryContainer
-
-        onClicked: {
-            Quickshell.execDetached(["bash", "-c", "qs kill -c ii && qs -c ii &"]);
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.NoButton
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: restartFab.expanded = true
-            onExited: restartFab.expanded = false
-        }
-    }
 }
-
