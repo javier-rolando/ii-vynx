@@ -1,11 +1,11 @@
+pragma Singleton
+pragma ComponentBehavior: Bound
 import qs.modules.common
 import qs.services
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
-pragma Singleton
-pragma ComponentBehavior: Bound
 
 Singleton {
     id: root
@@ -32,36 +32,92 @@ Singleton {
     property bool superReleaseMightTrigger: true
     property bool wallpaperSelectorOpen: false
     property bool workspaceShowNumbers: false
+    property bool filePickerOpen: false
+    property bool videoEditorPopupOpen: false
+    property bool videoEditorOpen: false
+    property string videoEditorPath: ""
+
+    // Bluetooth connection popup
+    property bool bluetoothConnectionPopupOpen: false
+    property var bluetoothConnectionPopupDevice: null
+
+    // Color Picker Popup
+    property bool colorPickerPopupOpen: false
+    property string colorPickerPopupColor: ""
+
+    function pickColor(hex) {
+        if (hex && hex.startsWith("#")) {
+            root.colorPickerPopupColor = hex;
+            if (Config.options.bar.tooltips.enableColorPickerPopup) {
+                root.colorPickerPopupOpen = false;
+                Qt.callLater(() => {
+                    root.colorPickerPopupOpen = true;
+                });
+            }
+        }
+    }
+
+    function launchColorPicker() {
+        Quickshell.execDetached(["qs", "-c", "ii", "ipc", "call", "colorPickerLaunch", "trigger"]);
+    }
+
+    IpcHandler {
+        target: "pickColor"
+        function handle(hex: string): void {
+            root.pickColor(hex);
+        }
+    }
+
+    function launchVideoEditor(path) {
+        root.videoEditorPath = path;
+        root.videoEditorPopupOpen = true;
+    }
+
+    IpcHandler {
+        target: "launchVideoEditor"
+        function handle(path: string): void {
+            root.launchVideoEditor(path);
+        }
+    }
 
     property bool dashboardPanelOpen: false // formerly sidebarRightOpen
     property bool policiesPanelOpen: false  // formerly sidebarLeftOpen
 
     readonly property bool effectiveLeftOpen: {
         switch (Config.options.sidebar.position) {
-            case "default":  return policiesPanelOpen;  
-            case "inverted": return dashboardPanelOpen;  
-            case "left":     return dashboardPanelOpen || policiesPanelOpen;
-            case "right":    return false;
-            default:         return policiesPanelOpen;
+        case "default":
+            return policiesPanelOpen;
+        case "inverted":
+            return dashboardPanelOpen;
+        case "left":
+            return dashboardPanelOpen || policiesPanelOpen;
+        case "right":
+            return false;
+        default:
+            return policiesPanelOpen;
         }
     }
     readonly property bool effectiveRightOpen: {
         switch (Config.options.sidebar.position) {
-            case "default":  return dashboardPanelOpen; 
-            case "inverted": return policiesPanelOpen; 
-            case "left":     return false;
-            case "right":    return dashboardPanelOpen || policiesPanelOpen;
-            default:         return dashboardPanelOpen;
+        case "default":
+            return dashboardPanelOpen;
+        case "inverted":
+            return policiesPanelOpen;
+        case "left":
+            return false;
+        case "right":
+            return dashboardPanelOpen || policiesPanelOpen;
+        default:
+            return dashboardPanelOpen;
         }
     }
 
     onPoliciesPanelOpenChanged: {
         if (policiesPanelOpen) {
             if (Config.options.sidebar.position == "right" || Config.options.sidebar.position == "left") {
-                GlobalStates.dashboardPanelOpen = false
+                GlobalStates.dashboardPanelOpen = false;
             }
         }
-        
     }
 
     onDashboardPanelOpenChanged: {
@@ -69,20 +125,19 @@ Singleton {
             Notifications.timeoutAll();
             Notifications.markAllRead();
             if (Config.options.sidebar.position == "right" || Config.options.sidebar.position == "left") {
-                GlobalStates.policiesPanelOpen = false
+                GlobalStates.policiesPanelOpen = false;
             }
         }
-        
     }
 
     GlobalShortcut {
         name: "workspaceNumber"
         description: "Hold to show workspace numbers, release to show icons"
         onPressed: {
-            root.superDown = true
+            root.superDown = true;
         }
         onReleased: {
-            root.superDown = false
+            root.superDown = false;
         }
     }
 }

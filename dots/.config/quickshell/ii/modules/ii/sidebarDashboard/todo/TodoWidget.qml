@@ -82,6 +82,11 @@ Item {
                     });
                 }).filter(function(item) {
                     return !item.done;
+                }).sort(function(a, b) {
+                    if (a.hasDate && !b.hasDate) return -1;
+                    if (!a.hasDate && b.hasDate) return 1;
+                    if (a.hasDate && b.hasDate) return a.date - b.date;
+                    return b.originalIndex - a.originalIndex;
                 })
             }
 
@@ -96,11 +101,51 @@ Item {
                     });
                 }).filter(function(item) {
                     return item.done;
+                }).sort(function(a, b) {
+                    if (a.hasDate && !b.hasDate) return -1;
+                    if (!a.hasDate && b.hasDate) return 1;
+                    if (a.hasDate && b.hasDate) return b.date - a.date; // Newest finished tasks first
+                    return b.originalIndex - a.originalIndex;
                 })
             }
 
         }
 
+    }
+
+    // TickTick sync indicator
+    RippleButton {
+        id: syncButton
+        visible: Todo.useTickTick
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: root.fabMargins
+        anchors.bottomMargin: root.fabMargins
+        implicitWidth: 36
+        implicitHeight: 36
+        buttonRadius: Appearance.rounding.full
+
+        onClicked: Todo.refresh()
+
+        contentItem: MaterialSymbol {
+            anchors.centerIn: parent
+            horizontalAlignment: Text.AlignHCenter
+            text: Todo.syncing ? "sync" : "cloud_done"
+            font.pixelSize: 18
+            color: Todo.syncing ? Appearance.colors.colPrimary : Appearance.colors.colOnSurfaceVariant
+
+            RotationAnimation on rotation {
+                running: Todo.syncing
+                from: 360
+                to: 0
+                duration: 1000
+                loops: Animation.Infinite
+            }
+        }
+
+        StyledToolTip {
+            text: Todo.syncing ? Translation.tr("Syncing...") : Translation.tr("TickTick synced")
+        }
     }
 
     // + FAB

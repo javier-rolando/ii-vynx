@@ -6,9 +6,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 import Quickshell.Bluetooth
 import Quickshell.Hyprland
+import Qt5Compat.GraphicalEffects
 
 import qs.modules.ii.sidebarDashboard.quickToggles
 import qs.modules.ii.sidebarDashboard.quickToggles.classicStyle
@@ -77,9 +77,11 @@ Item {
                 Layout.fillWidth: true
                 visible: active
                 active: {
-                    const configQuickSliders = Config.options.sidebar.quickSliders
-                    if (!configQuickSliders.enable) return false
-                    if (!configQuickSliders.showMic && !configQuickSliders.showVolume && !configQuickSliders.showBrightness) return false;
+                    const configQuickSliders = Config.options.sidebar.quickSliders;
+                    if (!configQuickSliders.enable)
+                        return false;
+                    if (!configQuickSliders.showMic && !configQuickSliders.showVolume && !configQuickSliders.showBrightness)
+                        return false;
                     return true;
                 }
                 sourceComponent: QuickSliders {}
@@ -108,6 +110,7 @@ Item {
                 Layout.fillHeight: false
                 Layout.fillWidth: true
                 Layout.preferredHeight: implicitHeight
+                forceCollapsed: root.editMode
             }
         }
     }
@@ -148,7 +151,8 @@ Item {
         shownPropertyString: "showWifiDialog"
         dialog: WifiDialog {}
         onShownChanged: {
-            if (!shown) return;
+            if (!shown)
+                return;
             Network.enableWifi();
             Network.rescanWifi();
         }
@@ -161,7 +165,8 @@ Item {
         readonly property bool shown: root[shownPropertyString]
         anchors.fill: parent
 
-        onShownChanged: if (shown) toggleDialogLoader.active = true;
+        onShownChanged: if (shown)
+            toggleDialogLoader.active = true
         active: shown
         onActiveChanged: {
             if (active) {
@@ -172,11 +177,12 @@ Item {
         Connections {
             target: toggleDialogLoader.item
             function onDismiss() {
-                toggleDialogLoader.item.show = false
+                toggleDialogLoader.item.show = false;
                 root[toggleDialogLoader.shownPropertyString] = false;
             }
             function onVisibleChanged() {
-                if (!toggleDialogLoader.item.visible && !root[toggleDialogLoader.shownPropertyString]) toggleDialogLoader.active = false;
+                if (!toggleDialogLoader.item.visible && !root[toggleDialogLoader.shownPropertyString])
+                    toggleDialogLoader.active = false;
             }
         }
     }
@@ -221,39 +227,87 @@ Item {
             color: Appearance.colors.colLayer1
             readonly property int fullRadius: Config.options.appearance.sharpMode ? Appearance.rounding.full : height / 2
             radius: fullRadius
-            implicitWidth: uptimeRow.implicitWidth + 24
-            implicitHeight: uptimeRow.implicitHeight + 8
-            
+
+            visible: Config.options.sidebar.dashboardHeader.profileImageType !== "none" || Config.options.sidebar.dashboardHeader.textMode !== "none"
+
+            property int rowLeftMargin: Config.options.sidebar.dashboardHeader.profileImageType === "custom" ? 6 : 14
+
+            implicitWidth: uptimeRow.implicitWidth + rowLeftMargin + 14
+            implicitHeight: Math.max(32, uptimeRow.implicitHeight + (Config.options.sidebar.dashboardHeader.profileImageType === "custom" ? 4 : 12))
+
             Row {
                 id: uptimeRow
-                anchors.centerIn: parent
+                anchors {
+                    left: parent.left
+                    verticalCenter: parent.verticalCenter
+                    leftMargin: uptimeContainer.rowLeftMargin
+                }
                 spacing: 8
-                CustomIcon {
-                    id: distroIcon
+
+                // PROFILE PICTURE
+                Item {
+                    id: profilePicContainer
+
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 25
-                    height: 25
-                    source: SystemInfo.distroIcon
-                    colorize: true
+                    width: Config.options.sidebar.dashboardHeader.profileImageType === "distro" ? 24 : 40
+                    height: Config.options.sidebar.dashboardHeader.profileImageType === "distro" ? 24 : 40
+                    visible: Config.options.sidebar.dashboardHeader.profileImageType !== "none"
+
+                    Loader {
+                        anchors.fill: parent
+                        active: Config.options.sidebar.dashboardHeader.profileImageType === "distro"
+                        sourceComponent: CustomIcon {
+                            anchors.centerIn: parent
+                            width: 24
+                            height: 24
+                            source: SystemInfo.distroIcon
+                            colorize: true
+                            color: Appearance.colors.colOnLayer1
+                        }
+                    }
+
+                    Image {
+                        id: profilePicSource
+                        anchors.fill: parent
+                        source: Config.options.sidebar.dashboardHeader.profileImageType === "custom" ? Config.options.sidebar.dashboardHeader.profileImagePath : ""
+                        sourceSize.width: parent.width
+                        sourceSize.height: parent.height
+                        fillMode: Image.PreserveAspectCrop
+                        visible: false
+                    }
+
+                    Rectangle {
+                        id: profilePicMask
+                        anchors.fill: parent
+                        radius: width / 2
+                        visible: false
+                    }
+
+                    OpacityMask {
+                        anchors.fill: parent
+                        source: profilePicSource
+                        maskSource: profilePicMask
+                        visible: Config.options.sidebar.dashboardHeader.profileImageType === "custom"
+                    }
+                }
+
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: Appearance.font.pixelSize.small
                     color: Appearance.colors.colOnLayer0
-                }
-                ColumnLayout {
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: -4
-                    StyledText {
-                        font.pixelSize: Appearance.font.pixelSize.small
-                        color: Appearance.colors.colOnLayer0
-                        text: Translation.tr("Up")
-                        textFormat: Text.MarkdownText
+                    text: {
+                        const mode = Config.options.sidebar.dashboardHeader.textMode;
+                        if (mode === "username")
+                            return "Hello, " + SystemInfo.username;
+                        if (mode === "uptime")
+                            return Translation.tr("Uptime") + ": " + DateTime.uptime;
+                        if (mode === "custom")
+                            return Config.options.sidebar.dashboardHeader.customText;
+                        return "";
                     }
-                    StyledText {
-                        font.pixelSize: Appearance.font.pixelSize.smaller
-                        color: Appearance.colors.colSubtext
-                        text: DateTime.uptime
-                        textFormat: Text.MarkdownText
-                    }
+                    font.bold: true
+                    visible: Config.options.sidebar.dashboardHeader.textMode !== "none"
                 }
-                
             }
         }
 
@@ -302,27 +356,31 @@ Item {
                 id: updateButton
                 toggled: confirm
                 property bool confirm: false
+                property string updateScript: Quickshell.env("HOME") + "/.local/share/ii-vynx/update-with-customs.sh"
                 buttonIcon: confirm ? "check" : "download"
                 Timer {
                     id: confirmTimer
                     interval: 2000
                     onTriggered: {
                         confirmTimer.stop();
-                        updateButton.confirm = false
+                        updateButton.confirm = false;
                     }
                 }
                 onClicked: {
                     if (confirm) {
-                        Quickshell.execDetached([Directories.cliPath, "update", "--no-confirm", "--no-backup"]);
                         GlobalStates.sidebarRightOpen = false;
+                        // Wrapper: roda dry-run primeiro, se exit 0 aplica de verdade
+                        const script = updateScript;
+                        const wrapperCmd = [`echo '━━━ ii-vynx: Verificando conflitos (dry-run)... ━━━'`, `bash '${script}' --dry-run -v`, `echo ''`, `echo '━━━ Sem conflitos! Aplicando update... ━━━'`, `echo ''`, `bash '${script}' -v`,].join(" && ");
+                        const fullCmd = `${wrapperCmd} || echo -e '\\n⚠ Conflitos ou erro detectado. Update NÃO aplicado.'`;
+                        Quickshell.execDetached([Config.options.apps.terminal, "-e", "bash", "-c", fullCmd + "; echo ''; echo 'Pressione Enter para fechar...'; read"]);
                     } else {
-                        confirm = true
-                        confirmTimer.start()
+                        confirm = true;
+                        confirmTimer.start();
                     }
-                    
                 }
                 StyledToolTip {
-                    text: Translation.tr("Update the ii-vynx, make sure you have the vynx-cli installed")
+                    text: Translation.tr("Update ii-vynx (preserving your customizations)")
                 }
             }
             QuickToggleButton {

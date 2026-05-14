@@ -11,6 +11,7 @@ import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import "../bar" as Bar
 
 Scope {
     id: root
@@ -85,7 +86,7 @@ Scope {
             visible: true
             exclusionMode: ExclusionMode.Ignore
             exclusiveZone: 0
-            implicitWidth: root.widgetWidth
+            implicitWidth: playerColumnLayout.implicitWidth
             implicitHeight: playerColumnLayout.implicitHeight
             color: "transparent"
             WlrLayershell.namespace: "quickshell:mediaControls"
@@ -164,13 +165,29 @@ Scope {
                     model: ScriptModel {
                         values: root.meaningfulPlayers
                     }
-                    delegate: PlayerControl {
+                    delegate: Loader {
+                        id: delegateLoader
                         required property MprisPlayer modelData
-                        player: modelData
-                        visualizerPoints: root.visualizerPoints
-                        implicitWidth: root.widgetWidth
-                        implicitHeight: root.widgetHeight
-                        radius: root.popupRounding
+                        
+                        sourceComponent: Config.options.bar.mediaPlayer.expressivePopup ? expressiveComp : standardComp
+
+                        Component {
+                            id: expressiveComp
+                            Bar.ExpressiveMediaCard {
+                                player: delegateLoader.modelData
+                            }
+                        }
+
+                        Component {
+                            id: standardComp
+                            PlayerControl {
+                                player: delegateLoader.modelData
+                                visualizerPoints: root.visualizerPoints
+                                implicitWidth: root.widgetWidth
+                                implicitHeight: root.widgetHeight
+                                radius: root.popupRounding
+                            }
+                        }
                     }
                 }
 

@@ -1,8 +1,8 @@
+pragma Singleton
+pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import qs.modules.common.functions
-pragma Singleton
-pragma ComponentBehavior: Bound
 
 Singleton {
     id: root
@@ -26,9 +26,9 @@ Singleton {
     }
     property real wallpaperVibrancy: (wallColorQuant.colors[0]?.hslSaturation + wallColorQuant.colors[0]?.hslLightness) / 2
     property real autoBackgroundTransparency: { // y = 0.5768x^2 - 0.759x + 0.2896
-        let x = wallpaperVibrancy
-        let y = 0.5768 * (x * x) - 0.759 * (x) + 0.2896
-        return Math.max(0, Math.min(0.22, y)) - 0.12 * (m3colors.darkmode ? 0 : 1)
+        let x = wallpaperVibrancy;
+        let y = 0.5768 * (x * x) - 0.759 * (x) + 0.2896;
+        return Math.max(0, Math.min(0.22, y)) - 0.12 * (m3colors.darkmode ? 0 : 1);
     }
     property real autoContentTransparency: 0.9
     property real backgroundTransparency: Config?.options.appearance.transparency.enable ? Config?.options.appearance.transparency.automatic ? autoBackgroundTransparency : Config?.options.appearance.transparency.backgroundTransparency : 0
@@ -119,31 +119,31 @@ Singleton {
         property color colLayer0Border: ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
         // Layer 1
         property color colLayer1Base: m3colors.m3surfaceContainerLow
-        property color colLayer1: ColorUtils.solveOverlayColor(colLayer0Base, colLayer1Base, 1 - root.contentTransparency);
-        property color colOnLayer1: m3colors.m3onSurfaceVariant;
-        property color colOnLayer1Inactive: ColorUtils.mix(colOnLayer1, colLayer1, 0.45);
+        property color colLayer1: ColorUtils.solveOverlayColor(colLayer0Base, colLayer1Base, 1 - root.contentTransparency)
+        property color colOnLayer1: m3colors.m3onSurfaceVariant
+        property color colOnLayer1Inactive: ColorUtils.mix(colOnLayer1, colLayer1, 0.45)
         property color colLayer1Hover: ColorUtils.transparentize(ColorUtils.mix(colLayer1, colOnLayer1, 0.92), root.contentTransparency)
-        property color colLayer1Active: ColorUtils.transparentize(ColorUtils.mix(colLayer1, colOnLayer1, 0.85), root.contentTransparency);
+        property color colLayer1Active: ColorUtils.transparentize(ColorUtils.mix(colLayer1, colOnLayer1, 0.85), root.contentTransparency)
         // Layer 2
         property color colLayer2Base: m3colors.m3surfaceContainer
         property color colLayer2: ColorUtils.solveOverlayColor(colLayer1Base, colLayer2Base, 1 - root.contentTransparency)
         property color colLayer2Hover: ColorUtils.solveOverlayColor(colLayer1Base, ColorUtils.mix(colLayer2Base, colOnLayer2, 0.90), 1 - root.contentTransparency)
-        property color colLayer2Active: ColorUtils.solveOverlayColor(colLayer1Base, ColorUtils.mix(colLayer2Base, colOnLayer2, 0.80), 1 - root.contentTransparency);
-        property color colLayer2Disabled: ColorUtils.solveOverlayColor(colLayer1Base, ColorUtils.mix(colLayer2Base, m3colors.m3background, 0.8), 1 - root.contentTransparency);
-        property color colOnLayer2: m3colors.m3onSurface;
-        property color colOnLayer2Disabled: ColorUtils.mix(colOnLayer2, m3colors.m3background, 0.4);
+        property color colLayer2Active: ColorUtils.solveOverlayColor(colLayer1Base, ColorUtils.mix(colLayer2Base, colOnLayer2, 0.80), 1 - root.contentTransparency)
+        property color colLayer2Disabled: ColorUtils.solveOverlayColor(colLayer1Base, ColorUtils.mix(colLayer2Base, m3colors.m3background, 0.8), 1 - root.contentTransparency)
+        property color colOnLayer2: m3colors.m3onSurface
+        property color colOnLayer2Disabled: ColorUtils.mix(colOnLayer2, m3colors.m3background, 0.4)
         // Layer 3
         property color colLayer3Base: m3colors.m3surfaceContainerHigh
         property color colLayer3: ColorUtils.solveOverlayColor(colLayer2Base, colLayer3Base, 1 - root.contentTransparency)
         property color colLayer3Hover: ColorUtils.solveOverlayColor(colLayer2Base, ColorUtils.mix(colLayer3Base, colOnLayer3, 0.90), 1 - root.contentTransparency)
-        property color colLayer3Active: ColorUtils.solveOverlayColor(colLayer2Base, ColorUtils.mix(colLayer3Base, colOnLayer3, 0.80), 1 - root.contentTransparency);
-        property color colOnLayer3: m3colors.m3onSurface;
+        property color colLayer3Active: ColorUtils.solveOverlayColor(colLayer2Base, ColorUtils.mix(colLayer3Base, colOnLayer3, 0.80), 1 - root.contentTransparency)
+        property color colOnLayer3: m3colors.m3onSurface
         // Layer 4
         property color colLayer4Base: m3colors.m3surfaceContainerHighest
         property color colLayer4: ColorUtils.solveOverlayColor(colLayer3Base, colLayer4Base, 1 - root.contentTransparency)
         property color colLayer4Hover: ColorUtils.solveOverlayColor(colLayer3Base, ColorUtils.mix(colLayer4Base, colOnLayer4, 0.90), 1 - root.contentTransparency)
-        property color colLayer4Active: ColorUtils.solveOverlayColor(colLayer3Base, ColorUtils.mix(colLayer4Base, colOnLayer4, 0.80), 1 - root.contentTransparency);
-        property color colOnLayer4: m3colors.m3onSurface;
+        property color colLayer4Active: ColorUtils.solveOverlayColor(colLayer3Base, ColorUtils.mix(colLayer4Base, colOnLayer4, 0.80), 1 - root.contentTransparency)
+        property color colOnLayer4: m3colors.m3onSurface
         // Primary
         property color colPrimary: m3colors.m3primary
         property color colOnPrimary: m3colors.m3onPrimary
@@ -199,16 +199,110 @@ Singleton {
     }
 
     rounding: QtObject {
-        property int unsharpen: Config.options.appearance.sharpMode ? 0 : 2
-        property int unsharpenmore: Config.options.appearance.sharpMode ? 0 : 6
-        property int verysmall: Config.options.appearance.sharpMode ? 0 : 8
-        property int small: Config.options.appearance.sharpMode ? 0 : 12
-        property int normal: Config.options.appearance.sharpMode ? 0 : 17
-        property int large: Config.options.appearance.sharpMode ? 0 : 23
-        property int verylarge: Config.options.appearance.sharpMode ? 0 : 30
-        property int full: Config.options.appearance.sharpMode ? 0 : 9999
+        property real scale: {
+            let mode = Config.options.appearance.globalRounding;
+            if (mode === "sharp" || Config.options.appearance.sharpMode)
+                return 0.0;
+            if (mode === "normal")
+                return 17.0 / 24.0;
+            if (mode === "verylarge")
+                return 32.0 / 24.0;
+            return 1.0; // "large" is 24 (default)
+        }
+
+        property int unsharpen: Math.round(2 * scale)
+        property int unsharpenmore: Math.round(6 * scale)
+        property int verysmall: Math.round(8 * scale)
+        property int small: Math.round(12 * scale)
+        property int normal: Math.round(17 * scale)
+        property int large: Math.round(24 * scale)
+        property int verylarge: Math.round(32 * scale)
+        property int full: scale === 0 ? 0 : 9999
         property int screenRounding: large
-        property int windowRounding: Config.options.appearance.sharpMode ? 0 : 18
+        property int windowRounding: Math.round(18 * scale)
+
+        onWindowRoundingChanged: {
+            if (Config.options.appearance.toggleWindowRounding && Config.ready) {
+                Quickshell.execDetached(["hyprctl", "keyword", "decoration:rounding", windowRounding.toString()]);
+            }
+        }
+    }
+
+    property color activeBorderColor: {
+        let type = Config.options.appearance.borderColorType;
+        if (type === "secondary") return colors.colSecondary;
+        if (type === "tertiary") return colors.colTertiary;
+        if (type === "primaryContainer") return colors.colPrimaryContainer;
+        if (type === "surface") return colors.colOutlineVariant;
+        return colors.colPrimary;
+    }
+
+    onActiveBorderColorChanged: {
+        if (Config.ready) {
+            let colorStr = activeBorderColor.toString();
+            let rgb = "";
+            if (colorStr.startsWith("#")) {
+                let hex = colorStr.substring(1);
+                if (hex.length === 8) {
+                    rgb = hex.substring(2); // AARRGGBB -> RRGGBB
+                } else {
+                    rgb = hex; // RRGGBB -> RRGGBB
+                }
+            }
+            
+            if (rgb !== "") {
+                let hyprColor = "0xAA" + rgb;
+                Quickshell.execDetached(["hyprctl", "keyword", "general:col.active_border", hyprColor]);
+                Quickshell.execDetached(["hyprctl", "keyword", "group:col.border_active", hyprColor]);
+                Quickshell.execDetached(["hyprctl", "keyword", "group:groupbar:col.active", hyprColor]);
+            }
+        }
+    }
+
+    property int blurSize: Config.options.appearance.blurSize ?? 8
+    onBlurSizeChanged: {
+        if (Config.ready) {
+            Quickshell.execDetached(["hyprctl", "keyword", "decoration:blur:size", blurSize.toString()]);
+        }
+    }
+
+    property real ignoreAlpha: Config.options.appearance.ignoreAlpha ?? 0.2
+    onIgnoreAlphaChanged: {
+        if (Config.ready) {
+            Quickshell.execDetached(["hyprctl", "keyword", "layerrule", "match:namespace quickshell:.*, ignore_alpha " + ignoreAlpha]);
+        }
+    }
+
+    Timer {
+        id: startupRoundingTimer
+        interval: 1500
+        running: Config.ready
+        repeat: false
+        onTriggered: {
+            if (Config.options.appearance.toggleWindowRounding) {
+                Quickshell.execDetached(["hyprctl", "keyword", "decoration:rounding", root.rounding.windowRounding.toString()]);
+            }
+            Quickshell.execDetached(["hyprctl", "keyword", "decoration:blur:size", root.blurSize.toString()]);
+            Quickshell.execDetached(["hyprctl", "keyword", "layerrule", "match:namespace quickshell:.*, ignore_alpha " + root.ignoreAlpha]);
+            
+            let colorStr = activeBorderColor.toString();
+            let rgb = "";
+            if (colorStr.startsWith("#")) {
+                let hex = colorStr.substring(1);
+                if (hex.length === 8) {
+                    rgb = hex.substring(2);
+                } else {
+                    rgb = hex;
+                }
+            }
+            
+            if (rgb !== "") {
+                let hyprColor = "0xAA" + rgb;
+                Quickshell.execDetached(["hyprctl", "keyword", "general:col.active_border", hyprColor]);
+                Quickshell.execDetached(["hyprctl", "keyword", "group:col.border_active", hyprColor]);
+                Quickshell.execDetached(["hyprctl", "keyword", "group:groupbar:col.active", hyprColor]);
+            }
+        }
     }
 
     font: QtObject {
@@ -224,15 +318,15 @@ Singleton {
         }
         property QtObject variableAxes: QtObject {
             property var main: ({
-                "wght": 450,
-                "wdth": 100,
-            })
+                    "wght": 450,
+                    "wdth": 100
+                })
             property var numbers: ({
-                "wght": 450,
-            })
+                    "wght": 450
+                })
             property var title: ({ // Slightly bold weight for title
-                "wght": 550, // Weight (Lowered to compensate for increased grade)
-            })
+                    "wght": 550 // Weight (Lowered to compensate for increased grade)
+                })
         }
         property QtObject pixelSize: QtObject {
             property int smallest: 10
@@ -331,17 +425,21 @@ Singleton {
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.expressiveEffects
             property int velocity: 850
-            property Component colorAnimation: Component { ColorAnimation {
-                duration: root.animation.elementMoveSlow.duration
-                easing.type: root.animation.elementMoveSlow.type
-                easing.bezierCurve: root.animation.elementMoveSlow.bezierCurve
-            }}
-            property Component numberAnimation: Component { NumberAnimation {
-                alwaysRunToEnd: true
-                duration: root.animation.elementMoveSlow.duration
-                easing.type: root.animation.elementMoveSlow.type
-                easing.bezierCurve: root.animation.elementMoveSlow.bezierCurve
-            }}
+            property Component colorAnimation: Component {
+                ColorAnimation {
+                    duration: root.animation.elementMoveSlow.duration
+                    easing.type: root.animation.elementMoveSlow.type
+                    easing.bezierCurve: root.animation.elementMoveSlow.bezierCurve
+                }
+            }
+            property Component numberAnimation: Component {
+                NumberAnimation {
+                    alwaysRunToEnd: true
+                    duration: root.animation.elementMoveSlow.duration
+                    easing.type: root.animation.elementMoveSlow.type
+                    easing.bezierCurve: root.animation.elementMoveSlow.bezierCurve
+                }
+            }
         }
 
         property QtObject elementMoveFast: QtObject {
@@ -349,17 +447,21 @@ Singleton {
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.expressiveEffects
             property int velocity: 850
-            property Component colorAnimation: Component { ColorAnimation {
-                duration: root.animation.elementMoveFast.duration
-                easing.type: root.animation.elementMoveFast.type
-                easing.bezierCurve: root.animation.elementMoveFast.bezierCurve
-            }}
-            property Component numberAnimation: Component { NumberAnimation {
-                alwaysRunToEnd: true
-                duration: root.animation.elementMoveFast.duration
-                easing.type: root.animation.elementMoveFast.type
-                easing.bezierCurve: root.animation.elementMoveFast.bezierCurve
-            }}
+            property Component colorAnimation: Component {
+                ColorAnimation {
+                    duration: root.animation.elementMoveFast.duration
+                    easing.type: root.animation.elementMoveFast.type
+                    easing.bezierCurve: root.animation.elementMoveFast.bezierCurve
+                }
+            }
+            property Component numberAnimation: Component {
+                NumberAnimation {
+                    alwaysRunToEnd: true
+                    duration: root.animation.elementMoveFast.duration
+                    easing.type: root.animation.elementMoveFast.type
+                    easing.bezierCurve: root.animation.elementMoveFast.bezierCurve
+                }
+            }
         }
 
         property QtObject elementResize: QtObject {
@@ -382,14 +484,16 @@ Singleton {
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.expressiveDefaultSpatial
             property int velocity: 850
-            property Component numberAnimation: Component { NumberAnimation {
-                alwaysRunToEnd: true
-                duration: root.animation.clickBounce.duration
-                easing.type: root.animation.clickBounce.type
-                easing.bezierCurve: root.animation.clickBounce.bezierCurve
-            }}
+            property Component numberAnimation: Component {
+                NumberAnimation {
+                    alwaysRunToEnd: true
+                    duration: root.animation.clickBounce.duration
+                    easing.type: root.animation.clickBounce.type
+                    easing.bezierCurve: root.animation.clickBounce.bezierCurve
+                }
+            }
         }
-        
+
         property QtObject scroll: QtObject {
             property int duration: 200
             property int type: Easing.BezierSpline
@@ -404,8 +508,7 @@ Singleton {
 
     sizes: QtObject {
         property real baseBarHeight: Config.options.bar.sizes.height
-        property real barHeight: Config.options.bar.cornerStyle === 1 ? 
-            (baseBarHeight + root.sizes.hyprlandGapsOut * 2) : baseBarHeight
+        property real barHeight: Config.options.bar.cornerStyle === 1 ? (baseBarHeight + root.sizes.hyprlandGapsOut * 2) : baseBarHeight
         property real barCenterSideModuleWidth: Config.options?.bar.verbose ? 360 : 140
         property real barCenterSideModuleWidthShortened: 280
         property real barCenterSideModuleWidthHellaShortened: 190
@@ -425,8 +528,7 @@ Singleton {
         property real sidebarWidthExpanded: 570 // when all 4 policies are enabled
         property real sidebarWidthExtended: 750
         property real baseVerticalBarWidth: Config.options.bar.sizes.width
-        property real verticalBarWidth: Config.options.bar.cornerStyle === 1 ? 
-            (baseVerticalBarWidth + root.sizes.hyprlandGapsOut * 2) : baseVerticalBarWidth
+        property real verticalBarWidth: Config.options.bar.cornerStyle === 1 ? (baseVerticalBarWidth + root.sizes.hyprlandGapsOut * 2) : baseVerticalBarWidth
         property real wallpaperSelectorWidth: 1200
         property real wallpaperSelectorHeight: 690
         property real wallpaperSelectorItemMargins: 8

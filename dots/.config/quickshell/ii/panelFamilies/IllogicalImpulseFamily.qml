@@ -4,6 +4,7 @@ import Quickshell
 import qs.modules.common
 import qs.modules.ii.background
 import qs.modules.ii.bar
+import qs.modules.ii.bluetoothConnectionPopup
 import qs.modules.ii.cheatsheet
 import qs.modules.ii.dock
 import qs.modules.ii.lock
@@ -23,6 +24,8 @@ import qs.modules.ii.overlay
 import qs.modules.ii.verticalBar
 import qs.modules.ii.wallpaperSelector
 import qs.modules.ii.wrappedFrame
+import qs.modules.ii.colorPickerPopup
+import qs.modules.ii.videoEditor
 
 Scope {
     property bool barExtraCondition: true
@@ -48,6 +51,7 @@ Scope {
     PanelLoader { extraCondition: Config.options.dock.enable; component: Dock {} }
     PanelLoader { component: Lock {} }
     PanelLoader { component: MediaControls {} }
+    PanelLoader { component: BluetoothConnectionPopup {} }
     PanelLoader { component: NotificationPopup {} }
     PanelLoader { component: OnScreenDisplay {} }
     PanelLoader { component: OnScreenKeyboard {} }
@@ -57,10 +61,13 @@ Scope {
     PanelLoader { component: RegionSelector {} }
     PanelLoader { component: ScreenCorners {} }
     PanelLoader { component: ScreenTranslator {} }
+    PanelLoader { component: ColorPickerPopup {} }
     PanelLoader { component: SessionScreen {} }
     PanelLoader { component: SidebarPolicies {} }
     PanelLoader { component: SidebarDashboard {} }
     PanelLoader { extraCondition: Config.options.bar.vertical && barExtraCondition; component: VerticalBar {} }
     PanelLoader { component: WallpaperSelector {} }
     PanelLoader { component: WrappedFrame {} }
+    PanelLoader { component: VideoEditorPopup {} }
+    PanelLoader { component: VideoEditor {} }
 }

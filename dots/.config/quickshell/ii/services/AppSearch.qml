@@ -11,6 +11,7 @@ import Quickshell
 Singleton {
     id: root
     property bool sloppySearch: Config.options?.search.sloppy ?? false
+    property bool frecencySearch: Config.options?.search.frecency ?? false
     property real scoreThreshold: 0.2
     property var substitutions: ({
         "code-url-handler": "visual-studio-code",
@@ -20,17 +21,8 @@ Singleton {
         "wps": "wps-office2019-kprometheus",
         "wpsoffice": "wps-office2019-kprometheus",
         "footclient": "foot",
-        "zen": "zen-browser",
-        "brave-browser": "brave-desktop",
-        "net.lutris.lutris": "net.lutris.Lutris",
-        "org.gnome.texteditor": "org.gnome.TextEditor",
-        "org.kde.kdeconnect.app": "kdeconnect",
-        "opentabletdriver.ux": "otd",
-        "chrome-chat.openai.com__-default": Quickshell.shellPath("assets/dock/ChatGPT.svg"),
-        "chrome-gemini.google.com__app-default": Quickshell.shellPath("assets/dock/gemini.svg"),
-        "chrome-translate.google.com__-default": "google-translate",
-        "kitty-yazi": "yazi",
-        "kitty-btop": "btop"
+        "jetbrains-studio": "android-studio",
+        "zen": "zen",
     })
     property var regexSubstitutions: [
         {
@@ -69,7 +61,53 @@ Singleton {
         entry: a
     }))
 
+    /**
+     * Frecency search: combines fuzzy matching with app launch frequency
+     */
+    function frecencyQuery(search: string): var {
+        if (search === "") {
+            // When empty, show most frequently used apps
+            return list.map(obj => ({
+                entry: obj,
+                score: AppUsage.getScore(obj.id)
+            })).filter(item => item.score > 0)
+              .sort((a, b) => b.score - a.score)
+              .map(item => item.entry);
+        }
+
+        // Combine fuzzy score with usage frequency
+        const results = list.map(obj => {
+            const fuzzyResult = Fuzzy.single(search, obj.name);
+            const fuzzyScore = fuzzyResult?.score ?? -1000;
+            const usageScore = AppUsage.getScore(obj.id);
+            return {
+                entry: obj,
+                fuzzyScore: fuzzyScore,
+                usageScore: usageScore,
+                // Normalize fuzzy score to 0-1 range and combine with usage
+                combinedScore: (fuzzyScore > -1000 ? 1 : 0) * 0.7 + usageScore * 0.3
+            };
+        }).filter(item => item.fuzzyScore > -1000 || item.usageScore > 0)
+          .sort((a, b) => {
+              // First sort by whether there's a fuzzy match
+              if ((a.fuzzyScore > -1000) !== (b.fuzzyScore > -1000)) {
+                  return (b.fuzzyScore > -1000 ? 1 : 0) - (a.fuzzyScore > -1000 ? 1 : 0);
+              }
+              // Then by combined score
+              return b.combinedScore - a.combinedScore;
+          })
+          .map(item => item.entry);
+
+        return results;
+    }
+
     function fuzzyQuery(search: string): var { // Idk why list<DesktopEntry> doesn't work
+        // Frecency mode: combine fuzzy with usage frequency
+        if (root.frecencySearch) {
+            return frecencyQuery(search);
+        }
+
+        // Sloppy mode: levenshtein distance
         if (root.sloppySearch) {
             const results = list.map(obj => ({
                 entry: obj,
@@ -80,6 +118,7 @@ Singleton {
                 .map(item => item.entry)
         }
 
+        // Default: fuzzy sort
         return Fuzzy.go(search, preppedNames, {
             all: true,
             key: "name"
@@ -109,13 +148,26 @@ Singleton {
     function guessIcon(str) {
         if (!str || str.length == 0) return "image-missing";
 
-        // Quickshell's desktop entry lookup
-        const entry = DesktopEntries.byId(str);
-        if (entry) return entry.icon;
-
-        // Normal substitutions
+        // Try common substitutions first
         if (substitutions[str]) return substitutions[str];
         if (substitutions[str.toLowerCase()]) return substitutions[str.toLowerCase()];
+
+        // Try to see if there's a themed icon matching the name (for absolute path icons)
+        // This is important for apps like Zen Browser where the .desktop has an absolute path
+        // but the theme script generates a themed icon with the desktop entry's ID
+        let nameWithoutExt = str;
+        if (str.endsWith(".desktop")) nameWithoutExt = str.slice(0, -8);
+        if (iconExists(nameWithoutExt)) return nameWithoutExt;
+
+        // Quickshell's desktop entry lookup
+        const entry = DesktopEntries.byId(str);
+        if (entry) {
+            // Even if we have an entry, check if its ID (basename) has a themed version
+            // because the entry.icon might be an absolute path
+            const entryId = entry.id.endsWith(".desktop") ? entry.id.slice(0, -8) : entry.id;
+            if (iconExists(entryId)) return entryId;
+            return entry.icon;
+        }
 
         // Regex substitutions
         for (let i = 0; i < regexSubstitutions.length; i++) {

@@ -8,6 +8,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import qs.modules.ii.bar as Bar
 
 Item {
     id: wrappedFrame
@@ -16,77 +17,8 @@ Item {
     property bool barVertical: Config.options.bar.vertical
     property bool barBottom: Config.options.bar.bottom
 
-    component HorizontalFrame: PanelWindow {
-        id: cornerPanelWindow
-        property bool showBackground: true
-
-        color: showBackground ? Appearance.colors.colLayer0 : "transparent"
-        implicitWidth: frameThickness;implicitHeight: frameThickness
-
-        Behavior on color {
-            animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-        }
-
-        anchors {
-            left: true
-            right: true
-        }
-    }
-
-    component VerticalFrame: PanelWindow {
-        id: cornerPanelWindow
-        property bool showBackground: true
-
-        color: showBackground ? Appearance.colors.colLayer0 : "transparent"
-        implicitWidth: frameThickness;implicitHeight: frameThickness
-
-        Behavior on color {
-            animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-        }
-
-        anchors {
-            bottom: true
-            top: true
-        }
-    }
-
-    component ScreenCorner: PanelWindow {
-        id: screenCornerWindow
-        property bool left
-        property bool bottom
-        property bool showBackground: true
-        screen: monitorScope.modelData
-        anchors {
-            bottom: bottom
-            top: !bottom
-            left: left
-            right: !left
-        }
-        implicitHeight: Appearance.rounding.screenRounding
-        implicitWidth: Appearance.rounding.screenRounding
-        color: "transparent"
-            
-        RoundCorner {
-            id: leftCorner
-            anchors {
-                top: !bottom ? parent.top : undefined
-                bottom: bottom ? parent.bottom : undefined
-                left: left ? parent.left : undefined
-                right: !left ? parent.right : undefined
-            }
-
-            implicitSize: Appearance.rounding.screenRounding
-            color: showBackground ? Appearance.colors.colLayer0 : "transparent"
-
-            Behavior on color {
-                animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-            }
-
-            corner: screenCornerWindow.left ? 
-                (screenCornerWindow.bottom ? RoundCorner.CornerEnum.BottomLeft : RoundCorner.CornerEnum.TopLeft) :
-                (screenCornerWindow.bottom ? RoundCorner.CornerEnum.BottomRight : RoundCorner.CornerEnum.TopRight)
-        }
-    }
+    Bar.BarThemes { id: barThemes }
+    property var activeTheme: barThemes.getTheme(Config.options.bar.expressiveColorTheme)
 
     Loader {
         active: Config.options.appearance.fakeScreenRounding == 3
@@ -112,76 +44,180 @@ Item {
 
                         const hasWindow = wsId ? HyprlandData.windowList.some(w => w.workspace.id === wsId && !w.floating) : false;
 
-                        monitorScope.hasActiveWindows = hasWindow
+                        monitorScope.hasActiveWindows = hasWindow;
                     }
                 }
 
-                // SCREEN CORNERS
+                // INVISIBLE SPACE RESERVERS: Push windows by frameThickness
+                component FrameSpaceReserver: PanelWindow {
+                    color: "transparent"
+                    mask: Region {}
+                    exclusionMode: ExclusionMode.Exclusive
+                }
+
                 Loader {
-                    active: !(barBottom && !barVertical) && !(barVertical && !barBottom)
-                    sourceComponent: ScreenCorner {
-                        left: true
+                    active: !(!barVertical && !barBottom) // topFrame is visible
+                    sourceComponent: FrameSpaceReserver {
+                        screen: monitorScope.modelData
+                        anchors { top: true; left: true; right: true }
+                        implicitHeight: frameThickness
+                        exclusiveZone: frameThickness
+                    }
+                }
+                Loader {
+                    active: !(!barVertical && barBottom) // bottomFrame is visible
+                    sourceComponent: FrameSpaceReserver {
+                        screen: monitorScope.modelData
+                        anchors { bottom: true; left: true; right: true }
+                        implicitHeight: frameThickness
+                        exclusiveZone: frameThickness
+                    }
+                }
+                Loader {
+                    active: !(barVertical && !barBottom) // leftFrame is visible
+                    sourceComponent: FrameSpaceReserver {
+                        screen: monitorScope.modelData
+                        anchors { left: true; top: true; bottom: true }
+                        implicitWidth: frameThickness
+                        exclusiveZone: frameThickness
+                    }
+                }
+                Loader {
+                    active: !(barVertical && barBottom) // rightFrame is visible
+                    sourceComponent: FrameSpaceReserver {
+                        screen: monitorScope.modelData
+                        anchors { right: true; top: true; bottom: true }
+                        implicitWidth: frameThickness
+                        exclusiveZone: frameThickness
+                    }
+                }
+
+                // VISUAL FRAME
+                PanelWindow {
+                    id: combinedFrameWindow
+                    screen: monitorScope.modelData
+                    anchors {
+                        top: true
                         bottom: true
-                        showBackground: monitorScope.showBarBackground
-                    }
-                }
-                Loader {
-                    active: barBottom
-                    sourceComponent: ScreenCorner {
                         left: true
-                        bottom: false
-                        showBackground: showBarBackground
+                        right: true
                     }
-                }
-                Loader {
-                    active: !(!barBottom && !barVertical) && !(barVertical && barBottom)
-                    sourceComponent: ScreenCorner {
-                        left: false
-                        bottom: false
-                        showBackground: monitorScope.showBarBackground
-                    }
-                }
-                Loader {
-                    active:  !barBottom
-                    sourceComponent: ScreenCorner {
-                        left: false
-                        bottom: true
-                        showBackground: showBarBackground
-                    }
-                }
+                    color: "transparent"
+                    
+                    WlrLayershell.namespace: "quickshell:bar"
+                    exclusionMode: ExclusionMode.Ignore
+                    mask: Region {} // Ignore pointer events so normal windows are clickable
 
-                // FRAMES
+                    property color baseColor: monitorScope.showBarBackground ? (Config.options.bar.expressiveColors ? activeTheme.barBackground : Appearance.colors.colLayer0) : "transparent"
+                    Behavior on baseColor { 
+                        animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(combinedFrameWindow) 
+                    }
 
-                Loader {
-                    active: !(!barVertical && barBottom)
-                    sourceComponent: HorizontalFrame {
-                        screen: monitorScope.modelData
-                        anchors.bottom: true
-                        showBackground: monitorScope.showBarBackground
-                    }
-                }
-                Loader {
-                    active: !(!barVertical && !barBottom)
-                    sourceComponent: HorizontalFrame {
-                        screen: monitorScope.modelData
-                        anchors.top: true
-                        showBackground: showBarBackground
-                    }
-                }
-                Loader {
-                    active: !(barVertical && barBottom)
-                    sourceComponent: VerticalFrame {
-                        screen: monitorScope.modelData
-                        anchors.right: true
-                        showBackground: showBarBackground
-                    }
-                }
-                Loader {
-                    active: !(barVertical && !barBottom)
-                    sourceComponent: VerticalFrame {
-                        screen: monitorScope.modelData
-                        anchors.left: true
-                        showBackground: showBarBackground
+                    Item {
+                        anchors.fill: parent
+
+                        // HORIZONTAL FRAMES
+                        Rectangle {
+                            id: topFrame
+                            visible: !(!barVertical && !barBottom)
+                            anchors {
+                                top: parent.top
+                                left: parent.left
+                                right: parent.right
+                            }
+                            height: frameThickness
+                            color: combinedFrameWindow.baseColor
+                        }
+
+                        Rectangle {
+                            id: bottomFrame
+                            visible: !(!barVertical && barBottom)
+                            anchors {
+                                bottom: parent.bottom
+                                left: parent.left
+                                right: parent.right
+                            }
+                            height: frameThickness
+                            color: combinedFrameWindow.baseColor
+                        }
+
+                        // VERTICAL FRAMES
+                        Rectangle {
+                            id: leftFrame
+                            visible: !(barVertical && !barBottom)
+                            anchors {
+                                top: topFrame.visible ? topFrame.bottom : parent.top
+                                bottom: bottomFrame.visible ? bottomFrame.top : parent.bottom
+                                left: parent.left
+                            }
+                            width: frameThickness
+                            color: combinedFrameWindow.baseColor
+                        }
+
+                        Rectangle {
+                            id: rightFrame
+                            visible: !(barVertical && barBottom)
+                            anchors {
+                                top: topFrame.visible ? topFrame.bottom : parent.top
+                                bottom: bottomFrame.visible ? bottomFrame.top : parent.bottom
+                                right: parent.right
+                            }
+                            width: frameThickness
+                            color: combinedFrameWindow.baseColor
+                        }
+
+                        // CORNERS (Inner radius connecting frames/bar)
+                        RoundCorner {
+                            id: bottomLeftCorner
+                            anchors {
+                                bottom: bottomFrame.visible ? bottomFrame.top : parent.bottom
+                                left: leftFrame.visible ? leftFrame.right : parent.left
+                                bottomMargin: !bottomFrame.visible ? Appearance.sizes.barHeight : 0
+                                leftMargin: !leftFrame.visible ? Appearance.sizes.verticalBarWidth : 0
+                            }
+                            implicitSize: Appearance.rounding.screenRounding
+                            color: combinedFrameWindow.baseColor
+                            corner: RoundCorner.CornerEnum.BottomLeft
+                        }
+
+                        RoundCorner {
+                            id: topLeftCorner
+                            anchors {
+                                top: topFrame.visible ? topFrame.bottom : parent.top
+                                left: leftFrame.visible ? leftFrame.right : parent.left
+                                topMargin: !topFrame.visible ? Appearance.sizes.barHeight : 0
+                                leftMargin: !leftFrame.visible ? Appearance.sizes.verticalBarWidth : 0
+                            }
+                            implicitSize: Appearance.rounding.screenRounding
+                            color: combinedFrameWindow.baseColor
+                            corner: RoundCorner.CornerEnum.TopLeft
+                        }
+
+                        RoundCorner {
+                            id: topRightCorner
+                            anchors {
+                                top: topFrame.visible ? topFrame.bottom : parent.top
+                                right: rightFrame.visible ? rightFrame.left : parent.right
+                                topMargin: !topFrame.visible ? Appearance.sizes.barHeight : 0
+                                rightMargin: !rightFrame.visible ? Appearance.sizes.verticalBarWidth : 0
+                            }
+                            implicitSize: Appearance.rounding.screenRounding
+                            color: combinedFrameWindow.baseColor
+                            corner: RoundCorner.CornerEnum.TopRight
+                        }
+
+                        RoundCorner {
+                            id: bottomRightCorner
+                            anchors {
+                                bottom: bottomFrame.visible ? bottomFrame.top : parent.bottom
+                                right: rightFrame.visible ? rightFrame.left : parent.right
+                                bottomMargin: !bottomFrame.visible ? Appearance.sizes.barHeight : 0
+                                rightMargin: !rightFrame.visible ? Appearance.sizes.verticalBarWidth : 0
+                            }
+                            implicitSize: Appearance.rounding.screenRounding
+                            color: combinedFrameWindow.baseColor
+                            corner: RoundCorner.CornerEnum.BottomRight
+                        }
                     }
                 }
             }

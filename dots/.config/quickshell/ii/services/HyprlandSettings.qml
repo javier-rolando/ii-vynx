@@ -10,18 +10,16 @@ Singleton {
     id: root
 
     readonly property string hyprlandConfigPath: Directories.home.replace("file://", "") + "/.local/share/ii-vynx/hyprland.conf"
-    
+
     Process {
         id: configWriter
-        
-        running: false
         property string pendingCommand: ""
+
         command: ["bash", "-c", pendingCommand]
 
-        onExited: (exitCode, exitStatus) => {
-            // NOTE: This will not work bc we are running it detached
-            if (exitCode === 1) {
-                Quickshell.execDetached(["notify-send", Translation.tr("Couldn't change the setting"), Translation.tr("Make sure you have vynx-cli installed"), "-a", "Shell"])
+        onExited: function(exitCode) {
+            if (exitCode !== 0) {
+                console.error("[HyprlandSettings] changeKey failed, exitCode:", exitCode)
             }
         }
     }
@@ -47,9 +45,9 @@ Singleton {
             const field = parts[1].trim()
 
             
-            sedCmd = `${Directories.cliPath} hyprset key '${section}:${field}' '${value}' >/dev/null 2>&1 || true`
+            sedCmd = `sed -E '/^${section}[[:space:]]*[{]/,/^[}]/ s|^([[:space:]]*${field}[[:space:]]*=[[:space:]]*).*|\\1${value}|' '${path}' > '${tmpPath}' && mv '${tmpPath}' '${path}'`
         } else {
-            // idk.. put smthng here
+            sedCmd = `sed -E 's|^([[:space:]]*${key}[[:space:]]*=[[:space:]]*).*|\\1${value}|' '${path}' > '${tmpPath}' && mv '${tmpPath}' '${path}'`
         }
 
         //console.log("[HyprlandSettings] Running command:", sedCmd)
@@ -57,26 +55,6 @@ Singleton {
         configWriter.startDetached()
     }
 
-    function changeAnimation(animName, style) {
-        if (configWriter.running) {
-            console.warn("[HyprlandConfig] Writer busy, skipping")
-            return
-        }
-
-        const safeCheck = /['"\\`$|&;]/
-        if (safeCheck.test(String(animName)) || safeCheck.test(String(style))) {
-            console.error("[HyprlandConfig] Unsafe characters rejected:", animName, style)
-            return
-        }
-
-        const tmpPath = "/tmp/hypr_config_write.tmp"
-        const path = root.hyprlandConfigPath
-
-        const sedCmd = `${Directories.cliPath} hyprset anim '${animName}' '${style}' >/dev/null 2>&1 || true`
-
-        configWriter.pendingCommand = sedCmd
-        configWriter.startDetached()
-    }
 
     function setLayout(layout) {
         if (layout !== "default" && layout !== "scrolling" && layout !== "dwindle" && layout !== "monocle" && layout !== "master") return

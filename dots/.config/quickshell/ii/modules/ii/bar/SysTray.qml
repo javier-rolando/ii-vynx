@@ -129,8 +129,8 @@ Item {
                             item: modelData
                             Layout.fillHeight: !root.vertical
                             Layout.fillWidth: root.vertical
-                            onMenuClosed: root.releaseFocus();
-                            onMenuOpened: (qsWindow) => root.setExtraWindowAndGrabFocus(qsWindow);
+                            onMenuClosed: root.releaseFocus()
+                            onMenuOpened: qsWindow => root.setExtraWindowAndGrabFocus(qsWindow)
                         }
                     }
                 }
@@ -147,8 +147,8 @@ Item {
                 item: modelData
                 Layout.fillHeight: !root.vertical
                 Layout.fillWidth: root.vertical
-                onMenuClosed: root.releaseFocus();
-                onMenuOpened: (qsWindow) => {
+                onMenuClosed: root.releaseFocus()
+                onMenuOpened: qsWindow => {
                     root.setExtraWindowAndGrabFocus(qsWindow);
                 }
             }

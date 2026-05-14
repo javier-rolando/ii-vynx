@@ -22,8 +22,6 @@ Singleton {
 
     function getCachedIcon(appId) {
         if (!appId) return ""
-        const entry = getCachedDesktopEntry(appId)
-        if (entry?.icon) return entry.icon
         return AppSearch.guessIcon(appId)
     }
 

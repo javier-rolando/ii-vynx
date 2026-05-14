@@ -9,24 +9,25 @@ import QtQml.Models
 ContentPage {
     id: page
     forceWidth: true
-    readonly property int index: 2 
+    readonly property int index: 2
     property bool register: parent.register ?? false
 
     property var componentMap: ({
-        "active_window": activeWindow,
-        "music_player": musicPlayer,
-        "utility_buttons": utilityButtons,
-        "system_tray": systemTray,
-        "workspaces": workspaces,
-        "timer": indicators,
-        "record_indicator": indicators
-    })
+            "active_window": activeWindow,
+            "music_player": musicPlayer,
+            "utility_buttons": utilityButtons,
+            "system_tray": systemTray,
+            "workspaces": workspaces,
+            "timer": indicators,
+            "record_indicator": indicators,
+            "system_monitor": resourcesConfig,
+            "sports": sportsConfig
+        })
 
     function scrollTo(stringId) {
-        const item = componentMap[stringId]
-        page.contentY = item.y
+        const item = componentMap[stringId];
+        page.contentY = item.y;
     }
-
 
     ContentSection {
         icon: "mobile_layout"
@@ -37,8 +38,8 @@ ContentPage {
             ConfigListView {
                 barSection: 0
                 listModel: Config.options.bar.layouts.left
-                onUpdated: (newList) => {
-                    Config.options.bar.layouts.left = newList
+                onUpdated: newList => {
+                    Config.options.bar.layouts.left = newList;
                 }
             }
         }
@@ -48,8 +49,8 @@ ContentPage {
             ConfigListView {
                 barSection: 1
                 listModel: Config.options.bar.layouts.center
-                onUpdated: (newList) => {
-                    Config.options.bar.layouts.center = newList
+                onUpdated: newList => {
+                    Config.options.bar.layouts.center = newList;
                 }
             }
         }
@@ -59,8 +60,8 @@ ContentPage {
             ConfigListView {
                 barSection: 2
                 listModel: Config.options.bar.layouts.right
-                onUpdated: (newList) => {
-                    Config.options.bar.layouts.right = newList
+                onUpdated: newList => {
+                    Config.options.bar.layouts.right = newList;
                 }
             }
         }
@@ -184,6 +185,11 @@ ContentPage {
                             displayName: Translation.tr("Rect"),
                             icon: "toolbar",
                             value: 2
+                        },
+                        {
+                            displayName: Translation.tr("Dynamic Island"),
+                            icon: "water_drop",
+                            value: 3
                         }
                     ]
                 }
@@ -230,17 +236,17 @@ ContentPage {
                 onSelected: newValue => {
                     Config.options.bar.barBackgroundStyle = newValue;
                 }
-                options: [ 
+                options: [
                     {
                         displayName: Translation.tr("Visible"),
                         icon: "visibility",
                         value: 1
-                    }, 
+                    },
                     {
                         displayName: Translation.tr("Adaptive"),
                         icon: "masked_transitions",
                         value: 2
-                    },        
+                    },
                     {
                         displayName: Translation.tr("Transparent"),
                         icon: "opacity",
@@ -249,8 +255,360 @@ ContentPage {
                 ]
             }
         }
+
+        ContentSubsection {
+            title: Translation.tr("Expressive bar solid colors")
+            tooltip: Translation.tr("Use expressive solid layer colors")
+            Layout.fillWidth: true
+
+            ConfigRow {
+                ConfigSwitch {
+                    buttonIcon: "palette"
+                    text: Translation.tr("Enable")
+                    checked: Config.options.bar.expressiveColors
+                    onCheckedChanged: {
+                        Config.options.bar.expressiveColors = checked;
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                ConfigSelectionArray {
+                    enabled: Config.options.bar.expressiveColors
+                    currentValue: Config.options.bar.expressiveColorTheme
+                    onSelected: newValue => {
+                        Config.options.bar.expressiveColorTheme = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Content"),
+                            icon: "brush",
+                            value: "content"
+                        },
+                        {
+                            displayName: Translation.tr("Vibrant"),
+                            icon: "brush",
+                            value: "primary"
+                        },
+                        {
+                            displayName: Translation.tr("Secondary"),
+                            icon: "brush",
+                            value: "secondary"
+                        },
+                        {
+                            displayName: Translation.tr("Surface"),
+                            icon: "brush",
+                            value: "surface"
+                        }
+                    ]
+                }
+            }
+        }
     }
-    
+
+    ContentSection {
+        id: componentStyles
+        icon: "dashboard_customize"
+        title: Translation.tr("Component styles")
+
+        ConfigRow {
+            uniform: true
+            ContentSubsection {
+                title: Translation.tr("Clock")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.clock
+                    onSelected: newValue => {
+                        Config.options.bar.styles.clock = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "schedule",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Media player")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.media
+                    onSelected: newValue => {
+                        Config.options.bar.styles.media = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "music_note",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+        }
+
+        ConfigRow {
+            uniform: true
+            ContentSubsection {
+                title: Translation.tr("Workspaces")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.workspaces
+                    onSelected: newValue => {
+                        Config.options.bar.styles.workspaces = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "workspaces",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Minimal"),
+                            icon: "navigation",
+                            value: "minimal"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Utility buttons")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.utilButtons
+                    onSelected: newValue => {
+                        Config.options.bar.styles.utilButtons = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "widgets",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+        }
+
+        ConfigRow {
+            uniform: true
+            ContentSubsection {
+                title: Translation.tr("Weather")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.weather
+                    onSelected: newValue => {
+                        Config.options.bar.styles.weather = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "partly_cloudy_day",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Notifications")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.notification
+                    onSelected: newValue => {
+                        Config.options.bar.styles.notification = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "notifications",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+        }
+        ConfigRow {
+            uniform: true
+            ContentSubsection {
+                title: Translation.tr("Dashboard")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.dashboard
+                    onSelected: newValue => {
+                        Config.options.bar.styles.dashboard = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "dashboard",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Resources")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.resources
+                    onSelected: newValue => {
+                        Config.options.bar.styles.resources = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "memory",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+        }
+
+        ConfigRow {
+            uniform: true
+            ContentSubsection {
+                title: Translation.tr("Policies")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.policies
+                    onSelected: newValue => {
+                        Config.options.bar.styles.policies = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "policy",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Power")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.power
+                    onSelected: newValue => {
+                        Config.options.bar.styles.power = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "power_settings_new",
+                            value: "default"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "fluid_med",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+        }
+        ConfigRow {
+            uniform: true
+            ContentSubsection {
+                title: Translation.tr("Battery")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.battery
+                    onSelected: newValue => { Config.options.bar.styles.battery = newValue; }
+                    options: [
+                        { displayName: Translation.tr("Default"), icon: "battery_charging_full", value: "default" },
+                        { displayName: Translation.tr("Expressive"), icon: "fluid_med", value: "expressive" }
+                    ]
+                }
+            }
+            ContentSubsection {
+                title: Translation.tr("Bluetooth")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.bluetooth
+                    onSelected: newValue => { Config.options.bar.styles.bluetooth = newValue; }
+                    options: [
+                        { displayName: Translation.tr("Default"), icon: "bluetooth", value: "default" },
+                        { displayName: Translation.tr("Expressive"), icon: "fluid_med", value: "expressive" }
+                    ]
+                }
+            }
+        }
+
+        ConfigRow {
+            uniform: true
+            ContentSubsection {
+                title: Translation.tr("Keyboard Layout")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.keyboard
+                    onSelected: newValue => { Config.options.bar.styles.keyboard = newValue; }
+                    options: [
+                        { displayName: Translation.tr("Default"), icon: "keyboard", value: "default" },
+                        { displayName: Translation.tr("Expressive"), icon: "fluid_med", value: "expressive" }
+                    ]
+                }
+            }
+        }
+
+        ConfigRow {
+            uniform: true
+            ContentSubsection {
+                title: Translation.tr("Sports")
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.styles.sports
+                    onSelected: newValue => { Config.options.bar.styles.sports = newValue; }
+                    options: [
+                        { displayName: Translation.tr("Default"), icon: "sports_soccer", value: "default" },
+                        { displayName: Translation.tr("Expressive"), icon: "fluid_med", value: "expressive" }
+                    ]
+                }
+            }
+            Item { Layout.fillWidth: true }
+        }
+    }
+
     ContentSection {
         id: activeWindow
         icon: "ad"
@@ -280,7 +638,7 @@ ContentPage {
                 onCheckedChanged: {
                     Config.options.bar.mediaPlayer.useFixedSize = checked;
                 }
-            }   
+            }
 
             ConfigSpinBox {
                 enabled: !Config.options.bar.vertical && Config.options.bar.mediaPlayer.useFixedSize
@@ -309,6 +667,15 @@ ContentPage {
             }
         }
 
+        ConfigSwitch {
+            buttonIcon: "fluid_med"
+            text: Translation.tr("Expressive media popup")
+            checked: Config.options.bar.mediaPlayer.expressivePopup
+            onCheckedChanged: {
+                Config.options.bar.mediaPlayer.expressivePopup = checked;
+            }
+        }
+
         ContentSubsection {
             title: Translation.tr("Artwork")
 
@@ -322,7 +689,7 @@ ContentPage {
                 }
             }
         }
-        
+
         ContentSubsection {
             title: Translation.tr("Lyrics")
 
@@ -348,7 +715,7 @@ ContentPage {
                     Layout.fillWidth: false
                     currentValue: Config.options.bar.mediaPlayer.lyrics.style
                     onSelected: newValue => {
-                        Config.options.bar.mediaPlayer.lyrics.style = newValue
+                        Config.options.bar.mediaPlayer.lyrics.style = newValue;
                     }
                     options: [
                         {
@@ -374,11 +741,8 @@ ContentPage {
                     Config.options.bar.mediaPlayer.lyrics.useGradientMask = checked;
                 }
             }
-            
         }
-
     }
-    
 
     ContentSection {
         icon: "notifications"
@@ -406,15 +770,8 @@ ContentPage {
                 Config.options.tray.invertPinnedItems = checked;
             }
         }
-        
-        ConfigSwitch {
-            buttonIcon: "colors"
-            text: Translation.tr('Tint icons')
-            checked: Config.options.tray.monochromeIcons
-            onCheckedChanged: {
-                Config.options.tray.monochromeIcons = checked;
-            }
-        }
+
+
     }
 
     ContentSection {
@@ -445,7 +802,7 @@ ContentPage {
                 }
             }
         }
-        
+
         ContentSubsection {
             title: Translation.tr("Record")
 
@@ -565,26 +922,12 @@ ContentPage {
             }
         }
 
-        ConfigRow {
-            uniform: true
-
-            ConfigSwitch {
-                buttonIcon: "award_star"
-                text: Translation.tr('Show app icons')
-                checked: Config.options.bar.workspaces.showAppIcons
-                onCheckedChanged: {
-                    Config.options.bar.workspaces.showAppIcons = checked;
-                }
-            }
-
-            ConfigSwitch {
-                enabled: Config.options.bar.workspaces.showAppIcons
-                buttonIcon: "colors"
-                text: Translation.tr('Tint app icons')
-                checked: Config.options.bar.workspaces.monochromeIcons
-                onCheckedChanged: {
-                    Config.options.bar.workspaces.monochromeIcons = checked;
-                }
+        ConfigSwitch {
+            buttonIcon: "award_star"
+            text: Translation.tr('Show app icons')
+            checked: Config.options.bar.workspaces.showAppIcons
+            onCheckedChanged: {
+                Config.options.bar.workspaces.showAppIcons = checked;
             }
         }
 
@@ -643,7 +986,7 @@ ContentPage {
             ConfigSelectionArray {
                 currentValue: JSON.stringify(Config.options.bar.workspaces.numberMap)
                 onSelected: newValue => {
-                    Config.options.bar.workspaces.numberMap = JSON.parse(newValue)
+                    Config.options.bar.workspaces.numberMap = JSON.parse(newValue);
                 }
                 options: [
                     {
@@ -664,42 +1007,444 @@ ContentPage {
                 ]
             }
         }
-    }
 
-    ContentSection {
-        icon: "tooltip"
-        title: Translation.tr("Tooltips")
-        ConfigRow {
-            ConfigSwitch {
-                buttonIcon: "ads_click"
-                text: Translation.tr("Click to show")
-                Layout.fillWidth: true
-                checked: Config.options.bar.tooltips.clickToShow
-                onCheckedChanged: {
-                    Config.options.bar.tooltips.clickToShow = checked;
+        ContentSubsection {
+            title: Translation.tr("Icon Shape Mask")
+            tooltip: Translation.tr("Apply a shape to crop icons")
+            ConfigRow {
+                ConfigSwitch {
+                    Layout.fillWidth: true
+                    buttonIcon: "masks"
+                    text: Translation.tr("Apply shape mask to icons")
+                    checked: Config.options.appearance.icons.enableShapeMask
+                    onCheckedChanged: {
+                        Config.options.appearance.icons.enableShapeMask = checked;
+                    }
+                    StyledToolTip {
+                        text: Translation.tr("Crops the icons using the selected material shape")
+                    }
+                }
+
+                RippleButtonWithShape {
+                    Layout.fillWidth: false
+                    shapeString: Config.options.appearance.icons.shapeMask
+                    implicitWidth: 60
+                    extraIcon: "edit"
+
+                    onClicked: {
+                        iconsShapeMaskLoader.active = !iconsShapeMaskLoader.active;
+                    }
+                    StyledToolTip {
+                        text: Translation.tr("Edit the material shape")
+                    }
                 }
             }
-            ConfigSwitch {
-                buttonIcon: "compress"
-                text: Translation.tr("Compact popups")
+
+            Loader {
+                id: iconsShapeMaskLoader
+                active: false
+                visible: active
                 Layout.fillWidth: true
-                checked: Config.options.bar.tooltips.compactPopups
-                onCheckedChanged: {
-                    Config.options.bar.tooltips.compactPopups = checked;
+                sourceComponent: ContentSubsection {
+                    title: Translation.tr("Mask shape")
+
+                    ConfigSelectionArray {
+                        currentValue: Config.options.appearance.icons.shapeMask
+                        onSelected: newValue => {
+                            Config.options.appearance.icons.shapeMask = newValue;
+                        }
+                        options: ([
+                            "Circle", "Square", "Slanted", "Arch", "Arrow", "SemiCircle", "Oval", "Pill", "Triangle",
+                            "Diamond", "ClamShell", "Pentagon", "Gem", "Sunny", "VerySunny", "Cookie4Sided", "Cookie6Sided",
+                            "Cookie7Sided", "Cookie9Sided", "Cookie12Sided", "Ghostish", "Clover4Leaf", "Clover8Leaf", "Burst",
+                            "SoftBurst", "Flower", "Puffy", "PuffyDiamond", "PixelCircle", "Bun", "Heart"
+                        ]).map(icon => {
+                            return {
+                                displayName: "",
+                                shape: icon,
+                                value: icon
+                            }
+                        })
+                    }
                 }
             }
         }
 
         ContentSubsection {
-            title: Translation.tr("Resources")
-            ConfigSwitch {
-                buttonIcon: "swap_horiz"
-                text: Translation.tr("Show Swap")
-                Layout.fillWidth: true
-                checked: Config.options.bar.tooltips.showSwap
-                onCheckedChanged: {
-                    Config.options.bar.tooltips.showSwap = checked;
+            title: Translation.tr("Active Indicator Shape")
+            tooltip: Translation.tr("Apply a Material Shape to the active workspace indicator")
+            ConfigRow {
+                ConfigSwitch {
+                    Layout.fillWidth: true
+                    buttonIcon: "frame_person"
+                    text: Translation.tr("Use Material Shape for indicator")
+                    checked: Config.options.bar.workspaces.useMaterialShapeForActiveIndicator
+                    onCheckedChanged: {
+                        Config.options.bar.workspaces.useMaterialShapeForActiveIndicator = checked;
+                    }
                 }
+
+                RippleButtonWithShape {
+                    Layout.fillWidth: false
+                    shapeString: Config.options.bar.workspaces.activeIndicatorShape
+                    implicitWidth: 60
+                    extraIcon: "edit"
+
+                    onClicked: {
+                        activeIndicatorShapeLoader.active = !activeIndicatorShapeLoader.active;
+                    }
+                    StyledToolTip {
+                        text: Translation.tr("Edit the material shape")
+                    }
+                }
+            }
+
+            Loader {
+                id: activeIndicatorShapeLoader
+                active: false
+                visible: active
+                Layout.fillWidth: true
+                sourceComponent: ContentSubsection {
+                    title: Translation.tr("Indicator shape")
+
+                    ConfigSelectionArray {
+                        currentValue: Config.options.bar.workspaces.activeIndicatorShape
+                        onSelected: newValue => {
+                            Config.options.bar.workspaces.activeIndicatorShape = newValue;
+                        }
+                        options: ([
+                            "Circle", "Square", "Slanted", "Arch", "Arrow", "SemiCircle", "Oval", "Pill", "Triangle",
+                            "Diamond", "ClamShell", "Pentagon", "Gem", "Sunny", "VerySunny", "Cookie4Sided", "Cookie6Sided",
+                            "Cookie7Sided", "Cookie9Sided", "Cookie12Sided", "Ghostish", "Clover4Leaf", "Clover8Leaf", "Burst",
+                            "SoftBurst", "Flower", "Puffy", "PuffyDiamond", "PixelCircle", "Bun", "Heart"
+                        ]).map(icon => {
+                            return {
+                                displayName: "",
+                                shape: icon,
+                                value: icon
+                            }
+                        })
+                    }
+                }
+            }
+        }
+    }
+
+    ContentSection {
+        icon: "tooltip"
+        title: Translation.tr("Tooltips")
+
+        ContentSubsection {
+            title: Translation.tr("Bluetooth devices layout")
+            tooltip: Translation.tr("Choose the layout for the Bluetooth devices popup in the bar")
+            ConfigSelectionArray {
+                currentValue: Config.options.bar.bluetoothDevicesLayout
+                onSelected: newValue => {
+                    Config.options.bar.bluetoothDevicesLayout = newValue;
+                }
+                options: [
+                    {
+                        displayName: Translation.tr("Classic"),
+                        icon: "style",
+                        value: "classic"
+                    },
+                    {
+                        displayName: Translation.tr("Expressive"),
+                        icon: "fluid_med",
+                        value: "expressive"
+                    }
+                ]
+            }
+        }
+
+        ConfigSwitch {
+            buttonIcon: "ads_click"
+            text: Translation.tr("Click to show")
+            checked: Config.options.bar.tooltips.clickToShow
+            onCheckedChanged: {
+                Config.options.bar.tooltips.clickToShow = checked;
+            }
+        }
+        ConfigSwitch {
+            buttonIcon: "compress"
+            text: Translation.tr("Compact popups")
+            checked: Config.options.bar.tooltips.compactPopups
+            onCheckedChanged: {
+                Config.options.bar.tooltips.compactPopups = checked;
+            }
+        }
+        ConfigSwitch {
+            buttonIcon: "colorize"
+            text: Translation.tr("Enable color picker popup")
+            checked: Config.options.bar.tooltips.enableColorPickerPopup
+            onCheckedChanged: {
+                Config.options.bar.tooltips.enableColorPickerPopup = checked;
+            }
+        }
+        ConfigSwitch {
+            buttonIcon: "bluetooth"
+            text: Translation.tr("Enable Bluetooth connection popup")
+            checked: Config.options.bar.tooltips.enableBluetoothConnectionPopup
+            onCheckedChanged: {
+                Config.options.bar.tooltips.enableBluetoothConnectionPopup = checked;
+            }
+        }
+    }
+
+    ContentSection {
+        id: resourcesConfig
+        icon: "memory"
+        title: Translation.tr("Resources")
+
+        ConfigSwitch {
+            buttonIcon: "percent"
+            text: Translation.tr("Show percentage text")
+            checked: Config.options.bar.resources.showPercentageText
+            onCheckedChanged: {
+                Config.options.bar.resources.showPercentageText = checked;
+            }
+        }
+        ConfigSwitch {
+            buttonIcon: "fluid_med"
+            text: Translation.tr("Expressive resources popup")
+            checked: Config.options.bar.resources.expressivePopup
+            onCheckedChanged: {
+                Config.options.bar.resources.expressivePopup = checked;
+            }
+        }
+        ConfigRow {
+            ConfigSwitch {
+                buttonIcon: "memory"
+                text: Translation.tr("RAM")
+                checked: Config.options.bar.resources.alwaysShowRam
+                onCheckedChanged: Config.options.bar.resources.alwaysShowRam = checked
+            }
+            ConfigSwitch {
+                buttonIcon: "planner_review"
+                text: Translation.tr("CPU")
+                checked: Config.options.bar.resources.alwaysShowCpu
+                onCheckedChanged: Config.options.bar.resources.alwaysShowCpu = checked
+            }
+        }
+        ConfigRow {
+            ConfigSwitch {
+                buttonIcon: "thermostat"
+                text: Translation.tr("Temp")
+                checked: Config.options.bar.resources.alwaysShowCpuTemp
+                onCheckedChanged: Config.options.bar.resources.alwaysShowCpuTemp = checked
+            }
+            ConfigSwitch {
+                buttonIcon: "hard_drive"
+                text: Translation.tr("Disk")
+                checked: Config.options.bar.resources.alwaysShowDisk
+                onCheckedChanged: Config.options.bar.resources.alwaysShowDisk = checked
+            }
+        }
+        ConfigSwitch {
+            buttonIcon: "swap_horiz"
+            text: Translation.tr("Swap")
+            checked: Config.options.bar.resources.alwaysShowSwap
+            onCheckedChanged: Config.options.bar.resources.alwaysShowSwap = checked
+        }
+    }
+
+    ContentSection {
+        id: sportsConfig
+        icon: "sports_soccer"
+        title: Translation.tr("Sports")
+
+        ConfigSwitch {
+            buttonIcon: "check"
+            text: Translation.tr("Enable sports tracker")
+            checked: Config.options.bar.sports.enable
+            onCheckedChanged: {
+                Config.options.bar.sports.enable = checked;
+            }
+        }
+
+        ContentSubsection {
+            title: Translation.tr("Supported Leagues")
+            Layout.fillWidth: true
+
+            Flow {
+                Layout.fillWidth: true
+                spacing: 8
+
+                // Allow vertical spacing when items wrap
+                topPadding: 4
+                bottomPadding: 4
+
+                LeagueChip {
+                    text: "Brasileirão"
+                    checked: Config.options.bar.sports.showBRA
+                    onToggled: c => Config.options.bar.sports.showBRA = c
+                }
+                LeagueChip {
+                    text: "Bundesliga"
+                    checked: Config.options.bar.sports.showBUND
+                    onToggled: c => Config.options.bar.sports.showBUND = c
+                }
+                LeagueChip {
+                    text: "Champions L."
+                    checked: Config.options.bar.sports.showCL
+                    onToggled: c => Config.options.bar.sports.showCL = c
+                }
+                LeagueChip {
+                    text: "Europa L."
+                    checked: Config.options.bar.sports.showUEL
+                    onToggled: c => Config.options.bar.sports.showUEL = c
+                }
+                LeagueChip {
+                    text: "Conference L."
+                    checked: Config.options.bar.sports.showUECL
+                    onToggled: c => Config.options.bar.sports.showUECL = c
+                }
+                LeagueChip {
+                    text: "Libertadores"
+                    checked: Config.options.bar.sports.showCLA
+                    onToggled: c => Config.options.bar.sports.showCLA = c
+                }
+                LeagueChip {
+                    text: "Premier L."
+                    checked: Config.options.bar.sports.showEPL
+                    onToggled: c => Config.options.bar.sports.showEPL = c
+                }
+                LeagueChip {
+                    text: "LaLiga"
+                    checked: Config.options.bar.sports.showLIGA
+                    onToggled: c => Config.options.bar.sports.showLIGA = c
+                }
+                LeagueChip {
+                    text: "Ligue 1"
+                    checked: Config.options.bar.sports.showLIG1
+                    onToggled: c => Config.options.bar.sports.showLIG1 = c
+                }
+                LeagueChip {
+                    text: "Serie A"
+                    checked: Config.options.bar.sports.showSERA
+                    onToggled: c => Config.options.bar.sports.showSERA = c
+                }
+                LeagueChip {
+                    text: "World Cup"
+                    checked: Config.options.bar.sports.showWC
+                    onToggled: c => Config.options.bar.sports.showWC = c
+                }
+                LeagueChip {
+                    text: "Women's WC"
+                    checked: Config.options.bar.sports.showWWC
+                    onToggled: c => Config.options.bar.sports.showWWC = c
+                }
+            }
+        }
+
+        ContentSubsection {
+            title: Translation.tr("Team Filter")
+            tooltip: Translation.tr("Comma-separated list of teams to show (e.g. Real Madrid, Arsenal)")
+            Layout.fillWidth: true
+
+            MaterialTextField {
+                Layout.fillWidth: true
+                placeholderText: Translation.tr("Filter by team name...")
+                text: Config.options.bar.sports.teamFilter
+                onTextChanged: Config.options.bar.sports.teamFilter = text
+            }
+        }
+
+        ContentSubsection {
+            title: Translation.tr("Preferences")
+            Layout.fillWidth: true
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 10
+                ConfigSpinBox {
+                    Layout.fillWidth: true
+                    icon: "av_timer"
+                    text: Translation.tr("Update Interval (s)")
+                    value: Config.options.bar.sports.updateInterval
+                    from: 10
+                    to: 600
+                    stepSize: 10
+                    onValueChanged: {
+                        Config.options.bar.sports.updateInterval = value;
+                    }
+                }
+                ConfigSpinBox {
+                    Layout.fillWidth: true
+                    icon: "layers"
+                    text: Translation.tr("Max cards in popup")
+                    value: Config.options.bar.sports.maxCardsPopup
+                    from: 1
+                    to: 15
+                    stepSize: 1
+                    onValueChanged: {
+                        Config.options.bar.sports.maxCardsPopup = value;
+                    }
+                }
+                ConfigSpinBox {
+                    Layout.fillWidth: true
+                    icon: "schedule"
+                    text: Translation.tr("Show matches before (hours)")
+                    value: Config.options.bar.sports.showBeforeHours
+                    from: 1
+                    to: 72
+                    stepSize: 1
+                    onValueChanged: {
+                        Config.options.bar.sports.showBeforeHours = value;
+                    }
+                }
+                ConfigSpinBox {
+                    Layout.fillWidth: true
+                    icon: "history"
+                    text: Translation.tr("Keep ended matches for (mins)")
+                    value: Config.options.bar.sports.showAfterMinutes
+                    from: 0
+                    to: 1440
+                    stepSize: 30
+                    onValueChanged: {
+                        Config.options.bar.sports.showAfterMinutes = value;
+                    }
+                }
+            }
+        }
+    }
+
+    component LeagueChip: Rectangle {
+        property string text
+        property bool checked: false
+        signal toggled(bool checked)
+        width: chipText.implicitWidth + 32
+        height: 36
+        radius: Appearance.rounding.full
+
+        HoverHandler {
+            id: chipHover
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        color: checked ? (chipHover.hovered ? Qt.lighter(Appearance.colors.colPrimary, 1.15) : Appearance.colors.colPrimary) : (chipHover.hovered ? Appearance.colors.colSurfaceContainerHigh : Appearance.colors.colSurfaceContainerHighest)
+
+        border.width: checked ? 0 : 1
+        border.color: Appearance.colors.colOutlineVariant
+
+        StyledText {
+            id: chipText
+            anchors.centerIn: parent
+            text: parent.text
+            color: parent.checked ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSurfaceVariant
+            font.pixelSize: Appearance.font.pixelSize.small
+            font.weight: Font.Medium
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: parent.toggled(!parent.checked)
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        Behavior on color {
+            ColorAnimation {
+                duration: 150
             }
         }
     }

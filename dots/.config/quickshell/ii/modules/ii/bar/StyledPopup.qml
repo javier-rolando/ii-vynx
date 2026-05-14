@@ -78,10 +78,12 @@ LazyLoader {
 
         property real animProgress: 0.0
         readonly property Item heroItem: {
-            if (!root.contentItem) return null;
+            if (!root.contentItem)
+                return null;
             for (let i = 0; i < root.contentItem.children.length; i++) {
                 let child = root.contentItem.children[i];
-                if (child.visible && child.width > 0) return child;
+                if (child.visible && child.width > 0)
+                    return child;
             }
             return null;
         }
@@ -93,7 +95,7 @@ LazyLoader {
             from: 0
             to: 1
             running: true
-            duration: Appearance.animation.elementMove.duration 
+            duration: Appearance.animation.elementMove.duration
             easing.type: Appearance.animation.elementMove.type
             easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
         }
@@ -101,14 +103,14 @@ LazyLoader {
         Rectangle {
             id: popupBackground
             readonly property real margin: 10
-            
+
             readonly property real targetWidth: (root.contentItem?.implicitWidth ?? 0) + margin * 2
             readonly property real targetHeight: (root.contentItem?.implicitHeight ?? 0) + margin * 2
 
             property bool isVertical: Config.options.bar.vertical
             property bool isBottom: Config.options.bar.bottom
             property int elevation: Appearance.sizes.elevationMargin
-            
+
             anchors {
                 top: (!isVertical && !isBottom) ? parent.top : undefined
                 bottom: (!isVertical && isBottom) ? parent.bottom : undefined
@@ -123,16 +125,17 @@ LazyLoader {
                 verticalCenter: isVertical ? parent.verticalCenter : undefined
                 horizontalCenter: !isVertical ? parent.horizontalCenter : undefined
             }
-            
+
             width: targetWidth
             height: {
-                if (!root.animate || !root.contentItem || !heroItem || targetHeight <= heroHeight + margin * 2) return targetHeight;
+                if (!root.animate || !root.contentItem || !heroItem || targetHeight <= heroHeight + margin * 2)
+                    return targetHeight;
                 return (heroHeight + margin * 2) + (targetHeight - (heroHeight + margin * 2)) * popupWindow.animProgress;
             }
 
-            color: Appearance.m3colors.m3surfaceContainer
+            color: Config.options.appearance.transparency.popups ? Appearance.colors.colLayer0 : Appearance.m3colors.m3surfaceContainer
             radius: root.popupRadius
-            
+
             Item {
                 id: contentContainer
                 anchors.fill: parent
@@ -151,14 +154,16 @@ LazyLoader {
                             let child = root.contentItem.children[i];
 
                             child.opacity = Qt.binding(() => {
-                                if (!root.animate) return 1.0;
+                                if (!root.animate)
+                                    return 1.0;
                                 let normalizedDelay = child.y / popupBackground.targetHeight;
                                 let progress = (popupWindow.animProgress - normalizedDelay) / (1.0 - normalizedDelay);
                                 return Math.max(0, Math.min(1.0, progress));
                             });
 
                             child.scale = Qt.binding(() => {
-                                if (!root.animate) return 1.0;
+                                if (!root.animate)
+                                    return 1.0;
                                 let normalizedDelay = child.y / popupBackground.targetHeight;
                                 let progress = (popupWindow.animProgress - normalizedDelay) / (1.0 - normalizedDelay);
                                 return 0.85 + (0.15 * Math.max(0, Math.min(1.0, progress)));
@@ -172,4 +177,5 @@ LazyLoader {
             border.color: Appearance.colors.colLayer0Border
         }
     }
+
 }

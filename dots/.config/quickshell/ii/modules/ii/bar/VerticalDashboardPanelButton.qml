@@ -9,13 +9,20 @@ RippleButton { // Right sidebar button
     id: rightSidebarButton
 
     Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
-    Layout.bottomMargin: Appearance.rounding.screenRounding
-    Layout.fillHeight: false
+    Layout.fillWidth: true
+    Layout.fillHeight: true
 
-    implicitHeight: indicatorsColumnLayout.implicitHeight + 4 * 2
-    implicitWidth: indicatorsColumnLayout.implicitWidth + 6 * 2
+    property real startRadius: Appearance.rounding.full
+    property real endRadius: Appearance.rounding.full
 
-    buttonRadius: Appearance.rounding.full
+    topLeftRadius: startRadius
+    topRightRadius: startRadius
+    bottomLeftRadius: endRadius
+    bottomRightRadius: endRadius
+
+    implicitHeight: indicatorsColumnLayout.implicitHeight + 8 * 2
+    implicitWidth: indicatorsColumnLayout.implicitWidth + 4 * 2
+
     colBackgroundHover: Appearance.colors.colLayer1Hover
     colRipple: Appearance.colors.colLayer1Active
     colBackgroundToggled: Appearance.colors.colSecondaryContainer
@@ -80,12 +87,6 @@ RippleButton { // Right sidebar button
                 color: rightSidebarButton.colText
             }
         }
-        HyprlandXkbIndicator {
-            vertical: true
-            Layout.alignment: Qt.AlignHCenter
-            Layout.bottomMargin: indicatorsColumnLayout.realSpacing
-            color: rightSidebarButton.colText
-        }
         Revealer {
             vertical: true
             reveal: Notifications.silent || Notifications.unread > 0
@@ -96,8 +97,17 @@ RippleButton { // Right sidebar button
             Behavior on Layout.bottomMargin {
                 animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
             }
-            NotificationUnreadCount {
+            Loader {
                 id: notificationUnreadCount
+                sourceComponent: Config.options.bar.styles.notification === "expressive" ? expressiveNotificationComp : defaultNotificationComp
+            }
+            Component {
+                id: defaultNotificationComp
+                NotificationUnreadCount {}
+            }
+            Component {
+                id: expressiveNotificationComp
+                ExpressiveNotificationUnreadCount {}
             }
         }
         MaterialSymbol {

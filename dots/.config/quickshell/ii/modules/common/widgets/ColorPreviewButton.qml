@@ -22,7 +22,7 @@ RippleButton {
 
     property bool customTheme: false
     readonly property string customThemeFilePath: customThemeDirectory + "/" + colorScheme + ".json"
-    readonly property string customThemeCommand: `jq -r '.primary, .primary_container, .secondary' ${customThemeFilePath}`  
+    readonly property string customThemeCommand: `jq -r '.primary, .primary_container, .secondary' ${customThemeFilePath}`
 
     readonly property string wallpaperPath: Config.options.background.wallpaperPath
     readonly property string scriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/colors/generate_colors_material.py`)
@@ -58,17 +58,15 @@ RippleButton {
             Quickshell.execDetached(["bash", "-c", `cp ${root.builtInThemeFilePath} ${Directories.generatedMaterialThemePath}`]);
         } else {
             Config.options.appearance.palette.type = root.colorScheme;
-            Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --noswitch`]);
+            Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --type ${root.colorScheme} --noswitch`]);
         }
     }
 
-    property var effectiveCommand:  root.customTheme ? root.customThemeCommand
-                                    : root.builtInTheme ? root.builtInThemeCommand
-                                    : root.fullCommand
+    property var effectiveCommand: root.customTheme ? root.customThemeCommand : root.builtInTheme ? root.builtInThemeCommand : root.fullCommand
 
     onShouldLoadChanged: {
         if (shouldLoad && !loaded) {
-            colorFetchProcess.running = true
+            colorFetchProcess.running = true;
         }
     }
 
@@ -82,22 +80,22 @@ RippleButton {
                 try {
                     //console.log("[ColorPreviewButton] Command:", root.effectiveCommand)
                     if (root.customTheme || root.builtInTheme) {
-                        const colors = this.text.trim().split("\n")
-                        root.primaryColor   = colors[0] || "transparent"
-                        root.secondaryColor = colors[1] || "transparent"
-                        root.tertiaryColor  = colors[2] || "transparent"
+                        const colors = this.text.trim().split("\n");
+                        root.primaryColor = colors[0] || "transparent";
+                        root.secondaryColor = colors[1] || "transparent";
+                        root.tertiaryColor = colors[2] || "transparent";
                     } else {
-                        const data = JSON.parse(this.text)
+                        const data = JSON.parse(this.text);
 
-                        root.primaryColor   = data.primary   || "transparent"
-                        root.secondaryColor = data.primary_container || "transparent"
-                        root.tertiaryColor  = data.secondary  || "transparent"
+                        root.primaryColor = data.primary || "transparent";
+                        root.secondaryColor = data.primary_container || "transparent";
+                        root.tertiaryColor = data.secondary || "transparent";
                     }
 
-                    root.loaded = true
-                    myCanvas.requestPaint()
+                    root.loaded = true;
+                    myCanvas.requestPaint();
                 } catch (e) {
-                    console.log("[ColorPreviewButton] Parse error:", this.text)
+                    console.log("[ColorPreviewButton] Parse error:", this.text);
                 }
             }
         }

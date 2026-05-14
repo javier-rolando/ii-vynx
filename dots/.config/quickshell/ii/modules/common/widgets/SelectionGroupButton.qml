@@ -52,7 +52,7 @@ GroupButton {
             active: root.buttonShape && root.buttonShape.length > 0
             visible: active
             sourceComponent: MaterialShape {
-                id: materialSymbol
+                id: materialSymbol2
                 implicitWidth: Appearance.font.pixelSize.larger
                 implicitHeight: Appearance.font.pixelSize.larger
                 shapeString: root.buttonShape
@@ -65,7 +65,7 @@ GroupButton {
             active: root.buttonSymbol && root.buttonSymbol.length > 0
             visible: active
             sourceComponent: CustomIcon {
-                id: materialSymbol
+                id: materialSymbol3
                 width: Appearance.font.pixelSize.larger
                 height: Appearance.font.pixelSize.larger
                 source: root.buttonSymbol

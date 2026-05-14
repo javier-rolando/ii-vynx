@@ -13,7 +13,7 @@ Item {
     property var fillMode: Image.PreserveAspectCrop
     property bool animated: true
     property bool imgAIsBack: true
-    
+
     property var sourceSize: Qt.size(0, 0)
     property bool cache: false
     property bool antialiasing: true
@@ -25,34 +25,35 @@ Item {
     Component.onCompleted: imgA.source = imageSource
 
     function fadeTo(newSrc) {
-        var back  = imgAIsBack ? imgA : imgB
-        var front = imgAIsBack ? imgB : imgA
+        var back = imgAIsBack ? imgA : imgB;
+        var front = imgAIsBack ? imgB : imgA;
 
-        if (newSrc === back.source) return
-
-        front.source  = newSrc
-        front.z       = 1
-        back.z        = 0
+        if (newSrc === back.source)
+            return;
+        front.source = newSrc;
+        front.z = 1;
+        back.z = 0;
 
         if (root.animated) {
-            front.opacity = 0
-            fadeAnim.target = front
-            fadeAnim.restart()
+            front.opacity = 0;
+            fadeAnim.target = front;
+            fadeAnim.restart();
         } else {
-            front.opacity = 1
-            root.imgAIsBack = !root.imgAIsBack
+            front.opacity = 1;
+            root.imgAIsBack = !root.imgAIsBack;
         }
     }
 
     NumberAnimation {
         id: fadeAnim
         property: "opacity"
-        from: 0; to: 1
+        from: 0
+        to: 1
         duration: root.animationDuration
         easing.type: Easing.InOutQuad
 
         onFinished: {
-            root.imgAIsBack = !root.imgAIsBack
+            root.imgAIsBack = !root.imgAIsBack;
         }
     }
 
@@ -61,7 +62,11 @@ Item {
         anchors.fill: parent
         fillMode: root.fillMode
         sourceSize: root.sourceSize
-        cache: root.cache; antialiasing: root.antialiasing; asynchronous: root.asynchronous; smooth: root.smooth; mipmap: root.mipmap
+        cache: root.cache
+        antialiasing: root.antialiasing
+        asynchronous: root.asynchronous
+        smooth: root.smooth
+        mipmap: root.mipmap
     }
 
     Image {
@@ -70,6 +75,10 @@ Item {
         opacity: 0
         fillMode: root.fillMode
         sourceSize: root.sourceSize
-        cache: root.cache; antialiasing: root.antialiasing; asynchronous: root.asynchronous; smooth: root.smooth; mipmap: root.mipmap
+        cache: root.cache
+        antialiasing: root.antialiasing
+        asynchronous: root.asynchronous
+        smooth: root.smooth
+        mipmap: root.mipmap
     }
 }

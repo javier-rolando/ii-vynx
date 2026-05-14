@@ -31,10 +31,10 @@ Item { // MediaMode instance
     property string geniusLyricsString: LyricsService.plainLyrics
 
     function updateArt() {
-        coverArtDownloader.targetFile = root.artUrl 
-        coverArtDownloader.artFilePath = root.artFilePath
-        root.downloaded = false
-        coverArtDownloader.running = true
+        coverArtDownloader.targetFile = root.artUrl;
+        coverArtDownloader.artFilePath = root.artFilePath;
+        root.downloaded = false;
+        coverArtDownloader.running = true;
     }
 
     onArtFilePathChanged: {
@@ -58,7 +58,6 @@ Item { // MediaMode instance
             }
         }
     }
-    
 
     ColorQuantizer {
         id: colorQuantizer
@@ -69,9 +68,10 @@ Item { // MediaMode instance
         // We have to delay the color change if the media changes too quickly...
         onColorsChanged: {
             // console.log("[Media Mode] Colors changed: ", colorQuantizer.colors)
-            if (!Config.options.background.mediaMode.changeShellColor) return;
+            if (!Config.options.background.mediaMode.changeShellColor)
+                return;
             // console.log("[Media Mode] Requesting to change shell color")
-            LyricsService.changeShellColor(colorQuantizer.colors[0])
+            LyricsService.changeShellColor(colorQuantizer.colors[0]);
         }
     }
 
@@ -97,14 +97,13 @@ Item { // MediaMode instance
                     animationEnabled: Config.options.background.mediaMode.backgroundAnimation.enable
 
                     workspaceNorm: {
-                        const chunkSize = Config?.options.bar.workspaces.shown ?? 10
-                        const lower = Math.floor(bgRoot.firstWorkspaceId / chunkSize) * chunkSize
-                        const upper = Math.ceil(bgRoot.lastWorkspaceId / chunkSize) * chunkSize
-                        const range = upper - lower
-                        const id = bgRoot.monitor.activeWorkspace?.id ?? 1
-                        return range > 0 ? (id - lower) / range : 0.5
+                        const chunkSize = Config?.options.bar.workspaces.shown ?? 10;
+                        const lower = Math.floor(bgRoot.firstWorkspaceId / chunkSize) * chunkSize;
+                        const upper = Math.ceil(bgRoot.lastWorkspaceId / chunkSize) * chunkSize;
+                        const range = upper - lower;
+                        const id = bgRoot.monitor.activeWorkspace?.id ?? 1;
+                        return range > 0 ? (id - lower) / range : 0.5;
                     }
-
                 }
 
                 RowLayout {
@@ -135,8 +134,9 @@ Item { // MediaMode instance
                             readonly property bool lrclibEnabled: Config.options.lyricsService.enableLrclib
 
                             Component.onCompleted: {
-                                if (!geniusEnabled && !lrclibEnabled) return
-                                LyricsService.initiliazeLyrics()
+                                if (!geniusEnabled && !lrclibEnabled)
+                                    return;
+                                LyricsService.initiliazeLyrics();
                             }
 
                             FadeLoader {
@@ -147,7 +147,7 @@ Item { // MediaMode instance
                                     player: root.player
                                 }
                             }
-                            
+
                             FadeLoader {
                                 shown: lyricsItem.hasSyncedLines
                                 anchors.fill: parent
