@@ -15,14 +15,16 @@ end
 require("hyprland.execs")
 require("hyprland.general")
 require("hyprland.rules")
-local colorsGenerated = HOME .. "/.local/state/quickshell/user/generated/hyprland/colors.lua"
-if is_file_exists(colorsGenerated) then dofile(colorsGenerated) else require("hyprland.colors") end
 require("hyprland.keybinds")
 
 -- Custom configurations --
 if is_file_exists(HOME .. "/.config/hypr/custom/plugins.lua") then
     require("custom.plugins")
 end
+
+-- Colors (después de plugins para que hyprbars esté cargado)
+local colorsGenerated = HOME .. "/.local/state/quickshell/user/generated/hyprland/colors.lua"
+if is_file_exists(colorsGenerated) then dofile(colorsGenerated) else require("hyprland.colors") end
 if is_file_exists(HOME .. "/.config/hypr/custom/execs.lua") then
     require("custom.execs")
 end
