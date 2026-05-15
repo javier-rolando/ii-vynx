@@ -17,6 +17,7 @@ Item { // Bar content region
     property var brightnessMonitor: Brightness.getMonitorForScreen(screen)
     property bool hasActiveWindows: false
     property bool showBarBackground: root.hasActiveWindows && Config.options.bar.barBackgroundStyle === 2 || Config.options.bar.barBackgroundStyle === 1
+    readonly property bool isDynamicIsland: Config.options.bar.cornerStyle === 3
     
     Connections {
         enabled: Config.options.bar.barBackgroundStyle === 2
@@ -61,24 +62,123 @@ Item { // Bar content region
     // Background
     Rectangle {
         id: barBackground
-        anchors {
-            fill: parent
-            margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut) : 0 // idk why but +1 is needed
-        }
         z: -10 // making sure its behind everything
+        anchors {
+            fill: root.isDynamicIsland ? undefined : parent
+            centerIn: root.isDynamicIsland ? parent : undefined
+        }
+
+        width: parent.width
+        height: root.isDynamicIsland ? (Math.max(islandSections.implicitHeight + 24, 200)) : parent.height
+
         color: root.showBarBackground ? Appearance.colors.colLayer0 : "transparent"
-        radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
+        property real baseRadius: root.isDynamicIsland ? width / 2 : (Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0)
+        topLeftRadius: (!Config.options.bar.bottom && root.isDynamicIsland) ? 0 : baseRadius
+        bottomLeftRadius: (!Config.options.bar.bottom && root.isDynamicIsland) ? 0 : baseRadius
+        topRightRadius: (Config.options.bar.bottom && root.isDynamicIsland) ? 0 : baseRadius
+        bottomRightRadius: (Config.options.bar.bottom && root.isDynamicIsland) ? 0 : baseRadius
         border.width: Config.options.bar.cornerStyle === 1 ? 1 : 0
         border.color: root.showBarBackground ? Appearance.colors.colLayer0Border : "transparent"
+
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
+        }
+
+        Behavior on height {
+            NumberAnimation {
+                duration: 450
+                easing.type: Easing.OutExpo
+            }
+        }
+    }
+
+    // Concave Corners (Dynamic Island mode)
+    RoundCorner {
+        z: -5
+        anchors.bottom: barBackground.top
+        anchors.left: Config.options.bar.bottom ? undefined : barBackground.left
+        anchors.right: Config.options.bar.bottom ? barBackground.right : undefined
+        implicitSize: barBackground.baseRadius
+        color: barBackground.color
+        corner: Config.options.bar.bottom ? RoundCorner.CornerEnum.BottomRight : RoundCorner.CornerEnum.BottomLeft
+        visible: root.isDynamicIsland && root.showBarBackground
+    }
+    RoundCorner {
+        z: -5
+        anchors.top: barBackground.bottom
+        anchors.left: Config.options.bar.bottom ? undefined : barBackground.left
+        anchors.right: Config.options.bar.bottom ? barBackground.right : undefined
+        implicitSize: barBackground.baseRadius
+        color: barBackground.color
+        corner: Config.options.bar.bottom ? RoundCorner.CornerEnum.TopRight : RoundCorner.CornerEnum.TopLeft
+        visible: root.isDynamicIsland && root.showBarBackground
+    }
+
+    ColumnLayout { // Combined Island section
+        id: islandSections
+        visible: root.isDynamicIsland
+        anchors.centerIn: parent
+        spacing: 16
+
+        ColumnLayout { // Top items
+            spacing: 4
+            Repeater {
+                model: Config.options.bar.layouts.left
+                delegate: Bar.BarComponent {
+                    vertical: true
+                    list: Config.options.bar.layouts.left
+                    barSection: 0
+                }
+            }
+        }
+
+        ColumnLayout { // Center items
+            spacing: 4
+            Repeater {
+                model: root.leftList
+                delegate: Bar.BarComponent {
+                    vertical: true
+                    list: Config.options.bar.layouts.center
+                    barSection: 1
+                    originalIndex: Config.options.bar.layouts.center.findIndex(e => e.id === modelData.id)
+                }
+            }
+            Repeater {
+                model: root.centerList
+                delegate: Bar.BarComponent {
+                    vertical: true
+                    list: Config.options.bar.layouts.center
+                    barSection: 1
+                    originalIndex: Config.options.bar.layouts.center.findIndex(e => e.id === modelData.id)
+                }
+            }
+            Repeater {
+                model: root.rightList
+                delegate: Bar.BarComponent {
+                    vertical: true
+                    list: Config.options.bar.layouts.center
+                    barSection: 1
+                    originalIndex: Config.options.bar.layouts.center.findIndex(e => e.id === modelData.id)
+                }
+            }
+        }
+
+        ColumnLayout { // Bottom items
+            spacing: 4
+            Repeater {
+                model: Config.options.bar.layouts.right
+                delegate: Bar.BarComponent {
+                    vertical: true
+                    list: Config.options.bar.layouts.right
+                    barSection: 2
+                }
+            }
         }
     }
 
     FocusedScrollMouseArea { // Top section | scroll to change brightness
         id: barTopSectionMouseArea
-        anchors.top: parent.top
-        
+        visible: !root.isDynamicIsland
 
         anchors {
             top: parent.top
@@ -102,6 +202,7 @@ Item { // Bar content region
 
     Item {
         id: topStopper
+        visible: !root.isDynamicIsland
         anchors {
             left: parent.left
             right: parent.right
@@ -113,6 +214,7 @@ Item { // Bar content region
 
     ColumnLayout { // Top section
         id: topSection
+        visible: !root.isDynamicIsland
         anchors {
             top: topStopper.bottom
             horizontalCenter: parent.horizontalCenter
@@ -132,6 +234,7 @@ Item { // Bar content region
 
     Item {
         id: middleSection
+        visible: !root.isDynamicIsland
         anchors {
             horizontalCenter: parent.horizontalCenter
             verticalCenter: parent.verticalCenter
@@ -194,6 +297,7 @@ Item { // Bar content region
 
     ColumnLayout { // Bottom section
         id: bottomSection
+        visible: !root.isDynamicIsland
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: bottomStopper.top
@@ -213,6 +317,7 @@ Item { // Bar content region
 
     Item {
         id: bottomStopper
+        visible: !root.isDynamicIsland
         anchors {
             left: parent.left
             right: parent.right
@@ -224,6 +329,7 @@ Item { // Bar content region
 
     FocusedScrollMouseArea { // Bottom section | scroll to change volume
         id: barBottomSectionMouseArea
+        visible: !root.isDynamicIsland
 
         z: -1
         anchors {

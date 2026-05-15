@@ -184,6 +184,11 @@ ContentPage {
                             displayName: Translation.tr("Rect"),
                             icon: "toolbar",
                             value: 2
+                        },
+                        {
+                            displayName: Translation.tr("Dynamic Island"),
+                            icon: "water_drop",
+                            value: 3
                         }
                     ]
                 }
