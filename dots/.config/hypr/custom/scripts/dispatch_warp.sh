@@ -1,17 +1,29 @@
 #!/usr/bin/env bash
 
-# Script para ejecutar un dispatcher de Hyprland desactivando temporalmente cursor:no_warps
-# Creado en el Laboratorio de Gadgets del Futuro.
-
-# Si no se proporcionan argumentos, muestra cómo usarlo y sale.
 if [ "$#" -eq 0 ]; then
-  echo "¡Debes proporcionar un comando para el dispatcher!"
   echo "Uso: $0 <dispatcher> <argumentos...>"
-  echo "Ejemplo: $0 movefocus d"
   exit 1
 fi
 
-# ¡La secuencia de activación!
+DISPATCHER=$1
+shift
+
 hyprctl eval "hl.config({ cursor = { no_warps = false } })"
-hyprctl dispatch "$@"
+
+case "$DISPATCHER" in
+  movefocus)
+    hyprctl eval "hl.dispatch(hl.dsp.focus({ direction = '$1' }))"
+    ;;
+  workspace)
+    hyprctl eval "hl.dispatch(hl.dsp.focus({ workspace = '$1' }))"
+    ;;
+  layoutmsg)
+    hyprctl eval "hl.dispatch(hl.dsp.layout('$1'))"
+    ;;
+  *)
+    hyprctl eval "hl.dispatch(hl.dsp.exec_cmd('hyprctl dispatch $DISPATCHER $*')())" 2>/dev/null \
+      || hyprctl dispatch "$DISPATCHER" "$@"
+    ;;
+esac
+
 hyprctl eval "hl.config({ cursor = { no_warps = true } })"
