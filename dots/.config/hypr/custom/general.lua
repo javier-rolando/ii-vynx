@@ -57,22 +57,6 @@ hl.config({
     misc = {
         background_color = "rgba(141311FF)",
     },
-    plugin = {
-        hyprbars = {
-            bar_text_font               = "Google Sans Flex Medium, Rubik, Geist, AR One Sans, Reddit Sans, Inter, Roboto, Ubuntu, Noto Sans, sans-serif",
-            bar_height                  = 38,
-            bar_padding                 = 10,
-            bar_button_padding          = 12,
-            bar_buttons_alignment       = "left",
-            bar_text_size               = 12,
-            bar_part_of_window          = true,
-            bar_precedence_over_border  = true,
-            bar_title_enabled           = false,
-            bar_color                   = "rgba(141311FF)",
-            ["col.text"]                = "rgba(e6e2ddFF)",
-            on_double_click             = "hyprctl dispatch togglefloating",
-        },
-    },
 })
 
 -- Custom animation curves
