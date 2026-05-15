@@ -15,7 +15,8 @@ end
 require("hyprland.execs")
 require("hyprland.general")
 require("hyprland.rules")
-require("hyprland.colors")
+local colorsGenerated = HOME .. "/.local/state/quickshell/user/generated/hyprland/colors.lua"
+if is_file_exists(colorsGenerated) then dofile(colorsGenerated) else require("hyprland.colors") end
 require("hyprland.keybinds")
 
 -- Custom configurations --
