@@ -34,6 +34,24 @@ hl.config({
     },
 })
 
-hl.config({ plugin = { hyprbars = { ["hyprbars-button"] = "rgba({{colors.inverse_primary.default.hex_stripped}}FF), 15, , hyprctl dispatch killactive, rgb(000000)" } } })
-hl.config({ plugin = { hyprbars = { ["hyprbars-button"] = "rgba({{colors.primary.default.hex_stripped}}FF), 15, , hyprctl dispatch fullscreen 1, rgb(000000)" } } })
-hl.config({ plugin = { hyprbars = { ["hyprbars-button"] = "rgba({{colors.tertiary.default.hex_stripped}}FF), 15, , if [[ $(hyprctl activewindow -j | jq -r '.workspace.name | startswith(\"special\")') == true ]]; then hyprctl -q dispatch togglespecialworkspace $(hyprctl activewindow -j | jq -r '.workspace.name' | sed 's/^special://'); else hyprctl -q dispatch movetoworkspacesilent special; fi, rgb(000000)" } } })
+hl.plugin.hyprbars.add_button({
+    bg_color = "rgba({{colors.inverse_primary.default.hex_stripped}}FF)",
+    fg_color = "rgb(000000)",
+    size     = 15,
+    icon     = "",
+    action   = "hyprctl dispatch killactive",
+})
+hl.plugin.hyprbars.add_button({
+    bg_color = "rgba({{colors.primary.default.hex_stripped}}FF)",
+    fg_color = "rgb(000000)",
+    size     = 15,
+    icon     = "",
+    action   = "hyprctl dispatch fullscreen 1",
+})
+hl.plugin.hyprbars.add_button({
+    bg_color = "rgba({{colors.tertiary.default.hex_stripped}}FF)",
+    fg_color = "rgb(000000)",
+    size     = 15,
+    icon     = "",
+    action   = "if [[ $(hyprctl activewindow -j | jq -r '.workspace.name | startswith(\"special\")') == true ]]; then hyprctl -q dispatch togglespecialworkspace $(hyprctl activewindow -j | jq -r '.workspace.name' | sed 's/^special://'); else hyprctl -q dispatch movetoworkspacesilent special; fi",
+})
