@@ -47,5 +47,5 @@ require("hyprland.shellOverrides.main")
 
 -- Local scratch (not managed by Nix, for testing) --
 if is_file_exists(HOME .. "/.config/hypr/custom/local.lua") then
-    dofile(HOME .. "/.config/hypr/custom/local.lua")
+    require("custom.local")
 end
