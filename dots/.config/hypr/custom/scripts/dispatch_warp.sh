@@ -12,6 +12,6 @@ if [ "$#" -eq 0 ]; then
 fi
 
 # ¡La secuencia de activación!
-hyprctl keyword cursor:no_warps false
-hyprctl dispatch "$@" # "$@" pasa TODOS los argumentos que le diste al script directamente a "dispatch"
-hyprctl keyword cursor:no_warps true
+hyprctl eval "hl.config({ cursor = { no_warps = false } })"
+hyprctl dispatch "$@"
+hyprctl eval "hl.config({ cursor = { no_warps = true } })"
