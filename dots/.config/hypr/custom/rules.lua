@@ -41,12 +41,12 @@ hl.workspace_rule({ workspace = "special:spotify",     ["on_created_empty"] = 's
 hl.workspace_rule({ workspace = "special:yt-music",    ["on_created_empty"] = 'youtube-music --enable-features=UseOzonePlatform --ozone-platform=wayland' })
 
 -- Workspace assignments
-hl.window_rule({ match = { class = "brave-browser" },              workspace = 1,  fullscreen_state = {0, 1} })
-hl.window_rule({ match = { class = "zen" },                        workspace = 1,  fullscreen_state = {0, 1} })
-hl.window_rule({ match = { class = "vesktop" },                    workspace = 2,  fullscreen_state = {0, 1} })
-hl.window_rule({ match = { class = "waterfox" },                   workspace = 5,  fullscreen_state = {0, 1} })
-hl.window_rule({ match = { class = "librewolf" },                  workspace = 11, fullscreen_state = {0, 1} })
-hl.window_rule({ match = { class = "firefox" },                    fullscreen_state = {0, 1} })
+hl.window_rule({ match = { class = "brave-browser" },              workspace = 1,  fullscreen_state = "0 1" })
+hl.window_rule({ match = { class = "zen" },                        workspace = 1,  fullscreen_state = "0 1" })
+hl.window_rule({ match = { class = "vesktop" },                    workspace = 2,  fullscreen_state = "0 1" })
+hl.window_rule({ match = { class = "waterfox" },                   workspace = 5,  fullscreen_state = "0 1" })
+hl.window_rule({ match = { class = "librewolf" },                  workspace = 11, fullscreen_state = "0 1" })
+hl.window_rule({ match = { class = "firefox" },                    fullscreen_state = "0 1" })
 hl.window_rule({ match = { class = "(elecwhat)" },                 workspace = 2 })
 hl.window_rule({ match = { class = "(eu.betterbird.Betterbird)" },  workspace = 2 })
 hl.window_rule({ match = { class = "(steam)" },                    workspace = 3 })
