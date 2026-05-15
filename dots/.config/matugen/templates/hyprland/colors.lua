@@ -29,7 +29,7 @@ hl.config({
             bar_precedence_over_border = true,
             bar_title_enabled          = false,
             ["col.text"]               = "rgba({{colors.on_background.default.hex_stripped}}FF)",
-            on_double_click            = "hyprctl dispatch togglefloating",
+            on_double_click            = "hyprctl eval \"hl.dispatch(hl.dsp.window.float({ action = 'toggle' }))\"",
         },
     },
 })
@@ -39,19 +39,19 @@ hl.plugin.hyprbars.add_button({
     fg_color = "rgb(000000)",
     size     = 15,
     icon     = "",
-    action   = "hyprctl dispatch killactive",
+    action   = "hyprctl eval \"hl.dispatch(hl.dsp.window.close())\"",
 })
 hl.plugin.hyprbars.add_button({
     bg_color = "rgba({{colors.primary.default.hex_stripped}}FF)",
     fg_color = "rgb(000000)",
     size     = 15,
     icon     = "",
-    action   = "hyprctl dispatch fullscreen 1",
+    action   = "hyprctl eval \"hl.dispatch(hl.dsp.window.fullscreen({ mode = 'fullscreen', action = 'toggle' }))\"",
 })
 hl.plugin.hyprbars.add_button({
     bg_color = "rgba({{colors.tertiary.default.hex_stripped}}FF)",
     fg_color = "rgb(000000)",
     size     = 15,
     icon     = "",
-    action   = "if [[ $(hyprctl activewindow -j | jq -r '.workspace.name | startswith(\"special\")') == true ]]; then hyprctl -q dispatch togglespecialworkspace $(hyprctl activewindow -j | jq -r '.workspace.name' | sed 's/^special://'); else hyprctl -q dispatch movetoworkspacesilent special; fi",
+    action   = "hyprctl eval \"local w = hl.get_active_window(); if w and w.workspace.name:match('^special') then hl.dispatch(hl.dsp.workspace.toggle_special(w.workspace.name:gsub('^special:', ''))) else hl.dispatch(hl.dsp.window.move({ workspace = 'special' })) end\"",
 })
