@@ -46,19 +46,6 @@ hl.config({
     }
 })
 
--- Theme colors (override upstream colors.lua)
-hl.config({
-    general = {
-        col = {
-            active_border   = "rgba(cac8adFF)",
-            inactive_border = "rgba(48474455)",
-        },
-    },
-    misc = {
-        background_color = "rgba(141311FF)",
-    },
-})
-
 -- Custom animation curves
 hl.curve("expressiveFastSpatial",    { type = "bezier", points = {{0.42, 1.67}, {0.21, 0.90}} })
 hl.curve("expressiveSlowSpatial",    { type = "bezier", points = {{0.39, 1.29}, {0.35, 0.98}} })
