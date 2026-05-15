@@ -197,5 +197,17 @@ hl.bind("CTRL + SUPER + F9", hl.dsp.exec_cmd("~/scripts/vm.sh"))
 hl.bind("SUPER + SHIFT + Z", hl.dsp.global("quickshell:mediaModeToggle"),        { description = "Toggle media mode" })
 hl.bind("SUPER + SHIFT + V", hl.dsp.global("quickshell:screenTranslate"))
 
+-- Special workspaces
+hl.bind("SUPER + W",         hl.dsp.workspace.toggle_special("special"))
+hl.bind("SUPER + M",         hl.dsp.workspace.toggle_special("spotify"))
+hl.bind("SUPER + ALT + E",   hl.dsp.workspace.toggle_special("yazi"))
+hl.bind("SUPER + ALT + T",   hl.dsp.workspace.toggle_special("translate"))
+hl.bind("SUPER + ntilde",    hl.dsp.workspace.toggle_special("term"))
+hl.bind("SUPER + SHIFT + B", hl.dsp.workspace.toggle_special("btop"))
+hl.bind("SUPER + SHIFT + W", hl.dsp.window.move({ workspace = "special" }))
+hl.bind("SUPER + ALT + W",   hl.dsp.window.move({ workspace = "special", follow = false }))
+hl.bind("SUPER + ALT + U",   hl.dsp.workspace.toggle_special("update"))
+hl.bind("SUPER + SHIFT + M", hl.dsp.workspace.toggle_special("yt-music"))
+
 -- Screenshot
 hl.bind("Print", hl.dsp.exec_cmd("hyprshot -m output -m DP-2"))

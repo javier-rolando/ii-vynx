@@ -1,4 +1,9 @@
 hl.on("hyprland.start", function ()
+    -- hyprbars buttons (config post-carga del plugin)
+    hl.exec_cmd("hyprctl keyword plugin:hyprbars:hyprbars-button 'rgba(605f4aFF), 15, , hyprctl dispatch killactive, rgb(000000)'")
+    hl.exec_cmd("hyprctl keyword plugin:hyprbars:hyprbars-button 'rgba(cac8adFF), 15, , hyprctl dispatch fullscreen 1, rgb(000000)'")
+    hl.exec_cmd([[hyprctl keyword plugin:hyprbars:hyprbars-button 'rgba(cac8a5FF), 15, , if [[ $(hyprctl activewindow -j | jq -r ".workspace.name | startswith(\"special\")") == true ]]; then hyprctl -q dispatch togglespecialworkspace $(hyprctl activewindow -j | jq -r ".workspace.name" | sed "s/^special://"); else hyprctl -q dispatch movetoworkspacesilent special; fi, rgb(000000)']])
+
     hl.exec_cmd("steam -nochatui -nofriendsui -silent")
     hl.exec_cmd("solaar -w hide")
     hl.exec_cmd("kdeconnect-indicator")

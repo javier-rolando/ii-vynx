@@ -27,6 +27,19 @@ hl.layer_rule({ match = { namespace = "^quickshell.*" },                    xray
 hl.layer_rule({ match = { namespace = "^quickshell.*" },                    ignore_alpha = 0.39 })
 hl.layer_rule({ match = { namespace = "^quickshell:onScreenDisplay.*" },    blur = false })
 
+-- Special workspaces
+hl.workspace_rule({ workspace = "special:term",        ["on-created-empty"] = 'kitty --class "kitty-special"' })
+hl.workspace_rule({ workspace = "special:update",      ["on-created-empty"] = 'kitty --class "kitty-update" -e fish -c "upd"' })
+hl.workspace_rule({ workspace = "special:install",     ["on-created-empty"] = 'kitty --class "kitty-install" -e fish -c "pkginstall"' })
+hl.workspace_rule({ workspace = "special:uninstall",   ["on-created-empty"] = 'kitty --class "kitty-uninstall" -e fish -c "pkgremove"' })
+hl.workspace_rule({ workspace = "special:yazi",        ["on-created-empty"] = 'kitty --class "kitty-yazi" -e fish -c "yazi"' })
+hl.workspace_rule({ workspace = "special:btop",        ["on-created-empty"] = 'kitty --class "kitty-btop" -e fish -c "btop"' })
+hl.workspace_rule({ workspace = "special:spotify-term",["on-created-empty"] = 'kitty --class "kitty-spotify" -e spotify_player' })
+hl.workspace_rule({ workspace = "special:english",     ["on-created-empty"] = 'kitty --class "kitty-english" -e fish -c "nvim /home/javier/Documents/ingles.txt"' })
+hl.workspace_rule({ workspace = "special:translate",   ["on-created-empty"] = 'chromium --app="https://translate.google.com/?sl=en&tl=es&op=translate"' })
+hl.workspace_rule({ workspace = "special:spotify",     ["on-created-empty"] = 'spotify --enable-features=UseOzonePlatform --ozone-platform=wayland' })
+hl.workspace_rule({ workspace = "special:yt-music",    ["on-created-empty"] = 'youtube-music --enable-features=UseOzonePlatform --ozone-platform=wayland' })
+
 -- Workspace assignments
 hl.window_rule({ match = { class = "brave-browser" },              workspace = 1,  fullscreen_state = {0, 1} })
 hl.window_rule({ match = { class = "zen" },                        workspace = 1,  fullscreen_state = {0, 1} })
