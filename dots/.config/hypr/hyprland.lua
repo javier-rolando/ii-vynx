@@ -20,6 +20,9 @@ if is_file_exists(colorsGenerated) then dofile(colorsGenerated) else require("hy
 require("hyprland.keybinds")
 
 -- Custom configurations --
+if is_file_exists(HOME .. "/.config/hypr/custom/plugins.lua") then
+    require("custom.plugins")
+end
 if is_file_exists(HOME .. "/.config/hypr/custom/execs.lua") then
     require("custom.execs")
 end
