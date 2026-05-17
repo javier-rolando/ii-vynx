@@ -11,14 +11,11 @@ if [ -z "$DIRECTION" ]; then
     exit 1
 fi
 
-# Ejecuta el swap en Lua. Si falla (swap returns falsy), hace fallback con layoutmsg.
-hyprctl eval "
-local ok = hl.dispatch(hl.dsp.window.swap({ direction = '$DIRECTION' }))
-if not ok then
-    if '$DIRECTION' == 'l' then
-        hl.dispatch(hl.dsp.layout('swapnext'))
-    elseif '$DIRECTION' == 'r' then
-        hl.dispatch(hl.dsp.layout('swapprev'))
-    end
-end
-"
+OUTPUT=$(hyprctl eval "hl.dispatch(hl.dsp.window.swap({ direction = '$DIRECTION' }))" 2>&1)
+
+if [[ "$OUTPUT" == *"No window"* ]]; then
+    case "$DIRECTION" in
+        l) hyprctl eval "hl.dispatch(hl.dsp.layout('swapnext'))" ;;
+        r) hyprctl eval "hl.dispatch(hl.dsp.layout('swapprev'))" ;;
+    esac
+fi
