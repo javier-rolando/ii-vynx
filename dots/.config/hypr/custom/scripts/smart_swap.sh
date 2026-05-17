@@ -11,25 +11,14 @@ if [ -z "$DIRECTION" ]; then
     exit 1
 fi
 
-# Ejecuta el comando y captura su salida estándar.
-# Redirigimos stderr a /dev/null por si acaso.
-OUTPUT=$(hyprctl dispatch swapwindow "$DIRECTION" 2>/dev/null)
-
-# Comprueba si la salida NO es la cadena "ok".
-# El trim de espacios es por si hyprctl añade saltos de línea.
-if [[ "$(echo -n "$OUTPUT" | tr -d '[:space:]')" != "ok" ]]; then
-    # El swap por defecto falló. Verificamos si fue un intento de swap horizontal.
-    case "$DIRECTION" in
-        l)
-            # Si el swap a la izquierda falló, usamos 'swapnext'.
-            hyprctl dispatch layoutmsg swapnext
-            ;;
-        r)
-            # Si el swap a la derecha falló, usamos 'swapprev'.
-            hyprctl dispatch layoutmsg swapprev
-            ;;
-        *)
-            # Para fallos con 'u' o 'd', no hacemos nada.
-            ;;
-    esac
-fi
+# Ejecuta el swap en Lua. Si falla (swap returns falsy), hace fallback con layoutmsg.
+hyprctl eval "
+local ok = hl.dispatch(hl.dsp.window.swap({ direction = '$DIRECTION' }))
+if not ok then
+    if '$DIRECTION' == 'l' then
+        hl.dispatch(hl.dsp.layout('swapnext'))
+    elseif '$DIRECTION' == 'r' then
+        hl.dispatch(hl.dsp.layout('swapprev'))
+    end
+end
+"
