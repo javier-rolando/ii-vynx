@@ -555,6 +555,17 @@ span[data-icon="status-filled-refreshed"] svg {
     background: var(--dynamic-soft-bg) !important;
 }
 
+/* Bubbles of Yesterday, Today, etc */
 .x1iyt1tq {
     background-color: var(--dynamic-soft-bg) !important;
+}
+
+/* Reactions */
+.x133tm0i {
+    background-color: var(--dynamic-soft-bg) !important;
+}
+
+/* Reactions hover */
+._ak73._ak82:hover {
+	background-color: var(--dynamic-softer-bg) !important;
 }
