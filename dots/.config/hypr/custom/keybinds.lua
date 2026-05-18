@@ -51,7 +51,8 @@ local function toggle_float_center()
     local floating = hl.get_active_window().floating
     hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
     if not floating then
-        hl.dispatch(hl.dsp.window.resize({ x = "80%", y = "80%", relative = false }))
+        local m = hl.get_active_monitor()
+        hl.dispatch(hl.dsp.window.resize({ x = math.floor(m.width * 0.8), y = math.floor(m.height * 0.8), "exact" }))
         hl.dispatch(hl.dsp.window.center())
     end
 end
@@ -59,9 +60,10 @@ end
 local function switch_layout(layout)
     local ws_name = hl.get_active_workspace().name
     hl.workspace_rule({ workspace = "name:" .. ws_name, layout = layout })
-    local gaps = layout == "dwindle" and "5 1360 5 1360" or "5 5 5 5"
-    hl.workspace_rule({ workspace = "name:" .. ws_name .. " w[t1]f[-1]", gapsout = gaps })
-    hl.dispatch(hl.dsp.layout("setlayout " .. layout))
+    local gaps = layout == "dwindle"
+        and { top = 5, right = 1360, bottom = 5, left = 1360 }
+        or  { top = 5, right = 5,    bottom = 5, left = 5    }
+    hl.workspace_rule({ workspace = "name:" .. ws_name .. " w[t1]f[-1]", gaps_out = gaps })
 end
 
 -- Shell config / keybinds
