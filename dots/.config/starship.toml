@@ -1,122 +1,174 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 format = """
-[](fg:yellow bg:none)[ ](bg:yellow fg:black)[](fg:yellow bg:none)\
-$conda\
-$docker_context\
+$os\
 $directory\
-$package\
 $git_branch\
 $git_status\
-${custom.git_end}\
 $cmd_duration\
 $fill\
-${custom.prog_ver_start}\
-$python$nodejs$java$golang\
-${custom.prog_ver_end}\
-$line_break\
+$c\
+$elixir\
+$elm\
+$golang\
+$haskell\
+$java\
+$julia\
+$nodejs\
+$nim\
+$rust\
+$scala\
+$conda\
+$python\
+$time\n  \
 $character
 """
 
-add_newline = true
+# palette = "matugen"
+#
+# [palettes.matugen]
+# black = '#4b4732'
+# red = '#C2842D'
+# cyan = '#DDCE4B'
+# yellow = '#FFE49D'
+# blue = '#92B482'
+# magenta = '#E79856'
+# green = '#C4D07E'
 
 [character]
-success_symbol = "[❯](fg:green)"
-error_symbol = "[❯](fg:red)"
+success_symbol = "[󱞪](fg:green)"
+error_symbol = "[󱞪](fg:red)"
 
-[custom.prog_ver_start]
-style = "fg:black bg:none"
-symbol = ""
-detect_files = ["pyproject.toml", ".python-version"]
-
-
-[custom.prog_ver_end]
-style = "fg:black bg:none"
-symbol = ""
-detect_files = ["pyproject.toml", ".python-version"]
-
-[cmd_duration]
-style = "fg:blue bg:none"
-format = "[]($style)[  $duration](fg:black bg:blue)[]($style)"
+[os]
+disabled = false
+format = "[](fg:black)[   ]($style)[](fg:black) "
+show_always = true
+style = "bg:black fg:green"
 
 [directory]
-style = "fg:green bg:none"
-format = "[]($style)[ 󰝰 $path ](fg:black bg:green)[]($style)"
+format = "[](fg:black)[ 󰝰 $path ]($style)[](fg:black) "
+style = "bg:black fg:blue"
 truncation_length = 1
 # truncation_symbol = "…/"
 
-# Here is how you can shorten some long paths by text replacement
-# similar to mapped_locations in Oh My Posh:
 [directory.substitutions]
-"Documents" = "󱔘"
-"Downloads" = " "
-"Music" = " "
-"Pictures" = " "
-# Keep in mind that the order matters. For example:
-# "Important Documents" = "  "
-# will not be replaced, because "Documents" was already substituted before.
-# So either put "Important Documents" before "Documents" or use the substituted version:
-# "Important  " = "  "
+Documents = "󰈙"
+Downloads = " "
+Music = " "
+Pictures = " "
 
 [fill]
+style = "fg:black"
 symbol = " "
 
-[conda]
-style = "fg:color5 bg:none"
-format = "[]($style)[ conda $environment ](fg:color0 bg:color5)[]($style)"
-
-[docker_context]
-style = "fg:color5 bg:none"
-format = "[]($style)[ docker $environment ](fg:color0 bg:color5)[]($style)"
-
-[package]
-style = "fg:black bg:none"
-format = "[]($style)[ $version ](fg:color0 bg:color4)[]($style)"
-
 [git_branch]
+format = "[](fg:black)[ $symbol $branch ]($style)[](fg:black) "
+style = "bg:black fg:red"
 symbol = ""
-style = "fg:black bg:cyan"
-format = '[](fg:cyan bg:none)[ $symbol $branch ]($style)'
 
 [git_status]
-style = "fg:black bg:cyan"
-format = '[$all_status$ahead_behind]($style)'
-conflicted = "=$count "
-untracked = "?$count "
-modified = "!$count "
-deleted = "✘$count "
-staged = "+$count "
-renamed = "»$count "
-stashed = "*$count "
-ahead = "⇡$count "
-behind = "⇣$count "
-diverged = "⇕ ⇣$behind_count ⇡$ahead_count "
+disabled = false
+style = "bg:black fg:red"
+format = '[](fg:black)([$all_status$ahead_behind]($style))[](fg:black) '
+up_to_date = '[ ✓ ](bg:black fg:green)'
+untracked = '[?\($count\)](bg:black fg:cyan)'
+stashed = '[\$](bg:black fg:green)'
+modified = '[!\($count\)](bg:black fg:cyan)'
+renamed = '[»\($count\)](bg:black fg:green)'
+deleted = '[✘\($count\)](style)'
+staged = '[++\($count\)](bg:black fg:cyan)'
+ahead = '[⇡\(${count}\)](bg:black fg:magenta)'
+diverged = '⇕[\[](bg:black fg:green)[⇡\(${ahead_count}\)](bg:black fg:magenta)[⇣\(${behind_count}\)](bg:black fg:yellow)[\]](bg:black fg:green)'
+behind = '[⇣\(${count}\)](bg:black fg:yellow)'
 
-[custom.git_end]
-style = "fg:cyan bg:none"
-symbol = ""
-format = "[$symbol]($style)"
-when = "git status 2>/dev/null; echo \\$?"
-require_repo = true
+[time]
+disabled = true
+format = " [](fg:black)[ $time 󰴈 ]($style)[](fg:black)"
+style = "bg:black fg:yellow"
+time_format = "%I:%M%P"
+use_12hr = true
 
-[python]
-symbol = ""
-style = "fg:color0 bg:color4"
-format = '[ [$symbol](fg:color7 bg:color4) $version ]($style)'
+[cmd_duration]
+symbol = " "
+format = "[](fg:black)[  $duration ]($style)[](fg:black) "
+style = "bg:black fg:yellow"
+
+# Languages
+
+[c]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = " "
+
+[elixir]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = " "
+
+[elm]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = " "
 
 [golang]
-symbol = ""
-style = "fg:color0 bg:color4"
-format = '[ $symbol $version ]($style)'
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = " "
+
+[haskell]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = " "
+
+[java]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = " "
+
+[julia]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = " "
 
 [nodejs]
-symbol = "󰎙"
-style = "fg:color0 bg:color4"
-format = '[ $symbol $version ]($style)'
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = "󰎙 "
 
-# [custom.angular]
-# symbol = "󰚲"
-# style = "fg:color0 bg:color4"
-# format = '[ $symbol $output ]($style)'
-# command = "jq -r '.dependencies[\"@angular/core\"]' 'package.json' | sed 's/[^0-9.]//g'"
-# detect_files = ["angular.json", "package.json"]
+[nim]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = "󰆥 "
+
+[rust]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = " "
+
+[scala]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = " "
+
+[python]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$version ]($style)[](fg:black)"
+disabled = false
+symbol = ' '
+
+[conda]
+style = "bg:black fg:cyan"
+format = " [](fg:black)[ $symbol$environment ]($style)[](fg:black)"
+disabled = false
+symbol = '🅒 '
