@@ -42,7 +42,6 @@ error_symbol = "[󱞪](fg:red)"
 [os]
 disabled = false
 format = "[](fg:black)[   ]($style)[](fg:black) "
-show_always = true
 style = "bg:black fg:green"
 
 [directory]
@@ -89,7 +88,6 @@ time_format = "%I:%M%P"
 use_12hr = true
 
 [cmd_duration]
-symbol = " "
 format = "[](fg:black)[  $duration ]($style)[](fg:black) "
 style = "bg:black fg:yellow"
 
