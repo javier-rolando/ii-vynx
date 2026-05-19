@@ -487,7 +487,7 @@ header.x1h3rtpe {
 }
 
 /* Status, Channels and Communities pages */
-._al_c {
+.x6egj2d {
     background-color: var(--dynamic-background) !important;
 }
 
@@ -568,4 +568,9 @@ span[data-icon="status-filled-refreshed"] svg {
 /* Reactions hover */
 ._ak73._ak82:hover {
 	background-color: var(--dynamic-softer-bg) !important;
+}
+
+/* Emoji selector */
+.x1x0w6k2 {
+    background-color: var(--dynamic-soft-bg) !important;
 }
