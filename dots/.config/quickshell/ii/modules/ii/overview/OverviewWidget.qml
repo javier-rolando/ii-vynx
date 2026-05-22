@@ -155,7 +155,9 @@ Item {
                             property color defaultWorkspaceColor: Appearance.colors.colSurfaceContainerLow
                             property color hoveredWorkspaceColor: ColorUtils.mix(defaultWorkspaceColor, Appearance.colors.colLayer1Hover, 0.1)
                             property color hoveredBorderColor: Appearance.colors.colLayer2Hover
-                            property bool hoveredWhileDragging: false
+                            property bool hoveredWhileDragging: root.draggingTargetWorkspace === workspaceValue
+                                                                && root.draggingFromWorkspace !== -1
+                                                                && root.draggingFromWorkspace !== workspaceValue
 
                             implicitWidth: root.workspaceImplicitWidth
                             implicitHeight: root.workspaceImplicitHeight
@@ -201,12 +203,9 @@ Item {
                                 onEntered: {
                                     root.dragDropType = 0
                                     root.draggingTargetWorkspace = workspace.workspaceValue
-                                    if (root.draggingFromWorkspace == root.draggingTargetWorkspace) return;
-                                    hoveredWhileDragging = true
                                 }
                                 onExited: {
                                     root.dragDropType = -1
-                                    hoveredWhileDragging = false
                                     if (root.draggingTargetWorkspace == workspace.workspaceValue) root.draggingTargetWorkspace = -1
                                 }
                             }
@@ -405,9 +404,9 @@ Item {
                     
 
                     DropArea { // Window drop
-                        anchors.fill:  parent
+                        anchors.fill: parent
+                        visible: !window.Drag.active
                         onEntered: {
-                            if (windowData?.address === root.draggingFromWindowAddress) return;
                             parent.hovering = true
                             root.dragDropType = 1 // window
                             root.draggingTargetWindowAdress = windowData?.address
@@ -424,7 +423,6 @@ Item {
                             }
                         }
                         onExited: {
-                            if (windowData?.address === root.draggingFromWindowAddress) return;
                             parent.hovering = false
                             root.dragDropType = -1
                             if (root.draggingTargetWindowAdress == windowData?.address) root.draggingTargetWindowAdress = ""
