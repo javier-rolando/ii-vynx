@@ -201,12 +201,10 @@ Item {
                             DropArea { // Workspace drop
                                 anchors.fill: parent
                                 onEntered: {
-                                    console.log(`[WS DROP] onEntered ws=${workspace.workspaceValue}`)
                                     root.dragDropType = 0
                                     root.draggingTargetWorkspace = workspace.workspaceValue
                                 }
                                 onExited: {
-                                    console.log(`[WS DROP] onExited ws=${workspace.workspaceValue}`)
                                     root.dragDropType = -1
                                     if (root.draggingTargetWorkspace == workspace.workspaceValue) root.draggingTargetWorkspace = -1
                                 }
@@ -409,7 +407,6 @@ Item {
                         anchors.fill: parent
                         visible: !window.Drag.active
                         onEntered: {
-                            console.log(`[WIN DROP] onEntered winAddr=${windowData?.address} wsId=${window?.wsId}`)
                             parent.hovering = true
                             root.dragDropType = 1 // window
                             root.draggingTargetWindowAdress = windowData?.address
@@ -426,7 +423,6 @@ Item {
                             }
                         }
                         onExited: {
-                            console.log(`[WIN DROP] onExited winAddr=${windowData?.address}`)
                             parent.hovering = false
                             root.dragDropType = -1
                             if (root.draggingTargetWindowAdress == windowData?.address) root.draggingTargetWindowAdress = ""
@@ -468,7 +464,6 @@ Item {
                             // console.log(`[OverviewWindow] Dragging window ${windowData?.address} from position (${window.x}, ${window.y})`)
                         }
                         onReleased: { // Dropping Event
-                            console.log(`[DROP] dragDropType=${root.dragDropType} targetWs=${root.draggingTargetWorkspace} fromWs=${root.draggingFromWorkspace} targetWinAddr=${root.draggingTargetWindowAdress} fromWinAddr=${root.draggingFromWindowAddress} thisWin=${windowData?.workspace.id}`)
 
                             if (root.dragDropType === 0 || (root.dragDropType === -1 && root.draggingTargetWorkspace !== -1 && root.draggingTargetWorkspace !== windowData?.workspace.id)) { // Workspace drop
                                 const targetWorkspace = root.draggingTargetWorkspace
@@ -496,13 +491,10 @@ Item {
                                 if (targetWindowAdress !== "" && targetWindowAdress !== windowData?.address) {
                                     // FIXME: we dont use the plugin anymore, so we have to somehow clear these or find a way to
                                     // have the same functionality without/with another plugin
-                                    if (root.draggingTargetWorkspace === root.draggingFromWorkspace) { // plugin directly supports same workspace switch
+                                    if (root.draggingTargetWorkspace === root.draggingFromWorkspace) { // same workspace
                                         Hyprland.dispatch(`layoutmsg swapaddrdir ${targetWindowAdress} ${root.draggingDirection} ${window.windowData?.address} true`)
                                     } else { // different workspace
-                                        Hyprland.dispatch(`movetoworkspacesilent ${targetWorkspace}, address:${root.draggingFromWindowAddress}`)
-                                        Qt.callLater(() => {
-                                            Hyprland.dispatch(`layoutmsg swapaddrdir ${targetWindowAdress} ${root.draggingDirection} ${window.windowData?.address} true`)
-                                        })
+                                        Hyprland.dispatch(`hl.dsp.window.move({ workspace = ${targetWorkspace}, follow = false, window = "address:${root.draggingFromWindowAddress}" })`)
                                     }
                                 }
                                 Qt.callLater(() => {
