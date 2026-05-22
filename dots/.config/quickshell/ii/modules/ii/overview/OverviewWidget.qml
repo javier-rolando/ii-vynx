@@ -201,10 +201,12 @@ Item {
                             DropArea { // Workspace drop
                                 anchors.fill: parent
                                 onEntered: {
+                                    console.log(`[WS DROP] onEntered ws=${workspace.workspaceValue}`)
                                     root.dragDropType = 0
                                     root.draggingTargetWorkspace = workspace.workspaceValue
                                 }
                                 onExited: {
+                                    console.log(`[WS DROP] onExited ws=${workspace.workspaceValue}`)
                                     root.dragDropType = -1
                                     if (root.draggingTargetWorkspace == workspace.workspaceValue) root.draggingTargetWorkspace = -1
                                 }
@@ -407,6 +409,7 @@ Item {
                         anchors.fill: parent
                         visible: !window.Drag.active
                         onEntered: {
+                            console.log(`[WIN DROP] onEntered winAddr=${windowData?.address} wsId=${window?.wsId}`)
                             parent.hovering = true
                             root.dragDropType = 1 // window
                             root.draggingTargetWindowAdress = windowData?.address
@@ -423,6 +426,7 @@ Item {
                             }
                         }
                         onExited: {
+                            console.log(`[WIN DROP] onExited winAddr=${windowData?.address}`)
                             parent.hovering = false
                             root.dragDropType = -1
                             if (root.draggingTargetWindowAdress == windowData?.address) root.draggingTargetWindowAdress = ""
@@ -464,6 +468,7 @@ Item {
                             // console.log(`[OverviewWindow] Dragging window ${windowData?.address} from position (${window.x}, ${window.y})`)
                         }
                         onReleased: { // Dropping Event
+                            console.log(`[DROP] dragDropType=${root.dragDropType} targetWs=${root.draggingTargetWorkspace} fromWs=${root.draggingFromWorkspace} targetWinAddr=${root.draggingTargetWindowAdress} fromWinAddr=${root.draggingFromWindowAddress} thisWin=${windowData?.workspace.id}`)
 
                             if (root.dragDropType === 0 || (root.dragDropType === -1 && root.draggingTargetWorkspace !== -1 && root.draggingTargetWorkspace !== windowData?.workspace.id)) { // Workspace drop
                                 const targetWorkspace = root.draggingTargetWorkspace
