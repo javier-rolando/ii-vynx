@@ -465,7 +465,7 @@ Item {
                         }
                         onReleased: { // Dropping Event
 
-                            if (root.dragDropType === 0) { // Workspace drop
+                            if (root.dragDropType === 0 || (root.dragDropType === -1 && root.draggingTargetWorkspace !== -1 && root.draggingTargetWorkspace !== windowData?.workspace.id)) { // Workspace drop
                                 const targetWorkspace = root.draggingTargetWorkspace
                                 window.pressed = false
                                 window.Drag.active = false
