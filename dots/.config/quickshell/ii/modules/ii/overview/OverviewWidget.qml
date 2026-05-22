@@ -405,8 +405,9 @@ Item {
                     
 
                     DropArea { // Window drop
-                        anchors.fill:  parent 
+                        anchors.fill:  parent
                         onEntered: {
+                            if (windowData?.address === root.draggingFromWindowAddress) return;
                             parent.hovering = true
                             root.dragDropType = 1 // window
                             root.draggingTargetWindowAdress = windowData?.address
@@ -423,6 +424,7 @@ Item {
                             }
                         }
                         onExited: {
+                            if (windowData?.address === root.draggingFromWindowAddress) return;
                             parent.hovering = false
                             root.dragDropType = -1
                             if (root.draggingTargetWindowAdress == windowData?.address) root.draggingTargetWindowAdress = ""
