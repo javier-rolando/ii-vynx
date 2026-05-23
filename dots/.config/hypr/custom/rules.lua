@@ -47,6 +47,7 @@ hl.window_rule({ match = { class = "vesktop" },                    workspace = 2
 hl.window_rule({ match = { class = "waterfox" },                   workspace = 5,  fullscreen_state = "0 1" })
 hl.window_rule({ match = { class = "librewolf" },                  workspace = 11, fullscreen_state = "0 1" })
 hl.window_rule({ match = { class = "firefox" },                    fullscreen_state = "0 1" })
+hl.window_rule({ match = { class = "Opera GX" },                    fullscreen_state = "0 1" })
 hl.window_rule({ match = { class = "(elecwhat)" },                 workspace = 2 })
 hl.window_rule({ match = { class = "(eu.betterbird.Betterbird)" },  workspace = 2 })
 hl.window_rule({ match = { class = "(steam)" },                    workspace = 3 })
