@@ -14,6 +14,8 @@ if [[ -z "${UNLOCK_PASSWORD}" ]]; then
     read -s UNLOCK_PASSWORD || return
 fi
 
-# Unlock
-echo -n "${UNLOCK_PASSWORD}" | gnome-keyring-daemon --unlock
+# Kill the broken PAM-started daemon and start a fresh one with the password
+killall -q -u "$(whoami)" gnome-keyring-daemon
+sleep 0.2
+echo -n "${UNLOCK_PASSWORD}" | gnome-keyring-daemon --replace --daemonize --login
 unset UNLOCK_PASSWORD
