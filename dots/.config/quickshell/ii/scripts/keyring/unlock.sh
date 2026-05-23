@@ -15,9 +15,5 @@ if [[ -z "${UNLOCK_PASSWORD}" ]]; then
 fi
 
 # Unlock
-killall -q -u "$(whoami)" gnome-keyring-daemon
-eval $(echo -n "${UNLOCK_PASSWORD}" \
-           | gnome-keyring-daemon --daemonize --login \
-           | sed -e 's/^/export /')
+echo -n "${UNLOCK_PASSWORD}" | gnome-keyring-daemon --unlock
 unset UNLOCK_PASSWORD
-echo '' >&2
