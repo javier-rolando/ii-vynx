@@ -38,7 +38,6 @@ Scope {
     Process {
         id: unlockKeyringProc
         onExited: (exitCode, exitStatus) => {
-            GlobalStates.screenLocked = false;
             KeyringStorage.fetchKeyringData();
         }
     }
@@ -79,16 +78,12 @@ Scope {
                 return;
             }
 
-            // Unlock the keyring if configured to do so.
-            // screenLocked is set to false in unlockKeyringProc.onExited to ensure
-            // the keyring is unlocked before the lock screen is dismissed.
-            if (Config.options.lock.security.unlockKeyring) {
-                root.unlockKeyring();
-            } else {
-                // Unlock the screen before exiting, or the compositor will display a
-                // fallback lock you can't interact with.
-                GlobalStates.screenLocked = false;
-            }
+            // Unlock the keyring if configured to do so
+            if (Config.options.lock.security.unlockKeyring) root.unlockKeyring(); // Async
+
+            // Unlock the screen before exiting, or the compositor will display a
+            // fallback lock you can't interact with.
+            GlobalStates.screenLocked = false;
 
             // Reset
             lockContext.reset();
