@@ -175,71 +175,41 @@ Variants {
                 animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)
             }
 
-            // Wallpaper
-            // TransitionImage {
-            //     id: wallpaper
-            //     visible: opacity > 0 && !blurLoader.active && !bgRoot.wallpaperIsVideo
-            //     opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo) ? 1 : 0
-            //     // Range = groups that workspaces span on
-            //     property int chunkSize: Config?.options.bar.workspaces.shown ?? 10
-            //     property int lower: Math.floor(bgRoot.firstWorkspaceId / chunkSize) * chunkSize
-            //     property int upper: Math.ceil(bgRoot.lastWorkspaceId / chunkSize) * chunkSize
-            //     property int range: upper - lower
-            //     property real valueX: {
-            //         let result = 0.5;
-            //         if (Config.options.background.parallax.enableWorkspace && !bgRoot.verticalParallax) {
-            //             result = ((bgRoot.monitor.activeWorkspace?.id - lower) / range);
-            //
-            //         }
-            //         return result;
-            //     }
-            //     property real sidebarOffsetX: {
-            //         if (!Config.options.background.parallax.enableSidebar) return 0;
-            //         return (0.15 * GlobalStates.effectiveRightOpen - 0.15 * GlobalStates.effectiveLeftOpen);
-            //
-            //     }
-            //     property real valueY: {
-            //         let result = 0.5;
-            //         if (Config.options.background.parallax.enableWorkspace && bgRoot.verticalParallax) {
-            //             result = ((bgRoot.monitor.activeWorkspace?.id - lower) / range);
-            //         }
-            //         return result;
-            //     }
-            //     property real effectiveValueX: Math.max(0, Math.min(1, valueX)) + sidebarOffsetX
-            //     property real effectiveValueY: Math.max(0, Math.min(1, valueY))
-            //     x: -(bgRoot.movableXSpace) - (effectiveValueX - 0.5) * 2 * bgRoot.movableXSpace
-            //     y: -(bgRoot.movableYSpace) - (effectiveValueY - 0.5) * 2 * bgRoot.movableYSpace
-            //
-            //     imageSource: bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
-            //     animated: Config.options.background.animateWallpaperChanges
-            //     fillMode: Image.PreserveAspectCrop
-            //     Behavior on x {
-            //         NumberAnimation {
-            //             duration: 600
-            //             easing.type: Easing.OutCubic
-            //         }
-            //     }
-            //     Behavior on y {
-            //         NumberAnimation {
-            //             duration: 600
-            //             easing.type: Easing.OutCubic
-            //         }
-            //     }
-            //     Behavior on width {
-            //         NumberAnimation {
-            //             duration: 800
-            //             easing.type: Easing.OutCubic
-            //         }
-            //     }
-            //     Behavior on height {
-            //         NumberAnimation {
-            //             duration: 800
-            //             easing.type: Easing.OutCubic
-            //         }
-            //     }
-            //     width: bgRoot.wallpaperWidth / bgRoot.wallpaperToScreenRatio * bgRoot.effectiveWallpaperScale
-            //     height: bgRoot.wallpaperHeight / bgRoot.wallpaperToScreenRatio * bgRoot.effectiveWallpaperScale
-            // }
+            // Wallpaper blur source — invisible since the external daemon renders the wallpaper.
+            // layer.enabled forces rendering into an FBO so GaussianBlur can use it as source.
+            Image {
+                id: wallpaper
+                visible: false
+                layer.enabled: Config.options.lock.blur.enable
+                source: bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
+                fillMode: Image.PreserveAspectCrop
+                anchors.fill: parent
+
+                property int chunkSize: Config?.options.bar.workspaces.shown ?? 10
+                property int lower: Math.floor(bgRoot.firstWorkspaceId / chunkSize) * chunkSize
+                property int upper: Math.ceil(bgRoot.lastWorkspaceId / chunkSize) * chunkSize
+                property int range: upper - lower
+                property real valueX: {
+                    let result = 0.5;
+                    if (Config.options.background.parallax.enableWorkspace && !bgRoot.verticalParallax) {
+                        result = ((bgRoot.monitor.activeWorkspace?.id - lower) / range);
+                    }
+                    return result;
+                }
+                property real sidebarOffsetX: {
+                    if (!Config.options.background.parallax.enableSidebar) return 0;
+                    return (0.15 * GlobalStates.effectiveRightOpen - 0.15 * GlobalStates.effectiveLeftOpen);
+                }
+                property real valueY: {
+                    let result = 0.5;
+                    if (Config.options.background.parallax.enableWorkspace && bgRoot.verticalParallax) {
+                        result = ((bgRoot.monitor.activeWorkspace?.id - lower) / range);
+                    }
+                    return result;
+                }
+                property real effectiveValueX: Math.max(0, Math.min(1, valueX)) + sidebarOffsetX
+                property real effectiveValueY: Math.max(0, Math.min(1, valueY))
+            }
 
             Loader {
                 id: blurLoader
