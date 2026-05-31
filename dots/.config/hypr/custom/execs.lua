@@ -1,5 +1,5 @@
 hl.on("hyprland.start", function ()
-    hl.exec_cmd("steam -nochatui -nofriendsui -silent")
+    hl.exec_cmd("setpriv --ambient-caps -all steam -nochatui -nofriendsui -silent")
     hl.exec_cmd("solaar -w hide")
     hl.exec_cmd("kdeconnect-indicator")
     hl.exec_cmd("fcitx5")
