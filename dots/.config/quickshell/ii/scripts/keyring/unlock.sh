@@ -22,7 +22,7 @@ killall -q -u "$(whoami)" gnome-keyring-daemon
 sleep 0.5
 
 log "starting fresh daemon with --replace --daemonize --login"
-OUTPUT=$(echo -n "${UNLOCK_PASSWORD}" | gnome-keyring-daemon --replace --daemonize --login 2>&1)
+OUTPUT=$(echo -n "${UNLOCK_PASSWORD}" | /run/wrappers/bin/gnome-keyring-daemon --replace --daemonize --login 2>&1)
 EXIT_CODE=$?
 log "daemon exit code: ${EXIT_CODE}, output: ${OUTPUT}"
 unset UNLOCK_PASSWORD
