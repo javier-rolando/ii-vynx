@@ -17,6 +17,9 @@ if [[ -z "${UNLOCK_PASSWORD}" ]]; then
     read -s UNLOCK_PASSWORD || return
 fi
 
+log "which gnome-keyring-daemon: $(which gnome-keyring-daemon 2>&1)"
+log "capabilities of this shell: $(getpcaps $$ 2>&1)"
+log "wrapper exists: $(ls /run/wrappers/bin/gnome-keyring-daemon 2>&1)"
 log "killing existing gnome-keyring-daemon"
 killall -q -u "$(whoami)" gnome-keyring-daemon
 sleep 0.5
