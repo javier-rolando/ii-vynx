@@ -574,3 +574,36 @@ span[data-icon="status-filled-refreshed"] svg {
 .x1x0w6k2 {
     background-color: var(--dynamic-soft-bg) !important;
 }
+
+/* Search container background */
+.xk0lpn4 {
+    background-color: var(--dynamic-background) !important;
+}
+
+/* Search container - Clear all button background */
+.x1p8t8ri {
+    background-color: var(--primary-color) !important;
+}
+
+/* Search container - Clear all button foreground */
+.x1lljey2 {
+    color: var(--background) !important;
+}
+
+.x1ubxc9n:hover {
+	background-color: var(--dynamic-soft-bg) !important;
+}
+
+div[data-testid="reactions-details-cell-not-me"] {
+  background-color: var(--dynamic-soft-bg) !important;
+
+  &:hover {
+    background-color: var(--dynamic-softer-bg) !important;
+  }
+}
+
+/* More reactions buttons */
+.x1sftees {
+  background-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+}
