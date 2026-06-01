@@ -43,7 +43,7 @@ if status is-interactive
     alias ldo lazydocker
     # alias code 'code --use-gl=desktop --ozone-platform-hint="auto" --enable-features="WaylandWindowDecorations" --password-store="gnome-libsecret" --profile "Home"'
     #alias code 'code --ozone-platform-hint="auto" --enable-features="WaylandWindowDecorations" --password-store="gnome-libsecret" --profile "Home"'
-    alias code 'code --profile "Home"'
+    alias code 'code --password-store="gnome-libsecret" --profile "Home"'
     alias cp 'cp -i'
     alias mv 'mv -i'
     alias rm 'trash -v'
