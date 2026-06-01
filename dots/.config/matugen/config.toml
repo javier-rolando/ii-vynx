@@ -104,3 +104,7 @@ output_path = "~/.local/state/quickshell/user/generated/kitty/kitty-colors.conf"
 [templates.starship]
 input_path = "~/.config/matugen/templates/apps/starship.toml"
 output_path = "~/starship-test.toml"
+
+[templates.vscode]
+input_path = "~/.config/matugen/templates/apps/vscode.json"
+output_path = "~/.config/Code/User/settings.json"
