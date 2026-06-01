@@ -100,3 +100,7 @@ output_path = "~/.config/nvim/lua/config/matugen_colors.lua"
 [templates.kitty]
 input_path = "~/.config/matugen/templates/apps/kitty-colors.conf"
 output_path = "~/.local/state/quickshell/user/generated/kitty/kitty-colors.conf"
+
+[templates.starship]
+input_path = "~/.config/matugen/templates/apps/starship.toml"
+output_path = "~/starship-test.toml"
