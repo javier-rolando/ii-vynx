@@ -50,6 +50,13 @@ Singleton {
             "replace": "system-lock-screen"
         }
     ]
+    property var titleSubstitutions: ({})
+    property var titleRegexSubstitutions: [
+        {
+            "regex": /^RPCS3/,
+            "replace": "rpcs3"
+        }
+    ]
 
     // Deduped list to fix double icons
     readonly property list<DesktopEntry> list: Array.from(DesktopEntries.applications.values)
@@ -106,8 +113,18 @@ Singleton {
         return str.toLowerCase().replace(/_/g, "-");
     }
 
-    function guessIcon(str) {
-        if (!str || str.length == 0) return "image-missing";
+    function guessIcon(str, title = "") {
+        if (!str || str.length == 0) {
+            if (title && title.length > 0) {
+                if (titleSubstitutions[title]) return titleSubstitutions[title];
+                for (let i = 0; i < titleRegexSubstitutions.length; i++) {
+                    const sub = titleRegexSubstitutions[i];
+                    const replaced = title.replace(sub.regex, sub.replace);
+                    if (replaced !== title) return replaced;
+                }
+            }
+            return "image-missing";
+        }
 
         // Quickshell's desktop entry lookup
         const entry = DesktopEntries.byId(str);
