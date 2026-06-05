@@ -608,7 +608,12 @@ div[data-testid="reactions-details-cell-not-me"] {
   color: var(--primary-color) !important;
 }
 
-/* Message bubble tail */
+/* Message out bubble tail */
 .x1fa4crm {
     color: var(--dynamic-primary-container) !important;
+}
+
+/* Message in bubble tail */
+.x1l1cedg {
+    color: var(--dynamic-soft-bg) !important;
 }
