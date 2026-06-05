@@ -50,13 +50,19 @@ Singleton {
             "replace": "system-lock-screen"
         }
     ]
-    property var titleSubstitutions: ({})
-    property var titleRegexSubstitutions: [
-        {
-            "regex": /^RPCS3/,
-            "replace": "rpcs3"
-        }
+    // Maps window title regex → stable appId, for apps with empty class
+    property var titleAppIdSubstitutions: [
+        { "regex": /^RPCS3/, "appId": "rpcs3" }
     ]
+
+    function getAppIdFromTitle(title) {
+        if (!title) return "";
+        for (let i = 0; i < titleAppIdSubstitutions.length; i++) {
+            if (titleAppIdSubstitutions[i].regex.test(title))
+                return titleAppIdSubstitutions[i].appId;
+        }
+        return "";
+    }
 
     // Deduped list to fix double icons
     readonly property list<DesktopEntry> list: Array.from(DesktopEntries.applications.values)
@@ -116,12 +122,8 @@ Singleton {
     function guessIcon(str, title = "") {
         if (!str || str.length == 0) {
             if (title && title.length > 0) {
-                if (titleSubstitutions[title]) return titleSubstitutions[title];
-                for (let i = 0; i < titleRegexSubstitutions.length; i++) {
-                    const sub = titleRegexSubstitutions[i];
-                    const replaced = title.replace(sub.regex, sub.replace);
-                    if (replaced !== title) return replaced;
-                }
+                const syntheticId = getAppIdFromTitle(title);
+                if (syntheticId) return guessIcon(syntheticId);
             }
             return "image-missing";
         }
