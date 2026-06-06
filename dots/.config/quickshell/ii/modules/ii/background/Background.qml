@@ -178,7 +178,7 @@ Variants {
             // Wallpaper
             TransitionImage {
                 id: wallpaper
-                visible: false
+                visible: transitionActive
                 layer.enabled: Config.options.lock.blur.enable
                 opacity: bgRoot.wallpaperIsVideo ? 0 : 1
                 // Range = groups that workspaces span on
