@@ -148,14 +148,14 @@ Variants {
 
         property bool mediaModeOpen: mediaModeLoader.active && MprisController.activePlayer
         onMediaModeOpenChanged: {
-            if (!mediaModeOpen) {
+            if (!mediaModeOpen && Config.options.appearance.palette.type.startsWith("scheme")) {
                 Wallpapers.apply(Config.options.background.wallpaperPath)
                 LyricsService.shellColorChanged = false
             }
         }
 
         Component.onCompleted: {
-            if (!mediaModeOpen) {
+            if (!mediaModeOpen && Config.options.appearance.palette.type.startsWith("scheme")) {
                 Wallpapers.apply(Config.options.background.wallpaperPath)
             }
         }
@@ -175,16 +175,13 @@ Variants {
                 animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)
             }
 
-            // Wallpaper blur source — invisible since the external daemon renders the wallpaper.
-            // layer.enabled forces rendering into an FBO so GaussianBlur can use it as source.
-            Image {
+            // Wallpaper
+            TransitionImage {
                 id: wallpaper
-                visible: false
+                visible: !blurLoader.active
                 layer.enabled: Config.options.lock.blur.enable
-                source: bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
-                fillMode: Image.PreserveAspectCrop
-                anchors.fill: parent
-
+                opacity: bgRoot.wallpaperIsVideo ? 0 : 1
+                // Range = groups that workspaces span on
                 property int chunkSize: Config?.options.bar.workspaces.shown ?? 10
                 property int lower: Math.floor(bgRoot.firstWorkspaceId / chunkSize) * chunkSize
                 property int upper: Math.ceil(bgRoot.lastWorkspaceId / chunkSize) * chunkSize
@@ -193,12 +190,14 @@ Variants {
                     let result = 0.5;
                     if (Config.options.background.parallax.enableWorkspace && !bgRoot.verticalParallax) {
                         result = ((bgRoot.monitor.activeWorkspace?.id - lower) / range);
+
                     }
                     return result;
                 }
                 property real sidebarOffsetX: {
                     if (!Config.options.background.parallax.enableSidebar) return 0;
                     return (0.15 * GlobalStates.effectiveRightOpen - 0.15 * GlobalStates.effectiveLeftOpen);
+
                 }
                 property real valueY: {
                     let result = 0.5;
@@ -209,6 +208,38 @@ Variants {
                 }
                 property real effectiveValueX: Math.max(0, Math.min(1, valueX)) + sidebarOffsetX
                 property real effectiveValueY: Math.max(0, Math.min(1, valueY))
+                x: -(bgRoot.movableXSpace) - (effectiveValueX - 0.5) * 2 * bgRoot.movableXSpace
+                y: -(bgRoot.movableYSpace) - (effectiveValueY - 0.5) * 2 * bgRoot.movableYSpace
+
+                imageSource: bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
+                animated: !bgRoot.wallpaperIsVideo
+                fillMode: Image.PreserveAspectCrop
+                Behavior on x {
+                    NumberAnimation {
+                        duration: 600
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on y {
+                    NumberAnimation {
+                        duration: 600
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 800
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on height {
+                    NumberAnimation {
+                        duration: 800
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                width: bgRoot.wallpaperWidth / bgRoot.wallpaperToScreenRatio * bgRoot.effectiveWallpaperScale
+                height: bgRoot.wallpaperHeight / bgRoot.wallpaperToScreenRatio * bgRoot.effectiveWallpaperScale
             }
 
             Loader {
