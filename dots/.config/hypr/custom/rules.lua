@@ -37,7 +37,7 @@ hl.workspace_rule({ workspace = "special:btop",        ["on_created_empty"] = 'k
 hl.workspace_rule({ workspace = "special:spotify-term",["on_created_empty"] = 'kitty --class "kitty-spotify" -e spotify_player' })
 hl.workspace_rule({ workspace = "special:english",     ["on_created_empty"] = 'kitty --class "kitty-english" -e fish -c "nvim /home/javier/Documents/ingles.txt"' })
 hl.workspace_rule({ workspace = "special:translate",   ["on_created_empty"] = 'chromium --app="https://translate.google.com/?sl=en&tl=es&op=translate"' })
-hl.workspace_rule({ workspace = "special:spotify",     ["on_created_empty"] = 'spotify --enable-features=UseOzonePlatform --ozone-platform=wayland' })
+hl.workspace_rule({ workspace = "special:spotify",     ["on_created_empty"] = 'spotify' })
 hl.workspace_rule({ workspace = "special:yt-music",    ["on_created_empty"] = 'youtube-music --enable-features=UseOzonePlatform --ozone-platform=wayland' })
 
 -- Workspace assignments

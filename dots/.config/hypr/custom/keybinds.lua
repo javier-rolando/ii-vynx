@@ -116,7 +116,7 @@ hl.bind("SUPER + D",         hl.dsp.exec_cmd("vesktop --enable-features=UseOzone
 hl.bind("SUPER + ALT + S",   hl.dsp.exec_cmd('chromium --app="https://chat.openai.com"'))
 hl.bind("SUPER + S",         hl.dsp.exec_cmd('chromium --app="https://gemini.google.com/app"'))
 hl.bind("SUPER + T",         hl.dsp.exec_cmd('chromium --app="https://translate.google.com/?sl=en&tl=es&op=translate"'))
-hl.bind("SUPER + ALT + M",   hl.dsp.exec_cmd("spotify --enable-features=UseOzonePlatform --ozone-platform=wayland"))
+hl.bind("SUPER + ALT + M",   hl.dsp.exec_cmd("spotify"))
 hl.bind("SUPER + E",         hl.dsp.exec_cmd('kitty --class "kitty-yazi" -e fish -c "yazi"'))
 hl.bind("SUPER + SHIFT + U", hl.dsp.exec_cmd('kitty --class "kitty-update" -e fish -c "upd"'))
 
