@@ -26,6 +26,14 @@ Item { // Player instance
     property int visualizerSmoothing: 2 // Number of points to average for smoothing
     property real radius
 
+    // Compact mode properties for embedding in widgets/quick toggles
+    property bool compactMode: false
+    property real elevationMargin: compactMode ? 0 : Appearance.sizes.elevationMargin
+    property real contentMargins: compactMode ? 8 : 13
+    property bool showPinButton: !compactMode
+    property real playPauseButtonSize: compactMode ? 32 : 44
+    property real trackChangeButtonSize: compactMode ? 18 : 24
+
     property string displayedArtFilePath: root.downloaded ? Qt.resolvedUrl(artFilePath) : ""
 
     component TrackChangeButton: RippleButton {
@@ -104,7 +112,7 @@ Item { // Player instance
     Rectangle { // Background
         id: background
         anchors.fill: parent
-        anchors.margins: Appearance.sizes.elevationMargin
+        anchors.margins: root.elevationMargin
         color: ColorUtils.applyAlpha(blendedColors.colLayer0, 1)
         radius: root.radius
 
@@ -150,14 +158,14 @@ Item { // Player instance
 
         RowLayout {
             anchors.fill: parent
-            anchors.margins: 13
-            spacing: 15
+            anchors.margins: root.contentMargins
+            spacing: root.compactMode ? 10 : 15
 
             Rectangle { // Art background
                 id: artBackground
-                Layout.fillHeight: true
-                implicitWidth: height
-                radius: Appearance.rounding.verysmall
+                Layout.preferredHeight: background.height - root.contentMargins * 2
+                Layout.preferredWidth: Layout.preferredHeight
+                radius: Appearance.rounding.normal
                 color: ColorUtils.transparentize(blendedColors.colLayer1, 0.5)
 
                 layer.enabled: true
@@ -185,13 +193,13 @@ Item { // Player instance
             }
 
             ColumnLayout { // Info & controls
-                Layout.fillHeight: true
-                spacing: 2
+                Layout.preferredHeight: background.height - root.contentMargins * 2
+                spacing: root.compactMode ? 1 : 2
 
                 StyledText {
                     id: trackTitle
                     Layout.fillWidth: true
-                    font.pixelSize: Appearance.font.pixelSize.large
+                    font.pixelSize: root.compactMode ? Appearance.font.pixelSize.small : Appearance.font.pixelSize.large
                     color: blendedColors.colOnLayer0
                     elide: Text.ElideRight
                     text: StringUtils.cleanMusicTitle(root.player?.trackTitle) || "Untitled"
@@ -202,7 +210,7 @@ Item { // Player instance
                 StyledText {
                     id: trackArtist
                     Layout.fillWidth: true
-                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    font.pixelSize: root.compactMode ? Appearance.font.pixelSize.smallest : Appearance.font.pixelSize.smaller
                     color: blendedColors.colSubtext
                     elide: Text.ElideRight
                     text: root.player?.trackArtist
@@ -213,14 +221,14 @@ Item { // Player instance
                 Item { Layout.fillHeight: true }
                 Item {
                     Layout.fillWidth: true
-                    implicitHeight: trackTime.implicitHeight + sliderRow.implicitHeight
+                    implicitHeight: Math.max(playPauseButton.height, trackTime.implicitHeight) + (root.compactMode ? 1 : 5) + sliderRow.implicitHeight
 
                     StyledText {
                         id: trackTime
                         anchors.bottom: sliderRow.top
-                        anchors.bottomMargin: 5
+                        anchors.bottomMargin: root.compactMode ? 1 : 5
                         anchors.left: parent.left
-                        font.pixelSize: Appearance.font.pixelSize.small
+                        font.pixelSize: root.compactMode ? Appearance.font.pixelSize.smallest : Appearance.font.pixelSize.small
                         color: blendedColors.colSubtext
                         elide: Text.ElideRight
                         text: `${StringUtils.friendlyTimeForSeconds(root.player?.position)} / ${StringUtils.friendlyTimeForSeconds(root.player?.length)}`
@@ -234,6 +242,7 @@ Item { // Player instance
                         }
                         TrackChangeButton {
                             iconName: "skip_previous"
+                            buttonSize: root.trackChangeButtonSize
                             downAction: () => root.player?.previous()
                         }
                         Item {
@@ -277,10 +286,12 @@ Item { // Player instance
                         }
                         TrackChangeButton {
                             iconName: "skip_next"
+                            buttonSize: root.trackChangeButtonSize
                             downAction: () => root.player?.next()
                         }
 
                         TrackChangeButton {
+                            visible: root.showPinButton
                             iconName: "keep"
                             buttonSize: 18
                             fill: MprisController.activePlayer == root.player
@@ -294,8 +305,8 @@ Item { // Player instance
                         id: playPauseButton
                         anchors.right: parent.right
                         anchors.bottom: sliderRow.top
-                        anchors.bottomMargin: 5
-                        property real size: 44
+                        anchors.bottomMargin: root.compactMode ? 1 : 5
+                        property real size: root.playPauseButtonSize
                         implicitWidth: size
                         implicitHeight: size
                         downAction: () => root.player.togglePlaying();

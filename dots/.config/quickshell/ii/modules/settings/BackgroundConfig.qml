@@ -58,80 +58,58 @@ ContentPage {
             }
         }
         ConfigSwitch {
-            buttonIcon: "masked_transitions"
+            buttonIcon: "blur_on"
             text: Translation.tr("Animate wallpaper changes")
             checked: Config.options.background.animateWallpaperChanges
             onCheckedChanged: {
                 Config.options.background.animateWallpaperChanges = checked;
             }
         }
-        
+        ConfigSwitch {
+            buttonIcon: "zoom_in_map"
+            text: Translation.tr("Zoom animation when overview/cheatsheet is open")
+            checked: Config.options.background.zoomOutEnabled
+            onCheckedChanged: {
+                Config.options.background.zoomOutEnabled = checked;
+            }
+        }
         ContentSubsection {
-            visible: Config.options.background.animateWallpaperChanges
-            title: Translation.tr("Wallpaper transition style")
-            
-            StyledComboBox {
-                Layout.fillWidth: true
-                buttonIcon: "masked_transitions"
-                textRole: "displayName"
-                model: [
+            visible: Config.options.background.zoomOutEnabled
+            title: Translation.tr("Zoom background style")
+            ConfigSelectionArray {
+                currentValue: Config.options.background.zoomOutStyle
+                onSelected: newValue => {
+                    Config.options.background.zoomOutStyle = newValue;
+                }
+                options: [
                     {
-                        displayName: Translation.tr("Radial Wipe"),
-                        icon: "circle",
-                        value: "radial"
-                    },
-                    {
-                        displayName: Translation.tr("Crossfade"),
+                        displayName: Translation.tr("Gnome Like"),
                         icon: "blur_on",
-                        value: "crossfade"
+                        value: 0
                     },
                     {
-                        displayName: Translation.tr("Linear Wipe"),
-                        icon: "swap_horiz",
-                        value: "wipe"
+                        displayName: Translation.tr("Default"),
+                        icon: "grid_view",
+                        value: 1
                     },
                     {
-                        displayName: Translation.tr("Diamond Wipe"),
-                        icon: "diamond",
-                        value: "diamond"
-                    },
-                    {
-                        displayName: Translation.tr("Slash Wipe"),
-                        icon: "timeline",
-                        value: "slash"
-                    },
-                    {
-                        displayName: Translation.tr("Outer Wipe"),
-                        icon: "radio_button_unchecked",
-                        value: "outer"
-                    },
-                    {
-                        displayName: Translation.tr("Wave Wipe"),
-                        icon: "water",
-                        value: "wave"
+                        displayName: Translation.tr("Zoom In"),
+                        icon: "zoom_in",
+                        value: 2
                     }
                 ]
-                currentIndex: {
-                    const index = model.findIndex(item => item.value === Config.options.background.transitionType);
-                    return index !== -1 ? index : 0;
-                }
-                onActivated: index => {
-                    Config.options.background.transitionType = model[index].value;
-                }
             }
-
-            ConfigSpinBox {
-                visible: Config.options.background.transitionType === "wipe" || Config.options.background.transitionType === "wave"
-                Layout.fillWidth: true
-                icon: "rotate_right"
-                text: Translation.tr("Wipe Angle (0° starts from left side)")
-                value: Config.options.background.wipeAngle
-                from: 0
-                to: 359
-                stepSize: 1
-                onValueChanged: {
-                    Config.options.background.wipeAngle = value;
-                }
+        }
+        ConfigSwitch {
+            visible: Config.options.background.zoomOutEnabled && Config.options.background.zoomOutStyle === 0
+            buttonIcon: "open_with"
+            text: Translation.tr("Experimental - Scale windows with wallpaper (GNOME-like)")
+            checked: Config.options.background.windowZoomOnOverview
+            onCheckedChanged: {
+                Config.options.background.windowZoomOnOverview = checked;
+            }
+            StyledToolTip {
+                text: Translation.tr("Shows scaled ScreencopyView of windows zooming out with the wallpaper when the overview opens.\nWindows on the active workspace follow the wallpaper zoom animation.\nWorkspace switching slides the window previews alongside the workspace animation.")
             }
         }
     }
@@ -372,6 +350,11 @@ ContentPage {
                             displayName: Translation.tr("Cookie"),
                             icon: "cookie",
                             value: "cookie"
+                        },
+                        {
+                            displayName: Translation.tr("Nagasaki"),
+                            icon: "grid_view",
+                            value: "nagasaki"
                         }
                     ]
                 }
@@ -395,6 +378,11 @@ ContentPage {
                             displayName: Translation.tr("Cookie"),
                             icon: "cookie",
                             value: "cookie"
+                        },
+                        {
+                            displayName: Translation.tr("Nagasaki"),
+                            icon: "grid_view",
+                            value: "nagasaki"
                         }
                     ]
                 }
@@ -997,8 +985,9 @@ ContentPage {
                     Config.options.background.widgets.media.enable = checked;
                 }
             }
-            
+
             RippleButtonWithShape {
+                visible: Config.options.background.widgets.media.style === "circular"
                 shapeString: Config.options.background.widgets.media.backgroundShape
                 implicitWidth: 60
                 extraIcon: "edit"
@@ -1041,11 +1030,38 @@ ContentPage {
             }
         }
 
+        ConfigRow {
+            Layout.fillWidth: true
+
+            ContentSubsection {
+                title: Translation.tr("Style")
+                Layout.fillWidth: true
+                ConfigSelectionArray {
+                    currentValue: Config.options.background.widgets.media.style
+                    onSelected: newValue => {
+                        Config.options.background.widgets.media.style = newValue;
+                    }
+                    options: [
+                        {
+                            displayName: Translation.tr("Circular"),
+                            icon: "progress_activity",
+                            value: "circular"
+                        },
+                        {
+                            displayName: Translation.tr("Expressive"),
+                            icon: "art_track",
+                            value: "expressive"
+                        }
+                    ]
+                }
+            }
+        }
+
 
         Loader { 
             id: mediaBackgroundShapeLoader
             active: false
-            visible: active
+            visible: active && Config.options.background.widgets.media.style === "circular"
             Layout.fillWidth: true
             sourceComponent: ContentSubsection {
                 title: Translation.tr("Background shape")
@@ -1072,6 +1088,7 @@ ContentPage {
         }
 
         ConfigRow {
+            visible: Config.options.background.widgets.media.style === "circular"
             uniform: true
             ConfigSwitch {
                 buttonIcon: "opacity"
@@ -1092,6 +1109,7 @@ ContentPage {
         }
 
         ConfigRow {
+            visible: Config.options.background.widgets.media.style === "circular"
             uniform: true
             ConfigSwitch {
                 buttonIcon: "block"

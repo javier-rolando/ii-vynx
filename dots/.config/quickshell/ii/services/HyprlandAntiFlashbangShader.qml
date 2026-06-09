@@ -13,14 +13,14 @@ Singleton {
     property bool enabled: confOpt.value == shaderPath
 
     function enable() {
-        HyprlandSettings.setKeys({
+        HyprlandConfig.setMany({
             "decoration:screen_shader": root.shaderPath,
             "debug:damage_tracking": 1, // Turn off dmg tracking to prevent weird flashes. 1 = monitor only
         });
     }
 
     function disable() {
-        HyprlandSettings.resetKeys([
+        HyprlandConfig.resetMany([
             "decoration:screen_shader",
             "debug:damage_tracking"
         ]);

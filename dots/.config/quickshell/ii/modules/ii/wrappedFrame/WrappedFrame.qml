@@ -8,6 +8,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import qs.modules.ii.bar as Bar
 
 Item {
     id: wrappedFrame
@@ -16,80 +17,13 @@ Item {
     property bool barVertical: Config.options.bar.vertical
     property bool barBottom: Config.options.bar.bottom
 
-    component HorizontalFrame: PanelWindow {
-        id: cornerPanelWindow
-        property bool showBackground: true
-
-        color: showBackground ? Appearance.colors.colLayer0 : "transparent"
-        implicitWidth: frameThickness;implicitHeight: frameThickness
-
-        Behavior on color {
-            animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-        }
-
-        anchors {
-            left: true
-            right: true
-        }
+    Bar.BarThemes {
+        id: barThemes
     }
-
-    component VerticalFrame: PanelWindow {
-        id: cornerPanelWindow
-        property bool showBackground: true
-
-        color: showBackground ? Appearance.colors.colLayer0 : "transparent"
-        implicitWidth: frameThickness;implicitHeight: frameThickness
-
-        Behavior on color {
-            animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-        }
-
-        anchors {
-            bottom: true
-            top: true
-        }
-    }
-
-    component ScreenCorner: PanelWindow {
-        id: screenCornerWindow
-        property bool left
-        property bool bottom
-        property bool showBackground: true
-        screen: monitorScope.modelData
-        anchors {
-            bottom: bottom
-            top: !bottom
-            left: left
-            right: !left
-        }
-        implicitHeight: Appearance.rounding.screenRounding
-        implicitWidth: Appearance.rounding.screenRounding
-        color: "transparent"
-            
-        RoundCorner {
-            id: leftCorner
-            anchors {
-                top: !bottom ? parent.top : undefined
-                bottom: bottom ? parent.bottom : undefined
-                left: left ? parent.left : undefined
-                right: !left ? parent.right : undefined
-            }
-
-            implicitSize: Appearance.rounding.screenRounding
-            color: showBackground ? Appearance.colors.colLayer0 : "transparent"
-
-            Behavior on color {
-                animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-            }
-
-            corner: screenCornerWindow.left ? 
-                (screenCornerWindow.bottom ? RoundCorner.CornerEnum.BottomLeft : RoundCorner.CornerEnum.TopLeft) :
-                (screenCornerWindow.bottom ? RoundCorner.CornerEnum.BottomRight : RoundCorner.CornerEnum.TopRight)
-        }
-    }
+    property var activeTheme: barThemes.getTheme(Config.options.bar.expressiveColorTheme)
 
     Loader {
-        active: Config.options.appearance.fakeScreenRounding == 3
+        active: Config.options.appearance.fakeScreenRounding == 3 && !GlobalStates.screenLocked
         sourceComponent: Variants {
             id: wrappedFrameVariant
             property var variantModel: Quickshell.screens
@@ -103,6 +37,9 @@ Item {
                 property bool hasActiveWindows: false
                 property bool showBarBackground: monitorScope.hasActiveWindows && Config.options.bar.barBackgroundStyle === 2 || Config.options.bar.barBackgroundStyle === 1
 
+                property HyprlandMonitor monitor: Hyprland.monitorFor(modelData)
+                property list<HyprlandWorkspace> workspacesForMonitor: Hyprland.workspaces.values.filter(workspace => workspace.monitor && workspace.monitor.name == monitor.name)
+
                 Connections {
                     enabled: Config.options.bar.barBackgroundStyle === 2
                     target: HyprlandData
@@ -112,79 +49,75 @@ Item {
 
                         const hasWindow = wsId ? HyprlandData.windowList.some(w => w.workspace.id === wsId && !w.floating) : false;
 
-                        monitorScope.hasActiveWindows = hasWindow
+                        monitorScope.hasActiveWindows = hasWindow;
                     }
                 }
 
-                // SCREEN CORNERS
                 Loader {
-                    active: !(barBottom && !barVertical) && !(barVertical && !barBottom)
-                    sourceComponent: ScreenCorner {
-                        left: true
-                        bottom: true
-                        showBackground: monitorScope.showBarBackground
+                    active: !(!barVertical && !barBottom) // topFrame is visible
+                    sourceComponent: FrameSpaceReserver {
+                        screen: monitorScope.modelData
+                        anchors {
+                            top: true
+                            left: true
+                            right: true
+                        }
+                        implicitHeight: frameThickness
+                        exclusiveZone: frameThickness
                     }
                 }
                 Loader {
-                    active: barBottom
-                    sourceComponent: ScreenCorner {
-                        left: true
-                        bottom: false
-                        showBackground: showBarBackground
+                    active: !(!barVertical && barBottom) // bottomFrame is visible
+                    sourceComponent: FrameSpaceReserver {
+                        screen: monitorScope.modelData
+                        anchors {
+                            bottom: true
+                            left: true
+                            right: true
+                        }
+                        implicitHeight: frameThickness
+                        exclusiveZone: frameThickness
                     }
                 }
                 Loader {
-                    active: !(!barBottom && !barVertical) && !(barVertical && barBottom)
-                    sourceComponent: ScreenCorner {
-                        left: false
-                        bottom: false
-                        showBackground: monitorScope.showBarBackground
+                    active: !(barVertical && !barBottom) // leftFrame is visible
+                    sourceComponent: FrameSpaceReserver {
+                        screen: monitorScope.modelData
+                        anchors {
+                            left: true
+                            top: true
+                            bottom: true
+                        }
+                        implicitWidth: frameThickness
+                        exclusiveZone: frameThickness
                     }
                 }
                 Loader {
-                    active:  !barBottom
-                    sourceComponent: ScreenCorner {
-                        left: false
-                        bottom: true
-                        showBackground: showBarBackground
+                    active: !(barVertical && barBottom) // rightFrame is visible
+                    sourceComponent: FrameSpaceReserver {
+                        screen: monitorScope.modelData
+                        anchors {
+                            right: true
+                            top: true
+                            bottom: true
+                        }
+                        implicitWidth: frameThickness
+                        exclusiveZone: frameThickness
                     }
                 }
 
-                // FRAMES
-
-                Loader {
-                    active: !(!barVertical && barBottom)
-                    sourceComponent: HorizontalFrame {
-                        screen: monitorScope.modelData
-                        anchors.bottom: true
-                        showBackground: monitorScope.showBarBackground
-                    }
-                }
-                Loader {
-                    active: !(!barVertical && !barBottom)
-                    sourceComponent: HorizontalFrame {
-                        screen: monitorScope.modelData
-                        anchors.top: true
-                        showBackground: showBarBackground
-                    }
-                }
-                Loader {
-                    active: !(barVertical && barBottom)
-                    sourceComponent: VerticalFrame {
-                        screen: monitorScope.modelData
-                        anchors.right: true
-                        showBackground: showBarBackground
-                    }
-                }
-                Loader {
-                    active: !(barVertical && !barBottom)
-                    sourceComponent: VerticalFrame {
-                        screen: monitorScope.modelData
-                        anchors.left: true
-                        showBackground: showBarBackground
-                    }
-                }
+                // VISUAL FRAME MOVED TO BAR AND VERTICALBAR TO FIX BLUR CLAMPING AND TRANSPARENCY
+                // See Bar.qml and VerticalBar.qml
             }
         }
+    }
+
+    // INVISIBLE SPACE RESERVERS: Push windows by frameThickness
+    // Hyprland overrides exclusive zones for fullscreen windows automatically,
+    // so no visibility toggling is needed here.
+    component FrameSpaceReserver: PanelWindow {
+        color: "transparent"
+        mask: Region {}
+        exclusionMode: ExclusionMode.Normal
     }
 }

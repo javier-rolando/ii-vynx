@@ -12,21 +12,81 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
 
-Item { // Wrapper
+Item {
+    signal requestToggleActions()
     id: root
 
     readonly property string xdgConfigHome: Directories.config
     readonly property int typingDebounceInterval: 200
-    readonly property int typingResultLimit: 15 // Should be enough to cover the whole view
+    readonly property int typingResultLimit: {
+        const query = LauncherSearch.query;
+        if (!query) return 15;
+        const isPrefixed = query.startsWith(Config.options.search.prefix.app) ||
+                           query.startsWith(Config.options.search.prefix.fileBrowser) ||
+                           query.startsWith(Config.options.search.prefix.emojis) ||
+                           query.startsWith(Config.options.search.prefix.windowSearch) ||
+                           query.startsWith(Config.options.search.prefix.fileSearch);
+        return isPrefixed ? 500 : 15;
+    }
+    readonly property bool isSearching: false
+    readonly property bool showSkeletons: false
 
-    readonly property bool sharpMode: Config.options.appearance.sharpMode
     property string searchingText: LauncherSearch.query
-    property bool showResults: searchingText != ""
-    implicitWidth: searchWidgetContent.implicitWidth + Appearance.sizes.elevationMargin * 2
-    implicitHeight: searchWidgetContent.implicitHeight + searchBar.verticalPadding * 2 + Appearance.sizes.elevationMargin * 2
+    readonly property bool isClipboardMode: root.searchingText.startsWith(Config.options.search.prefix.clipboard)
+    readonly property bool isBluetoothMode: root.searchingText.startsWith(Config.options.search.prefix.bluetooth)
+    readonly property bool isTranslatorMode: root.searchingText.startsWith(Config.options.search.prefix.translator)
+    readonly property bool isAnySpecialMode: root.isClipboardMode || root.isBluetoothMode || root.isTranslatorMode
+    readonly property bool alwaysListAppsMode: Config.options.search.alwaysListApps && !root.isAnySpecialMode
+    property bool showResults: searchingText != "" || isAnySpecialMode || alwaysListAppsMode || (searchingText === "" && LauncherSearch.results.length > 0)
+    property string overviewPosition: Config.options.overview?.position ?? ""
+    property bool isNowPlayingFocused: false
+
+    Connections {
+        target: GlobalStates
+        function onOverviewOpenChanged() {
+            if (GlobalStates.overviewOpen) {
+                if (root.alwaysListAppsMode) {
+                    Qt.callLater(() => {
+                        resultModel.values = root.processResults(LauncherSearch.results);
+                        root.focusFirstItem();
+                    });
+                }
+            } else {
+                root.isNowPlayingFocused = false;
+            }
+        }
+    }
+
+    Connections {
+        target: LauncherSearch
+        function onRequestOpenSettings() {
+            GlobalStates.overviewOpen = false;
+            Qt.callLater(() => {
+                GlobalStates.policiesPanelOpen = true;
+            });
+        }
+    }
+    implicitWidth: {
+        if (root.isBluetoothMode) return (Config.options.search.clipboard.panelWidth ?? 860) + Appearance.sizes.elevationMargin * 2;
+        if (root.isClipboardMode) return (Config.options.search.clipboard.panelWidth ?? 860) + Appearance.sizes.elevationMargin * 2;
+        if (root.isTranslatorMode) return (Config.options.search.clipboard.panelWidth ?? 860) + Appearance.sizes.elevationMargin * 2;
+        return searchWidgetContent.implicitWidth + Appearance.sizes.elevationMargin * 2;
+    }
+    implicitHeight: {
+        if (root.isBluetoothMode) return (bluetoothPanelLoader.item ? bluetoothPanelLoader.item.implicitHeight : 520) + Appearance.sizes.elevationMargin * 2;
+        if (root.isClipboardMode) return (clipboardPanelLoader.item ? clipboardPanelLoader.item.implicitHeight : 560) + searchBar.verticalPadding * 2 + Appearance.sizes.elevationMargin * 2;
+        if (root.isTranslatorMode) return (translatorPanelLoader.item ? translatorPanelLoader.item.implicitHeight : 520) + searchBar.verticalPadding * 2 + Appearance.sizes.elevationMargin * 2;
+        return searchWidgetContent.implicitHeight + searchBar.verticalPadding * 2 + Appearance.sizes.elevationMargin * 2;
+    }
 
     function focusFirstItem() {
-        appResults.currentIndex = 0;
+        if (root.isBluetoothMode) {
+        } else if (root.isClipboardMode) {
+        } else if (root.isTranslatorMode) {
+            if (translatorPanelLoader.item) translatorPanelLoader.item.focusInput();
+        } else {
+            appResults.currentIndex = 0;
+        }
     }
 
     function focusSearchInput() {
@@ -48,7 +108,52 @@ Item { // Wrapper
         LauncherSearch.query = text;
     }
 
+    function areResultsDifferent(newResults, currentValues) {
+        if (!newResults || !currentValues) return true;
+        const newLen = newResults.length;
+        const curLen = currentValues.length;
+        if (newLen !== curLen) return true;
+        for (let i = 0; i < newLen; i++) {
+            if (!newResults[i] || !currentValues[i]) return true;
+            if (newResults[i].key !== currentValues[i].key) return true;
+            if (newResults[i].name !== currentValues[i].name) return true;
+        }
+        return false;
+    }
+
+    function processResults(results) {
+        const q = LauncherSearch.query.trim().toLowerCase();
+        let list = Array.from(results);
+
+        if (Config.options.search.alwaysListApps || q !== "") {
+            list = list.filter(item => item && item.key !== "mpris:now-playing");
+        }
+
+        return list.slice(0, root.typingResultLimit);
+    }
+
     Keys.onPressed: event => {
+        if (event.key === Qt.Key_Left) {
+            if (nowPlayingFloatingBubble.bubbleActive) {
+                if (searchBar.searchInput.activeFocus && searchBar.searchInput.cursorPosition > 0) {
+                    // Let cursor move left in input
+                    return;
+                }
+                root.isNowPlayingFocused = true;
+                nowPlayingFloatingBubble.forceActiveFocus();
+                event.accepted = true;
+                return;
+            }
+        }
+
+        if (event.key === Qt.Key_K && (event.modifiers & Qt.ControlModifier)) {
+            if (appResults.visible) {
+                root.requestToggleActions();
+                event.accepted = true;
+            }
+            return;
+        }
+
         // Prevent Esc and Backspace from registering
         if (event.key === Qt.Key_Escape)
             return;
@@ -96,63 +201,60 @@ Item { // Wrapper
                 root.focusFirstItem();
             }
         }
-
-        // Ctrl+n (next item)
-        if (event.modifiers & Qt.ControlModifier && event.key === Qt.Key_N) {
-            if (appResults.currentIndex < appResults.count - 1) {
-                appResults.currentIndex++;
-                const item = appResults.itemAtIndex(appResults.currentIndex);
-                if (item && item.forceActiveFocus) {
-                    item.forceActiveFocus();
-                }
-            }
-            event.accepted = true;
-            return;
-        }
-
-        // Ctrl+p (previous item)
-        if (event.modifiers & Qt.ControlModifier && event.key === Qt.Key_P) {
-            if (appResults.currentIndex > 0) {
-                appResults.currentIndex--;
-                const item = appResults.itemAtIndex(appResults.currentIndex);
-                if (item && item.forceActiveFocus) {
-                    item.forceActiveFocus();
-                }
-            }
-            event.accepted = true;
-            return;
-        }
     }
 
     StyledRectangularShadow {
         target: searchWidgetContent
     }
-
-    Rectangle { // Background
+    Rectangle {
         id: searchWidgetContent
+        anchors.horizontalCenter: parent.horizontalCenter
         clip: true
-        implicitWidth: gridLayout.implicitWidth
-        implicitHeight: gridLayout.implicitHeight
-        radius: Config.options.appearance.sharpMode ? 0 : searchBar.height / 2 + searchBar.verticalPadding
+        implicitWidth: {
+            if (root.isBluetoothMode) return Config.options.search.clipboard.panelWidth ?? 860;
+            if (root.isClipboardMode) return Config.options.search.clipboard.panelWidth ?? 860;
+            if (root.isTranslatorMode) return Config.options.search.clipboard.panelWidth ?? 860;
+            return gridLayout.implicitWidth;
+        }
+        implicitHeight: {
+            if (root.isBluetoothMode) return bluetoothPanelLoader.item ? bluetoothPanelLoader.item.implicitHeight + searchBar.height + searchBar.verticalPadding * 2 + 10 : 520;
+            if (root.isClipboardMode) return clipboardPanelLoader.item ? clipboardPanelLoader.item.implicitHeight + searchBar.height + searchBar.verticalPadding * 2 + 10 : 560;
+            if (root.isTranslatorMode) return translatorPanelLoader.item ? translatorPanelLoader.item.implicitHeight + searchBar.height + searchBar.verticalPadding * 2 + 10 : 520;
+            return gridLayout.implicitHeight;
+        }
+        radius: searchBar.height / 2 + searchBar.verticalPadding
         color: Appearance.colors.colBackgroundSurfaceContainer
+
+        Behavior on implicitWidth {
+            id: searchWidthBehavior
+            NumberAnimation {
+                duration: 350
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
+            }
+        }
 
         Behavior on implicitHeight {
             id: searchHeightBehavior
-            enabled: GlobalStates.overviewOpen && root.showResults
-            animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
+            NumberAnimation {
+                duration: 350
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
+            }
         }
 
         GridLayout {
             id: gridLayout
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
             columns: 1
 
-            // clip: true
             layer.enabled: true
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
                     width: searchWidgetContent.width
-                    height: searchWidgetContent.width
+                    height: searchWidgetContent.height
                     radius: searchWidgetContent.radius
                 }
             }
@@ -165,89 +267,513 @@ Item { // Wrapper
                 Layout.rightMargin: 4
                 Layout.topMargin: verticalPadding
                 Layout.bottomMargin: verticalPadding
+                Layout.row: root.overviewPosition == "bottom" ? 2 : 0
+                animateWidth: true
                 Synchronizer on searchingText {
                     property alias source: root.searchingText
+                }
+
+                clipboardMode: root.isClipboardMode || root.isBluetoothMode || root.isTranslatorMode
+                clipboardWidth: 830
+                currentResultIndex: appResults.currentIndex
+                isTranslatorPanelFocused: root.isTranslatorMode && translatorPanelLoader.item && translatorPanelLoader.item.focusedControlIndex !== -1
+
+                onCtrlKPressed: {
+                    if (appResults.visible) {
+                        root.requestToggleActions();
+                    }
+                }
+
+                onNavigateUp: {
+                    if (root.isBluetoothMode) {
+                        if (bluetoothPanelLoader.item)
+                            bluetoothPanelLoader.item.navigateUp();
+                    } else if (root.isClipboardMode) {
+                        if (clipboardPanelLoader.item)
+                            clipboardPanelLoader.item.navigateUp();
+                    } else if (root.isTranslatorMode) {
+                        if (translatorPanelLoader.item)
+                            translatorPanelLoader.item.navigateUp();
+                    } else {
+                        if (appResults.count > 0 && appResults.currentIndex > 0)
+                            appResults.currentIndex--;
+                    }
+                }
+
+                onNavigateDown: {
+                    if (root.isBluetoothMode) {
+                        if (bluetoothPanelLoader.item)
+                            bluetoothPanelLoader.item.navigateDown();
+                    } else if (root.isClipboardMode) {
+                        if (clipboardPanelLoader.item)
+                            clipboardPanelLoader.item.navigateDown();
+                    } else if (root.isTranslatorMode) {
+                        if (translatorPanelLoader.item)
+                            translatorPanelLoader.item.navigateDown();
+                    } else {
+                        if (appResults.count > 0 && appResults.currentIndex < appResults.count - 1)
+                            appResults.currentIndex++;
+                    }
+                }
+
+                onNavigateLeft: {
+                    if (root.isBluetoothMode && bluetoothPanelLoader.item)
+                        bluetoothPanelLoader.item.navigateLeft();
+                    else if (root.isClipboardMode && clipboardPanelLoader.item)
+                        clipboardPanelLoader.item.navigateLeft();
+                    else if (root.isTranslatorMode && translatorPanelLoader.item)
+                        translatorPanelLoader.item.navigateLeft();
+                }
+
+                onNavigateRight: {
+                    if (root.isBluetoothMode && bluetoothPanelLoader.item)
+                        bluetoothPanelLoader.item.navigateRight();
+                    else if (root.isClipboardMode && clipboardPanelLoader.item)
+                        clipboardPanelLoader.item.navigateRight();
+                    else if (root.isTranslatorMode && translatorPanelLoader.item)
+                        translatorPanelLoader.item.navigateRight();
+                }
+
+                onActivate: {
+                    if (root.isBluetoothMode && bluetoothPanelLoader.item)
+                        bluetoothPanelLoader.item.activateSelected();
+                    else if (root.isClipboardMode && clipboardPanelLoader.item)
+                        clipboardPanelLoader.item.activateSelected();
+                    else if (root.isTranslatorMode && translatorPanelLoader.item)
+                        translatorPanelLoader.item.activateSelected();
+                }
+
+                onDeleteSelected: {
+                    if (root.isBluetoothMode && bluetoothPanelLoader.item) {
+                        bluetoothPanelLoader.item.activateSelected();
+                    } else if (root.isClipboardMode && clipboardPanelLoader.item) {
+                        clipboardPanelLoader.item.activateSelected();
+                    } else if (root.isTranslatorMode && translatorPanelLoader.item) {
+                        translatorPanelLoader.item.activateSelected();
+                    }
                 }
             }
 
             Rectangle {
-                // Separator
-                visible: root.showResults
+                visible: root.showResults || root.isAnySpecialMode
                 Layout.fillWidth: true
                 height: 1
                 color: Appearance.colors.colOutlineVariant
                 Layout.row: 1
             }
 
-            ListView { // App results
-                id: appResults
-                visible: root.showResults
+            Item {
+                visible: root.showResults && !root.isAnySpecialMode
                 Layout.fillWidth: true
-                implicitHeight: Math.min(600, appResults.contentHeight + topMargin + bottomMargin)
-                clip: true
-                topMargin: 10
-                bottomMargin: 10
-                spacing: 2
-                KeyNavigation.up: searchBar
-                highlightMoveDuration: 100
+                implicitHeight: root.showSkeletons ? searchSkeletons.implicitHeight + 20 : Math.min(600, appResults.contentHeight + appResults.topMargin + appResults.bottomMargin)
+                Layout.row: root.overviewPosition == "bottom" ? 0 : 2
 
-                onFocusChanged: {
-                    if (focus)
-                        appResults.currentIndex = 1;
-                }
-
-                Connections {
-                    target: root
-                    function onSearchingTextChanged() {
-                        if (appResults.count > 0)
-                            appResults.currentIndex = 0;
+                Behavior on implicitHeight {
+                    NumberAnimation {
+                        duration: 300
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
                     }
                 }
 
-                Timer {
-                    id: debounceTimer
-                    interval: root.typingDebounceInterval
-                    onTriggered: {
-                        resultModel.values = LauncherSearch.results ?? [];
+                ListView {
+                    id: appResults
+                    anchors.fill: parent
+                    visible: opacity > 0
+                    opacity: root.showSkeletons ? 0.0 : 1.0
+                    Behavior on opacity {
+                        NumberAnimation { duration: 180; easing.type: Easing.OutQuad }
                     }
-                }
+                    clip: true
+                    topMargin: 10
+                    bottomMargin: 10
+                    spacing: 2
+                    KeyNavigation.up: searchBar
+                    highlightMoveDuration: 100
 
-                Connections {
-                    target: LauncherSearch
-                    function onResultsChanged() {
-                        resultModel.values = LauncherSearch.results.slice(0, root.typingResultLimit);
-                        root.focusFirstItem();
-                        debounceTimer.restart();
-                    }
-                }
 
-                model: ScriptModel {
-                    id: resultModel
-                    objectProp: "key"
-                }
 
-                delegate: SearchItem {
-                    id: searchItem
-                    // The selectable item for each search result
-                    required property var modelData
-                    anchors.left: parent?.left
-                    anchors.right: parent?.right
-                    entry: modelData
-                    query: StringUtils.cleanOnePrefix(root.searchingText, [Config.options.search.prefix.action, Config.options.search.prefix.app, Config.options.search.prefix.clipboard, Config.options.search.prefix.emojis, Config.options.search.prefix.math, Config.options.search.prefix.shellCommand, Config.options.search.prefix.webSearch])
-
-                    Keys.onPressed: event => {
-                        if (event.key === Qt.Key_Tab) {
-                            if (LauncherSearch.results.length === 0)
-                                return;
-                            const tabbedText = searchItem.modelData.name;
-                            LauncherSearch.query = tabbedText;
-                            searchBar.searchInput.text = tabbedText;
-                            event.accepted = true;
-                            root.focusSearchInput();
+                    Connections {
+                        target: root
+                        function onSearchingTextChanged() {
+                            if (appResults.count > 0)
+                                appResults.currentIndex = 0;
                         }
+                    }
+
+                    Connections {
+                        target: LauncherSearch
+                        function onResultsChanged() {
+                            const newResults = LauncherSearch.results;
+                            const currentValues = resultModel.values;
+
+                            if (!root.areResultsDifferent(newResults, currentValues)) {
+                                return;
+                            }
+
+                            resultModel.values = root.processResults(newResults);
+                            root.focusFirstItem();
+                        }
+                    }
+
+                    model: ScriptModel {
+                        id: resultModel
+                        objectProp: "key"
+                        onValuesChanged: Qt.callLater(() => {
+                            if (appResults.count > 0) {
+                                appResults.currentIndex = 0;
+                            }
+                        })
+                        Component.onCompleted: {
+                            values = root.processResults(LauncherSearch.results);
+                        }
+                    }
+
+                    delegate: SearchItem {
+                        id: searchItem
+                        required property int index
+                        listIndex: index
+                        listCurrentIndex: appResults.currentIndex
+                        required property var modelData
+                        anchors.left: parent?.left
+                        anchors.right: parent?.right
+                        entry: modelData
+                        query: StringUtils.cleanOnePrefix(root.searchingText, [Config.options.search.prefix.action, Config.options.search.prefix.app, Config.options.search.prefix.clipboard, Config.options.search.prefix.emojis, Config.options.search.prefix.math, Config.options.search.prefix.shellCommand, Config.options.search.prefix.webSearch])
+
+                        Connections {
+                            target: root
+                            function onRequestToggleActions() {
+                                if (searchItem.listIndex === appResults.currentIndex) {
+                                    searchItem.actionPanelOpen = !searchItem.actionPanelOpen;
+                                    searchItem.actionSelectedIndex = 0;
+                                    if (searchItem.actionPanelOpen) {
+                                        searchItem.forceActiveFocus();
+                                    } else {
+                                        root.focusSearchInput();
+                                    }
+                                }
+                            }
+                        }
+
+                        Keys.onPressed: event => {
+                            if (event.key === Qt.Key_K && (event.modifiers & Qt.ControlModifier)) {
+                                searchItem.actionPanelOpen = !searchItem.actionPanelOpen;
+                                searchItem.actionSelectedIndex = 0;
+                                if (searchItem.actionPanelOpen) {
+                                    searchItem.forceActiveFocus();
+                                } else {
+                                    root.focusSearchInput();
+                                }
+                                event.accepted = true;
+                            } else if (event.key === Qt.Key_Tab) {
+                                if (searchItem.actionPanelOpen) return;
+                                if (LauncherSearch.results.length === 0)
+                                    return;
+                                const tabbedText = searchItem.modelData.name;
+                                LauncherSearch.query = tabbedText;
+                                searchBar.searchInput.text = tabbedText;
+                                event.accepted = true;
+                                root.focusSearchInput();
+                            }
+                        }
+                    }
+                }
+
+                ColumnLayout {
+                    id: searchSkeletons
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.leftMargin: 16
+                    anchors.rightMargin: 16
+                    anchors.topMargin: 10
+                    anchors.bottomMargin: 10
+                    spacing: 8
+                    visible: opacity > 0
+                    opacity: root.showSkeletons ? 1.0 : 0.0
+                    Behavior on opacity {
+                        NumberAnimation { duration: 180; easing.type: Easing.OutQuad }
+                    }
+
+                    Repeater {
+                        model: 4
+                        Rectangle {
+                            id: skeletonRow
+                            required property int index
+                            Layout.fillWidth: true
+                            implicitHeight: 52
+                            radius: Appearance.rounding.small
+                            color: Appearance.colors.colSurfaceContainerHigh
+                            antialiasing: true
+
+                            // Shimmer animation with wave phase shift
+                            SequentialAnimation on opacity {
+                                loops: Animation.Infinite
+                                running: searchSkeletons.visible
+                                NumberAnimation { from: 0.25; to: 0.65; duration: 600 + skeletonRow.index * 100; easing.type: Easing.InOutQuad }
+                                NumberAnimation { from: 0.65; to: 0.25; duration: 600 + skeletonRow.index * 100; easing.type: Easing.InOutQuad }
+                            }
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 12
+                                anchors.rightMargin: 12
+                                spacing: 12
+
+                                Rectangle {
+                                    implicitWidth: 32
+                                    implicitHeight: 32
+                                    radius: Appearance.rounding.full
+                                    color: Appearance.colors.colSurfaceContainerHighest
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 4
+
+                                    Rectangle {
+                                        Layout.preferredWidth: 120
+                                        implicitHeight: 12
+                                        radius: Appearance.rounding.verysmall
+                                        color: Appearance.colors.colSurfaceContainerHighest
+                                    }
+
+                                    Rectangle {
+                                        Layout.preferredWidth: 80
+                                        implicitHeight: 8
+                                        radius: Appearance.rounding.verysmall
+                                        color: Appearance.colors.colSurfaceContainerHighest
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            Loader {
+                id: clipboardPanelLoader
+                visible: root.isClipboardMode
+                active: root.isClipboardMode
+                Layout.fillWidth: true
+                source: "ClipboardPanel.qml"
+                Layout.row: root.overviewPosition == "bottom" ? 0 : 2
+
+                opacity: root.isClipboardMode ? 1.0 : 0.0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 280
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
+                    }
+                }
+
+                Binding {
+                    target: clipboardPanelLoader.item
+                    property: "searchQuery"
+                    value: StringUtils.cleanOnePrefix(root.searchingText, [Config.options.search.prefix.clipboard])
+                    when: clipboardPanelLoader.status === Loader.Ready
+                }
+            }
+
+            Loader {
+                id: bluetoothPanelLoader
+                visible: root.isBluetoothMode
+                active: root.isBluetoothMode
+                Layout.fillWidth: true
+                source: "BluetoothPanel.qml"
+                Layout.row: root.overviewPosition == "bottom" ? 0 : 2
+
+                opacity: root.isBluetoothMode ? 1.0 : 0.0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 280
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
+                    }
+                }
+
+                Binding {
+                    target: bluetoothPanelLoader.item
+                    property: "searchQuery"
+                    value: StringUtils.cleanOnePrefix(root.searchingText, [Config.options.search.prefix.bluetooth])
+                    when: bluetoothPanelLoader.status === Loader.Ready
+                }
+            }
+
+            Loader {
+                id: translatorPanelLoader
+                visible: root.isTranslatorMode
+                active: root.isTranslatorMode
+                Layout.fillWidth: true
+                source: "TranslatorPanel.qml"
+                Layout.row: root.overviewPosition == "bottom" ? 0 : 2
+
+                opacity: root.isTranslatorMode ? 1.0 : 0.0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 280
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
+                    }
+                }
+
+                Binding {
+                    target: translatorPanelLoader.item
+                    property: "searchQuery"
+                    value: StringUtils.cleanOnePrefix(root.searchingText, [Config.options.search.prefix.translator])
+                    when: translatorPanelLoader.status === Loader.Ready
+                }
+
+                Connections {
+                    target: translatorPanelLoader.item
+                    ignoreUnknownSignals: true
+                    function onRequestSetSearchQuery(query) {
+                        root.setSearchingText(Config.options.search.prefix.translator + query);
+                    }
+                    function onRequestFocusSearchInput() {
+                        root.focusSearchInput();
                     }
                 }
             }
         }
     }
+
+    // Now Playing Floating Bubble (Expressive Spinning Vinyl)
+    Rectangle {
+        id: nowPlayingFloatingBubble
+        
+        readonly property bool bubbleActive: (root.alwaysListAppsMode || root.searchingText !== "") && MprisController.activePlayer !== null
+        
+        anchors.right: searchWidgetContent.left
+        anchors.rightMargin: 12
+        y: searchWidgetContent.y + searchBar.y + (searchBar.height - height) / 2
+        
+        width: bubbleActive ? 96 : 0
+        height: 48
+        radius: 24
+        visible: width > 0
+        clip: true
+        
+        color: root.isNowPlayingFocused 
+            ? Appearance.colors.colSurfaceContainerHigh 
+            : Appearance.colors.colBackgroundSurfaceContainer
+            
+        border.width: 0
+        
+        focus: root.isNowPlayingFocused
+        activeFocusOnTab: false
+        
+        Behavior on color {
+            animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(nowPlayingFloatingBubble)
+        }
+        
+        Behavior on width {
+            NumberAnimation {
+                duration: 350
+                easing.type: Easing.OutQuint
+            }
+        }
+        
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 6
+            anchors.rightMargin: 6
+            spacing: 6
+            opacity: nowPlayingFloatingBubble.width >= 80 ? 1.0 : 0.0
+            Behavior on opacity { NumberAnimation { duration: 150 } }
+            
+            // Album art circle (Expressive Spinning Vinyl)
+            Rectangle {
+                id: artContainer
+                Layout.preferredWidth: 36
+                Layout.preferredHeight: 36
+                radius: 18
+                color: Appearance.colors.colSurfaceContainerHighest
+                
+                layer.enabled: true
+                layer.effect: OpacityMask {
+                    maskSource: Rectangle {
+                        width: artContainer.width
+                        height: artContainer.height
+                        radius: artContainer.radius
+                    }
+                }
+                
+                Image {
+                    anchors.fill: parent
+                    source: MprisController.artUrl || ""
+                    fillMode: Image.PreserveAspectCrop
+                    visible: MprisController.artUrl && MprisController.artUrl !== ""
+                    
+                    // Slow premium spinning animation when music is playing!
+                    RotationAnimator on rotation {
+                        from: 0
+                        to: 360
+                        duration: 12000
+                        loops: Animation.Infinite
+                        running: MprisController.isPlaying
+                    }
+                }
+                
+                MaterialSymbol {
+                    anchors.centerIn: parent
+                    text: "music_note"
+                    iconSize: 18
+                    color: Appearance.colors.colOnSurfaceVariant
+                    visible: !MprisController.artUrl || MprisController.artUrl === ""
+                }
+            }
+            
+            // Play/pause button inside dynamic MaterialShape
+            MaterialShape {
+                id: playPauseShape
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: 36
+                Layout.preferredHeight: 36
+                shape: root.isNowPlayingFocused ? MaterialShape.Shape.Cookie4Sided : MaterialShape.Shape.Cookie7Sided
+                color: root.isNowPlayingFocused 
+                    ? Appearance.colors.colPrimary 
+                    : Appearance.colors.colSurfaceContainerHighest
+                
+                Behavior on color {
+                    animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(playPauseShape)
+                }
+                
+                MaterialSymbol {
+                    anchors.centerIn: parent
+                    text: MprisController.isPlaying ? "pause" : "play_arrow"
+                    iconSize: 18
+                    color: root.isNowPlayingFocused 
+                        ? Appearance.colors.colOnPrimary 
+                        : Appearance.colors.colOnSurfaceVariant
+                    fill: root.isNowPlayingFocused ? 1 : 0
+                    Behavior on fill { NumberAnimation { duration: 200 } }
+                }
+            }
+        }
+        
+        PointingHandInteraction {
+            id: bubbleMouseArea
+            anchors.fill: parent
+            onClicked: {
+                root.isNowPlayingFocused = true;
+                nowPlayingFloatingBubble.forceActiveFocus();
+                MprisController.togglePlaying();
+            }
+        }
+        
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Right || event.key === Qt.Key_Escape) {
+                root.isNowPlayingFocused = false;
+                searchBar.forceFocus();
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Space || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                MprisController.togglePlaying();
+                event.accepted = true;
+            }
+        }
+    }
 }
+

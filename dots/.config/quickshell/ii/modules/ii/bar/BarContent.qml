@@ -3,7 +3,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.UPower
-import Quickshell.Hyprland
 import qs
 import qs.services
 import qs.modules.common
@@ -34,7 +33,7 @@ Item { // Bar content region
 
             const hasWindow = wsId ? HyprlandData.windowList.some(w => w.workspace.id === wsId && !w.floating) : false;
 
-            root.hasActiveWindows = hasWindow
+            root.hasActiveWindows = hasWindow;
         }
     }
 
@@ -46,18 +45,18 @@ Item { // Bar content region
     property var rightList: []
 
     onFullModelChanged: {
-        const idx = fullModel.findIndex(item => item.centered)
-        
+        const idx = fullModel.findIndex(item => item.centered);
+
         if (idx === -1) {
-            leftList = []
-            centerList = fullModel
-            rightList = []
-            return
+            leftList = [];
+            centerList = fullModel;
+            rightList = [];
+            return;
         }
 
-        leftList = fullModel.slice(0, idx)
-        centerList = [fullModel[idx]]
-        rightList = fullModel.slice(idx + 1)
+        leftList = fullModel.slice(0, idx);
+        centerList = [fullModel[idx]];
+        rightList = fullModel.slice(idx + 1);
     }
 
     // Background shadow
@@ -69,27 +68,71 @@ Item { // Bar content region
             target: barBackground
         }
     }
+    BarThemes {
+        id: barThemes
+    }
+    property var activeTheme: barThemes.getTheme(Config.options.bar.expressiveColorTheme)
+
+    Rectangle {
+        id: shadowSource
+        z: -12
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: !Config.options.bar.vertical && !Config.options.bar.bottom ? parent.top : undefined
+            bottom: !Config.options.bar.vertical && Config.options.bar.bottom ? parent.bottom : undefined
+            leftMargin: (Config.options.bar.vertical && !Config.options.bar.bottom) ? 0 : undefined
+            rightMargin: (Config.options.bar.vertical && Config.options.bar.bottom) ? 0 : undefined
+        }
+        width: Config.options.bar.vertical ? 1 : parent.width
+        height: Config.options.bar.vertical ? parent.height : 1
+        visible: Config.options.bar.barBackgroundStyle === 0
+        color: "transparent"
+    }
+
+    Rectangle {
+        z: -11
+        anchors.fill: parent
+        visible: Config.options.bar.barBackgroundStyle === 0
+        gradient: Gradient {
+            GradientStop {
+                position: Config.options.bar.bottom ? 1.0 : 0.0
+                color: Qt.rgba(0, 0, 0, 0.6)
+            }
+            GradientStop {
+                position: Config.options.bar.bottom ? 0.6 : 0.4
+                color: Qt.rgba(0, 0, 0, 0.2)
+            }
+            GradientStop {
+                position: Config.options.bar.bottom ? 0.0 : 1.0
+                color: "transparent"
+            }
+        }
+    }
+
     // Background
     Rectangle {
         id: barBackground
         z: -10 // making sure its behind everything
         anchors {
-            fill: root.isDynamicIsland ? undefined : parent
-            centerIn: root.isDynamicIsland ? parent : undefined
-            margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut) : 0 // idk why but +1 is needed
+            top: parent.top
+            bottom: parent.bottom
+            left: root.isDynamicIsland ? undefined : parent.left
+            right: root.isDynamicIsland ? undefined : parent.right
+            horizontalCenter: root.isDynamicIsland ? parent.horizontalCenter : undefined
+            margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut) : 0
         }
 
-        readonly property int islandSectionSpacing: 32
-        width: root.isDynamicIsland ? (Math.max(islandSections.implicitWidth + 24, 200)) : parent.width
-        height: parent.height
+        readonly property int islandSectionSpacing: 48 //spacing between the three modules
+        width: root.isDynamicIsland ? (Math.max(islandSections.implicitWidth + 12, 200)) : parent.width
 
-        color: root.showBarBackground ? Appearance.colors.colLayer0 : "transparent"
-        property real baseRadius: root.isDynamicIsland ? height / 2 : (Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0)
-        topLeftRadius: (!Config.options.bar.bottom && root.isDynamicIsland) ? 0 : baseRadius
-        topRightRadius: (!Config.options.bar.bottom && root.isDynamicIsland) ? 0 : baseRadius
-        bottomLeftRadius: (Config.options.bar.bottom && root.isDynamicIsland) ? 0 : baseRadius
-        bottomRightRadius: (Config.options.bar.bottom && root.isDynamicIsland) ? 0 : baseRadius
-        border.width: Config.options.bar.cornerStyle === 1 ? 1 : 0
+        color: root.showBarBackground ? (Config.options.bar.expressiveColors ? activeTheme.barBackground : Appearance.colors.colLayer0) : "transparent"
+        property real baseRadius: root.isDynamicIsland ? height / 2 : (Config.options.bar.cornerStyle === 1 || Config.options.appearance.fakeScreenRounding === 4 ? Appearance.rounding.windowRounding : 0)
+        topLeftRadius: (!Config.options.bar.bottom && (root.isDynamicIsland || Config.options.appearance.fakeScreenRounding === 4)) ? 0 : baseRadius
+        topRightRadius: (!Config.options.bar.bottom && (root.isDynamicIsland || Config.options.appearance.fakeScreenRounding === 4)) ? 0 : baseRadius
+        bottomLeftRadius: (Config.options.bar.bottom && (root.isDynamicIsland || Config.options.appearance.fakeScreenRounding === 4)) ? 0 : baseRadius
+        bottomRightRadius: (Config.options.bar.bottom && (root.isDynamicIsland || Config.options.appearance.fakeScreenRounding === 4)) ? 0 : baseRadius
+        border.width: (Config.options.bar.cornerStyle === 1) ? 1 : 0
         border.color: root.showBarBackground ? Appearance.colors.colLayer0Border : "transparent"
 
         Behavior on color {
@@ -104,7 +147,7 @@ Item { // Bar content region
         }
     }
 
-    // Concave Corners (Dynamic Island mode)
+    // Concave Corners (HUD Mode)
     RoundCorner {
         z: -5
         anchors.top: barBackground.top
@@ -114,7 +157,11 @@ Item { // Bar content region
         corner: RoundCorner.CornerEnum.TopRight
         visible: root.isDynamicIsland && root.showBarBackground && !Config.options.bar.bottom
         opacity: visible ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 250 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+            }
+        }
     }
     RoundCorner {
         z: -5
@@ -125,8 +172,13 @@ Item { // Bar content region
         corner: RoundCorner.CornerEnum.TopLeft
         visible: root.isDynamicIsland && root.showBarBackground && !Config.options.bar.bottom
         opacity: visible ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 250 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+            }
+        }
     }
+
     RoundCorner {
         z: -5
         anchors.bottom: barBackground.bottom
@@ -136,7 +188,11 @@ Item { // Bar content region
         corner: RoundCorner.CornerEnum.BottomRight
         visible: root.isDynamicIsland && root.showBarBackground && Config.options.bar.bottom
         opacity: visible ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 250 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+            }
+        }
     }
     RoundCorner {
         z: -5
@@ -147,7 +203,11 @@ Item { // Bar content region
         corner: RoundCorner.CornerEnum.BottomLeft
         visible: root.isDynamicIsland && root.showBarBackground && Config.options.bar.bottom
         opacity: visible ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 250 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+            }
+        }
     }
 
     FocusedScrollMouseArea { // Left side | scroll to change brightness
@@ -161,23 +221,16 @@ Item { // Bar content region
         }
         implicitHeight: Appearance.sizes.baseBarHeight
 
-        onScrollDown: Brightness.decreaseBrightness()
-        onScrollUp: Brightness.increaseBrightness()
+        onScrollDown: if (Config.options.bar.enableBrightnessScroll) Brightness.decreaseBrightness()
+        onScrollUp: if (Config.options.bar.enableBrightnessScroll) Brightness.increaseBrightness()
         onMovedAway: GlobalStates.osdBrightnessOpen = false
-
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-
         onPressed: event => {
-            if (event.button === Qt.LeftButton) {
-                GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
-            }
-            if (event.button === Qt.RightButton) {
-                Hyprland.dispatch("exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
-            }
+            if (event.button === Qt.LeftButton)
+                GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen;
         }
 
         ScrollHint {
-            reveal: barLeftSideMouseArea.hovered
+            reveal: barLeftSideMouseArea.hovered && Config.options.bar.enableBrightnessScroll
             icon: Hyprsunset.gamma === 100 ? "light_mode" : "wb_twilight"
             tooltipText: Translation.tr("Scroll to change brightness")
             side: "left"
@@ -185,15 +238,14 @@ Item { // Bar content region
             anchors.verticalCenter: parent.verticalCenter
         }
     }
-    
 
     Item {
         id: leftStopper
         anchors {
-            top: parent.top
-            bottom: parent.bottom
-            left: parent.left
-            leftMargin: Math.ceil(Appearance.rounding.screenRounding / 2)
+            top: barBackground.top
+            bottom: barBackground.bottom
+            left: barBackground.left
+            leftMargin: 4
         }
         width: 1
     }
@@ -201,7 +253,11 @@ Item { // Bar content region
     RowLayout { // Combined Island section
         id: islandSections
         visible: root.isDynamicIsland
-        anchors.centerIn: parent
+        anchors {
+            top: barBackground.top
+            bottom: barBackground.bottom
+            horizontalCenter: barBackground.horizontalCenter
+        }
         spacing: barBackground.islandSectionSpacing
 
         RowLayout { // Left
@@ -244,7 +300,7 @@ Item { // Bar content region
         }
 
         RowLayout { // Right
-            spacing: 4
+            spacing: 8
             Repeater {
                 model: Config.options.bar.layouts.right
                 delegate: BarComponent {
@@ -259,8 +315,8 @@ Item { // Bar content region
         id: leftSection
         visible: !root.isDynamicIsland
         anchors {
-            top: parent.top
-            bottom: parent.bottom
+            top: barBackground.top
+            bottom: barBackground.bottom
             left: leftStopper.right
         }
         spacing: 4
@@ -275,22 +331,18 @@ Item { // Bar content region
         }
     }
 
-    Row { // Middle section
+    RowLayout { // Middle section
         id: middleSection
         visible: !root.isDynamicIsland
         anchors {
-            top: parent.top
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
+            top: barBackground.top
+            bottom: barBackground.bottom
+            horizontalCenter: barBackground.horizontalCenter
         }
+        spacing: 4
 
         RowLayout {
-            anchors {
-                top: parent.top
-                bottom: parent.bottom
-                right: centerCenter.left
-                rightMargin: 4
-            }
+            Layout.fillHeight: true
             Repeater {
                 id: middleLeftRepeater
                 model: root.leftList
@@ -304,11 +356,7 @@ Item { // Bar content region
 
         RowLayout { //center
             id: centerCenter
-            anchors {
-                top: parent.top
-                bottom: parent.bottom
-                horizontalCenter: parent.horizontalCenter
-            }
+            Layout.fillHeight: true
             Repeater {
                 model: root.centerList
                 delegate: BarComponent {
@@ -320,12 +368,7 @@ Item { // Bar content region
         }
 
         RowLayout {
-            anchors {
-                top: parent.top
-                bottom: parent.bottom
-                left: centerCenter.right
-                leftMargin: 4
-            }
+            Layout.fillHeight: true
             Repeater {
                 id: middleRightRepeater
                 model: root.rightList
@@ -336,19 +379,18 @@ Item { // Bar content region
                 }
             }
         }
-
     }
 
     RowLayout { // Right section
         id: rightSection
         visible: !root.isDynamicIsland
         anchors {
-            top: parent.top
-            bottom: parent.bottom
+            top: barBackground.top
+            bottom: barBackground.bottom
             right: rightStopper.left
-            rightMargin: Math.ceil(Appearance.rounding.screenRounding / 2)
+            rightMargin: 4
         }
-        spacing: 4
+        spacing: 8
 
         Repeater {
             id: rightRepeater
@@ -360,18 +402,15 @@ Item { // Bar content region
         }
     }
 
-
     Item {
         id: rightStopper
         anchors {
-            top: parent.top
-            bottom: parent.bottom
-            right: parent.right
+            top: barBackground.top
+            bottom: barBackground.bottom
+            right: barBackground.right
         }
         width: 1
     }
-
-    
 
     FocusedScrollMouseArea { // Right side | scroll to change volume
         id: barRightSideMouseArea
@@ -385,24 +424,17 @@ Item { // Bar content region
         }
         implicitHeight: Appearance.sizes.baseBarHeight
 
-        onScrollDown: Audio.decrementVolume();
-        onScrollUp: Audio.incrementVolume();
-        onMovedAway: GlobalStates.osdVolumeOpen = false;
-
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-
+        onScrollDown: if (Config.options.bar.enableVolumeScroll) Audio.decrementVolume()
+        onScrollUp: if (Config.options.bar.enableVolumeScroll) Audio.incrementVolume()
+        onMovedAway: GlobalStates.osdVolumeOpen = false
         onPressed: event => {
             if (event.button === Qt.LeftButton) {
                 GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
             }
-
-            if (event.button === Qt.RightButton) {
-                Audio.sink.audio.muted = !Audio.sink.audio.muted;
-            }
         }
 
         ScrollHint {
-            reveal: barRightSideMouseArea.hovered
+            reveal: barRightSideMouseArea.hovered && Config.options.bar.enableVolumeScroll
             icon: "volume_up"
             tooltipText: Translation.tr("Scroll to change volume")
             side: "right"

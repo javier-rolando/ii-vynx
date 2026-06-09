@@ -16,8 +16,8 @@ Singleton {
     property bool isNewHyprlandInstance: previousHyprlandInstanceSignature !== states.hyprlandInstanceSignature
 
     onReadyChanged: {
-        root.previousHyprlandInstanceSignature = root.states.hyprlandInstanceSignature
-        root.states.hyprlandInstanceSignature = Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || ""
+        root.previousHyprlandInstanceSignature = root.states.hyprlandInstanceSignature;
+        root.states.hyprlandInstanceSignature = Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") || "";
     }
 
     Timer {
@@ -25,7 +25,7 @@ Singleton {
         interval: 100
         repeat: false
         onTriggered: {
-            persistentStatesFileView.reload()
+            persistentStatesFileView.reload();
         }
     }
 
@@ -34,7 +34,7 @@ Singleton {
         interval: 100
         repeat: false
         onTriggered: {
-            persistentStatesFileView.writeAdapter()
+            persistentStatesFileView.writeAdapter();
         }
     }
 
@@ -72,6 +72,10 @@ Singleton {
 
             property JsonObject cheatsheet: JsonObject {
                 property int tabIndex: 0
+            }
+
+            property JsonObject clipboard: JsonObject {
+                property list<string> pinnedEntries: []
             }
 
             property JsonObject sidebar: JsonObject {
@@ -172,6 +176,8 @@ Singleton {
             property JsonObject screenRecord: JsonObject {
                 property bool active: false
                 property int seconds: 0
+                property bool loading: false
+                property bool paused: false
             }
 
             property JsonObject settings: JsonObject {
@@ -182,7 +188,7 @@ Singleton {
                     property string iconNerd: "JetBrains Mono NF"
                     property string monospace: "JetBrains Mono NF"
                     property string reading: "Readex Pro"
-                    property string expressive: "Space Grotesk" 
+                    property string expressive: "Space Grotesk"
                 }
             }
 
@@ -200,11 +206,11 @@ Singleton {
                 }
             }
             property JsonObject media: JsonObject {
-                property rect popupRect: Qt.rect(0, 0, 0, 0)
             }
 
             property JsonObject wallpaper: JsonObject {
                 property list<string> favourites: []
+                property list<string> favouriteDirectories: []
             }
         }
     }

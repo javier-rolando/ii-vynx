@@ -17,15 +17,15 @@ Singleton {
 
     readonly property real gammaLowerLimit: 25
 
-    property string from: Config.options?.light?.night?.from ?? "19:00" 
-    property string to: Config.options?.light?.night?.to ?? "06:30"
-    property bool automatic: Config.options?.light?.night?.automatic && (Config?.ready ?? true)
-    property int colorTemperature: Config.options?.light?.night?.colorTemperature ?? 5000
-    property int defaultColorTemperature: 6000
+    property string from: (Config.options && Config.options.light && Config.options.light.night && Config.options.light.night.from) ? Config.options.light.night.from : "19:00" 
+    property string to: (Config.options && Config.options.light && Config.options.light.night && Config.options.light.night.to) ? Config.options.light.night.to : "06:30"
+    property bool automatic: (Config.options && Config.options.light && Config.options.light.night && Config.options.light.night.automatic) && (Config ? Config.ready : true)
+    property int colorTemperature: (Config.options && Config.options.light && Config.options.light.night && Config.options.light.night.colorTemperature) ? Config.options.light.night.colorTemperature : 5000
     property int gamma: 100
     property bool shouldBeOn
     property bool firstEvaluation: true
     property bool temperatureActive: false
+    property int defaultColorTemperature: 6000
 
     property int fromHour: Number(from.split(":")[0])
     property int fromMinute: Number(from.split(":")[1])
@@ -88,6 +88,7 @@ Singleton {
     }
 
     function load() {
+        root.startHyprsunset();
         root.ensureState();
     }
 
@@ -162,10 +163,9 @@ Singleton {
 
     // Change temp
     Connections {
-        target: Config.options.light.night
+        target: (Config.options && Config.options.light && Config.options.light.night) ? Config.options.light.night : null
         function onColorTemperatureChanged() {
             if (!root.temperatureActive) return;
-            Hyprland.dispatch(`hyprctl hyprsunset temperature ${Config.options.light.night.colorTemperature}`);
             Quickshell.execDetached(["hyprctl", "hyprsunset", "temperature", `${Config.options.light.night.colorTemperature}`]);
         }
     }

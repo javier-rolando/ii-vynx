@@ -16,7 +16,7 @@ NestableObject {
     Component.onCompleted: fetch()
 
     Connections {
-        target: HyprlandSettings
+        target: HyprlandConfig
         function onReloaded() {
             root.fetch();
         }
@@ -28,11 +28,11 @@ NestableObject {
     }
 
     function setValue(newValue) {
-        HyprlandSettings.changeKey(root.key, newValue)
+        HyprlandConfig.set(root.key, newValue)
     }
 
     function reset() {
-        HyprlandSettings.reset(root.key)
+        HyprlandConfig.reset(root.key)
     }
 
     Process {

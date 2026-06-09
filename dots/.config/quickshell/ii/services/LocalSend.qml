@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import qs.modules.common
+import qs
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -24,6 +25,7 @@ Singleton {
     property bool autoStart: Config.options?.localsend?.autoStart ?? false
     property string downloadPath: Config.options?.localsend?.downloadPath
     property bool showNotifications: Config.options?.localsend?.showNotifications ?? true
+    property bool preferPopupOverNotification: Config.options?.localsend?.preferPopupOverNotification ?? true
 
     // Receive state
     property var currentTransfer: null
@@ -33,6 +35,7 @@ Singleton {
     property list<var> droppedFiles: []
     property list<var> discoveredDevices: []
     property bool sending: false
+    property bool scanning: false
 
     signal transferRequested(var transfer)
     signal transferStarted(var transfer)
@@ -77,8 +80,17 @@ Singleton {
     function sendToDevice(deviceIp: string): void {
         if (!root.available || root.sending || root.droppedFiles.length === 0) return
         root.sending = true
+        
         const filePaths = root.droppedFiles.map(f => f.path)
-        sendProc.command = ["bash", "-lc",`localsend-cli send ${deviceIp} ${filePaths.join(" ")} --json`]
+        const cliPath = Directories.home.toString().replace(/^file:\/\//, "") + "/.local/bin/localsend-cli"
+        
+        const cmd = [cliPath, "send", deviceIp]
+        for (let i = 0; i < filePaths.length; i++) {
+            cmd.push(filePaths[i])
+        }
+        cmd.push("--json")
+        
+        sendProc.command = cmd
         sendProc.running = true
     }
 
@@ -87,13 +99,96 @@ Singleton {
         root.sending = false
     }
 
+    function startScanning(): void {
+        if (!root.available) return
+        if (root.scanning) {
+            scanProc.running = false
+        }
+        root.scanning = true
+        root.discoveredDevices = []
+        scanProc.running = true
+    }
+
+    function stopScanning(): void {
+        scanProc.running = false
+        root.scanning = false
+    }
+
+    function openFilePicker(): void {
+        if (fileDialogProc.running) return
+        fileDialogProc.running = true
+    }
+
+    // Process to scan for LocalSend devices on the network using custom hybrid script
+    Process {
+        id: scanProc
+        running: false
+        command: ["python3", Directories.home.toString().replace(/^file:\/\//, "") + "/.config/quickshell/ii/services/localsend_scan.py"]
+        stdout: SplitParser {
+            onRead: line => {
+                if (!line || line.trim().length === 0) return
+                try {
+                    const device = JSON.parse(line)
+                    if (device && device.ip) {
+                        const newList = root.discoveredDevices.slice()
+                        let found = false
+                        for (let i = 0; i < newList.length; i++) {
+                            if (newList[i].ip === device.ip) { found = true; break }
+                        }
+                        if (!found) {
+                            newList.push({
+                                ip: device.ip,
+                                name: device.alias || device.name || "Unknown",
+                                port: device.port || 53317
+                            })
+                            root.discoveredDevices = newList
+                        }
+                    }
+                } catch (e) {
+                    console.error("[LocalSend] Failed to parse scan line:", line, e)
+                }
+            }
+        }
+        onExited: (exitCode, exitStatus) => {
+            console.log("[LocalSend] Scan completed or exited.")
+            root.scanning = false
+        }
+    }
+
+    // Process to pick multiple files using kdialog (preferred) or zenity (fallback) asynchronously
+    Process {
+        id: fileDialogProc
+        running: false
+        command: [
+            "bash", "-c",
+            "if command -v kdialog >/dev/null; then " +
+            "  FILES=$(kdialog --getopenfilename \"$HOME\" \"\" --multiple 2>/dev/null); " +
+            "  if [ -n \"$FILES\" ]; then echo -n \"$FILES\" | tr '\\n' '|'; fi; " +
+            "elif command -v zenity >/dev/null; then " +
+            "  zenity --file-selection --multiple --separator=\"|\" 2>/dev/null; " +
+            "fi"
+        ]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (this.text.trim().length === 0) return
+                const paths = this.text.trim().split("|")
+                for (let i = 0; i < paths.length; i++) {
+                    const path = paths[i].trim()
+                    if (path.length > 0) {
+                        root.addDroppedFile(path)
+                    }
+                }
+            }
+        }
+    }
+
     // Check if localsend-cli is available
     Process {
         id: checkAvailabilityProc
         running: true
         command: ["bash", "-lc", "which localsend-cli"]
         environment: ({
-            "PATH": Directories.home + "/.local/bin:/usr/local/bin:/usr/bin:/bin"
+            "PATH": Directories.home.toString().replace(/^file:\/\//, "") + "/.local/bin:/usr/local/bin:/usr/bin:/bin"
         })
         onExited: (exitCode, exitStatus) => {
             root.available = (exitCode === 0)
@@ -136,8 +231,8 @@ Singleton {
             "notify-send",
             Translation.tr("LocalSend: Incoming Transfer"),
             Translation.tr("From: %1\nCheck the clock widget popup on the bar for more information").arg(transfer.sender),
-            "-A", "accept=Kabul Et",
-            "-A", "deny=Reddet",
+            "-A", "accept=" + Translation.tr("Accept"),
+            "-A", "deny=" + Translation.tr("Reject"),
             "-a", "LocalSend",
         ]
         notificationProc.running = true
@@ -150,7 +245,7 @@ Singleton {
         stdinEnabled: true
 
         environment: ({
-            "PATH": Directories.home + "/.local/bin:/usr/local/bin:/usr/bin:/bin"
+            "PATH": Directories.home.toString().replace(/^file:\/\//, "") + "/.local/bin:/usr/local/bin:/usr/bin:/bin"
         })
 
         stdout: SplitParser {
@@ -183,7 +278,7 @@ Singleton {
         running: false
 
         environment: ({
-            "PATH": Directories.home + "/.local/bin:/usr/local/bin:/usr/bin:/bin"
+            "PATH": Directories.home.toString().replace(/^file:\/\//, "") + "/.local/bin:/usr/local/bin:/usr/bin:/bin"
         })
 
         stdout: SplitParser {
@@ -257,11 +352,15 @@ Singleton {
                 root.currentTransfer = transfer
                 root.pendingTransfers.push(transfer)
                 root.transferRequested(transfer)
+                GlobalStates.localSendPopupTransfer = transfer
+                if (root.preferPopupOverNotification) {
+                    GlobalStates.localSendPopupOpen = true
+                }
                 break
 
             case "prompt":
                 console.log("[LocalSend] Prompt received, showing notification")
-                if (root.currentTransfer && root.showNotifications) {
+                if (root.currentTransfer && root.showNotifications && !root.preferPopupOverNotification) {
                     root.showIncomingNotification(root.currentTransfer)
                 }
                 break
@@ -282,6 +381,7 @@ Singleton {
                     ])
                 }
                 root.currentTransfer = null
+                GlobalStates.localSendPopupOpen = false
                 break
 
             case "saved":
@@ -303,11 +403,13 @@ Singleton {
                     ])
                 }
                 root.currentTransfer = null
+                GlobalStates.localSendPopupOpen = false
                 break
 
             case "cancelled":
                 root.transferCancelled(event)
                 root.currentTransfer = null
+                GlobalStates.localSendPopupOpen = false
                 break
         }
     }
@@ -316,7 +418,8 @@ Singleton {
         id: serverStartDelayTimer
         interval: 500
         onTriggered: {
-            receiveProc.command = ["bash", "-lc", `localsend-cli receive --interactive-json --output ${root.downloadPath}`]
+            const cliPath = Directories.home.toString().replace(/^file:\/\//, "") + "/.local/bin/localsend-cli"
+            receiveProc.command = [cliPath, "receive", "--interactive-json", "--output", root.downloadPath]
             console.log("[LocalSend] Starting receive server with output dir:", root.downloadPath)
             receiveProc.running = true
         }
@@ -369,12 +472,14 @@ Singleton {
         console.log("[LocalSend] Accepting transfer...")
         receiveProc.write("y\n")
         root.currentTransfer = null
+        GlobalStates.localSendPopupOpen = false
     }
 
     function denyTransfer(): void {
         console.log("[LocalSend] Denying transfer...")
         root.currentTransfer = null
         receiveProc.write("n\n")
+        GlobalStates.localSendPopupOpen = false
     }
 
     function getPendingTransfers(): list<var> {

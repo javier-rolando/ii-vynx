@@ -6,6 +6,7 @@ import qs.modules.common.functions
 import qs.modules.common.widgets
 import Qt5Compat.GraphicalEffects
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
@@ -46,7 +47,10 @@ Item { // Window
     property real iconToWindowRatio: centerIcons ? 0.35 : 0.15
     property real xwaylandIndicatorToIconRatio: 0.35
     property real iconToWindowRatioCompact: 0.6
-    property string iconPath: Quickshell.iconPath(AppSearch.guessIcon(windowData?.class, windowData?.title), "image-missing")
+    property string iconPath: {
+        const _ = TaskbarApps.iconThemeRevision;
+        return Quickshell.iconPath(AppSearch.guessIcon(windowData?.class), "image-missing");
+    }
     property bool compactMode: Appearance.font.pixelSize.smaller * 4 > targetWindowHeight || Appearance.font.pixelSize.smaller * 4 > targetWindowWidth
 
     property bool indicateXWayland: windowData?.xwayland ?? false
@@ -102,23 +106,31 @@ Item { // Window
         animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)
     }
 
+    // Soft shadow behind the window
+    StyledRectangularShadow {
+        target: root
+        blur: 16
+        opacity: 0.3
+        offset: Qt.vector2d(0, 4)
+    }
+
     // Windows are not always rendered in scrolling mode, so background stays transparent. This fallback is needed to make sure the window is visible
     Loader {
         z: 0
         active: root.hyprscrollingEnabled
         anchors.fill: parent
-        sourceComponent: Rectangle { 
+        sourceComponent: Rectangle {
             anchors.fill: parent
-            color: Qt.rgba(0.1,0.1,0.1,1.0)
+            color: Qt.rgba(0.1, 0.1, 0.1, 1.0)
         }
     }
-    
 
     ScreencopyView {
         id: windowPreview
         anchors.fill: parent
         captureSource: root.toplevel
-        live: true
+        // Performance: live false to avoid continuous screencopy overhead
+        live: false
         z: 1
 
         // Color overlay for interactions
@@ -130,10 +142,7 @@ Item { // Window
             bottomLeftRadius: !hyprscrollingEnabled ? root.bottomLeftRadius : root.windowRounding
             bottomRightRadius: !hyprscrollingEnabled ? root.bottomRightRadius : root.windowRounding
 
-
-            color: pressed ? ColorUtils.transparentize(Appearance.colors.colLayer2Active, 0.5) : 
-                hovered ? ColorUtils.transparentize(Appearance.colors.colLayer2Hover, 0.7) : 
-                ColorUtils.transparentize(Appearance.colors.colLayer2)
+            color: pressed ? ColorUtils.transparentize(Appearance.colors.colLayer2Active, 0.5) : hovered ? ColorUtils.transparentize(Appearance.colors.colLayer2Hover, 0.7) : ColorUtils.transparentize(Appearance.colors.colLayer2)
         }
 
         Loader {
@@ -161,7 +170,7 @@ Item { // Window
                 source: root.iconPath
                 width: iconSize
                 height: iconSize
-                sourceSize: Qt.size(iconSize, iconSize)
+                sourceSize: Qt.size(iconSize + TaskbarApps.iconThemeRevision, iconSize + TaskbarApps.iconThemeRevision)
 
                 Behavior on width {
                     animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)

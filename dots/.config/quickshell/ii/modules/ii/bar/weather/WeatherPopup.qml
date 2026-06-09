@@ -11,15 +11,16 @@ import qs.modules.ii.bar
 StyledPopup {
     id: root
     popupRadius: Appearance.rounding.large
+    stickyHover: true
 
     required property bool compact
     property bool compactMode: Config.options.bar.tooltips.compactPopups
     property int cardMargins: 14
 
-    // Forecast data model
-    property var forecastData: []
-    property var hourlyData: []
-    property bool forecastLoading: true
+    // Forecast data model bound to central Weather singleton
+    property var forecastData: Weather.forecastData
+    property var hourlyData: Weather.hourlyData
+    property bool forecastLoading: Weather.forecastLoading
     property int maxHourlyBars: 5
 
     property var filteredHourlyData: {
@@ -48,16 +49,11 @@ StyledPopup {
     readonly property string city: Config.options.bar.weather.city
     onCityChanged: {
         if (Config.options.bar.weather.city)
-            root.fetchForecast();
+            Weather.getData();
     }
 
     function fetchForecast() {
-        forecastLoading = true;
-        let city = Config.options.bar.weather.city || "auto";
-        //console.log(`[WeatherPopup] Fetching forecast for city: ${city}`);
-        city = city.trim().split(/\s+/).join('+');
-        forecastFetcher.command[2] = `curl -s "wttr.in/${city}?format=j1" | jq '{daily: [.weather[] | {date: .date, maxC: .maxtempC, minC: .mintempC, maxF: .maxtempF, minF: .mintempF, code: .hourly[4].weatherCode}], hourly: [.weather[0].hourly[], .weather[1].hourly[] | {time: .time, tempC: .tempC, tempF: .tempF, code: .weatherCode}]}'`;
-        forecastFetcher.running = true;
+        Weather.getData();
     }
 
     function getDayName(dateStr, index) {
@@ -67,7 +63,7 @@ StyledPopup {
             return Translation.tr("Tomorrow");
         const date = new Date(dateStr);
         const days = [Translation.tr("Sun"), Translation.tr("Mon"), Translation.tr("Tue"), Translation.tr("Wed"), Translation.tr("Thu"), Translation.tr("Fri"), Translation.tr("Sat")];
-        return days[date.getDay()];
+        return days[date.getUTCDay()];
     }
 
     function formatHour(timeStr) {
@@ -99,28 +95,6 @@ StyledPopup {
         id: contentLayout
         anchors.centerIn: parent
         spacing: 12
-
-        Process {
-            id: forecastFetcher
-            command: ["bash", "-c", ""]
-            stdout: StdioCollector {
-                onStreamFinished: {
-                    if (text.length === 0) {
-                        root.forecastLoading = false;
-                        return;
-                    }
-                    try {
-                        const data = JSON.parse(text);
-                        root.forecastData = data.daily || [];
-                        root.hourlyData = data.hourly || [];
-                    } catch (e) {
-                        console.error(`[WeatherPopup] Forecast parse error: ${e.message}`);
-                    }
-                    root.forecastLoading = false;
-                }
-            }
-        }
-
         HeroCard {
             id: weatherHero
             Layout.minimumWidth: 320

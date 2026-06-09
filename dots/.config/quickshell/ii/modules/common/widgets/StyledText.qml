@@ -9,50 +9,49 @@ Text {
 
     renderType: Text.NativeRendering
     verticalAlignment: Text.AlignVCenter
-    property bool shouldUseNumberFont: /^\d+$/.test(root.text)
+    property bool shouldUseNumberFont: /^[0-9\s.,]+$/.test(root.text.trim())
     property var defaultFont: shouldUseNumberFont ? Appearance.font.family.numbers : Appearance.font.family.main
     
     font {
         hintingPreference: Font.PreferDefaultHinting
-        family: defaultFont
+        family: defaultFont + (shouldUseNumberFont ? "," + Appearance.font.family.main : "")
         pixelSize: Appearance?.font.pixelSize.small ?? 15
         variableAxes: shouldUseNumberFont ? ({}) : Appearance.font.variableAxes.main
     }
     color: Appearance?.m3colors.m3onBackground ?? "black"
     linkColor: Appearance?.m3colors.m3primary
 
-    component Anim: NumberAnimation {
-        target: root
-        duration: 300 / 2
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Appearance.animation.elementMoveFast.bezierCurve
+    transform: Translate {
+        id: textTranslate
     }
 
-    Component.onCompleted: {
-        textAnimationBehavior.originalX = root.x;
-        textAnimationBehavior.originalY = root.y;
+    component Anim: NumberAnimation {
+        duration: 300 / 2
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: Appearance?.animation.elementMoveFast.bezierCurve ?? Easing.Linear
     }
 
     Behavior on text {
         id: textAnimationBehavior
-        property real originalX: root.x
-        property real originalY: root.y
         enabled: root.animateChange
 
         SequentialAnimation {
             alwaysRunToEnd: true
             ParallelAnimation {
                 Anim {
+                    target: textTranslate
                     property: "x"
-                    to: textAnimationBehavior.originalX - root.animationDistanceX
+                    to: -root.animationDistanceX
                     easing.type: Easing.InSine
                 }
                 Anim {
+                    target: textTranslate
                     property: "y"
-                    to: textAnimationBehavior.originalY - root.animationDistanceY
+                    to: -root.animationDistanceY
                     easing.type: Easing.InSine
                 }
                 Anim {
+                    target: root
                     property: "opacity"
                     to: 0
                     easing.type: Easing.InSine
@@ -60,27 +59,30 @@ Text {
             }
             PropertyAction {} // Tie the text update to this point (we don't want it to happen during the first slide+fade)
             PropertyAction {
-                target: root
+                target: textTranslate
                 property: "x"
-                value: textAnimationBehavior.originalX + root.animationDistanceX
+                value: root.animationDistanceX
             }
             PropertyAction {
-                target: root
+                target: textTranslate
                 property: "y"
-                value: textAnimationBehavior.originalY + root.animationDistanceY
+                value: root.animationDistanceY
             }
             ParallelAnimation {
                 Anim {
+                    target: textTranslate
                     property: "x"
-                    to: textAnimationBehavior.originalX
+                    to: 0
                     easing.type: Easing.OutSine
                 }
                 Anim {
+                    target: textTranslate
                     property: "y"
-                    to: textAnimationBehavior.originalY
+                    to: 0
                     easing.type: Easing.OutSine
                 }
                 Anim {
+                    target: root
                     property: "opacity"
                     to: 1
                     easing.type: Easing.OutSine

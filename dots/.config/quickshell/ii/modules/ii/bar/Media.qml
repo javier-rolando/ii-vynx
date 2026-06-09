@@ -16,7 +16,7 @@ Item {
 
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
-    
+
     property int customSize: Config.options.bar.mediaPlayer.customSize
     property int lyricsCustomSize: Config.options.bar.mediaPlayer.lyrics.customSize
     readonly property int maxWidth: 300
@@ -28,23 +28,23 @@ Item {
     readonly property bool artworkEnabled: Config.options.bar.mediaPlayer.artwork.enable
 
     readonly property int progressButtonSize: 20
-    readonly property int artworkBoxSize: artworkEnabled ? Math.min(25, Appearance.sizes.barHeight - 8) : 0
+    readonly property int artworkBoxSize: artworkEnabled ? Math.min(25, Appearance.sizes.baseBarHeight - 8) : 0
     readonly property int artworkContentPadding: artworkEnabled ? 6 : 0
 
     property int textMetricsSpacing: artworkEnabled ? 70 : 50 // text metrics returns width without spacing
     property int textMetricsAdvance: Math.min(textMetrics.advanceWidth + textMetricsSpacing, Config.options.bar.mediaPlayer.maxSize)
     implicitWidth: LyricsService.hasSyncedLines && root.lyricsEnabled ? lyricsCustomSize : useFixedSize ? customSize : textMetricsAdvance
-    implicitHeight: Appearance.sizes.barHeight
+    implicitHeight: Appearance.sizes.baseBarHeight
 
     Behavior on implicitWidth {
         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(root)
     }
 
     Component.onCompleted: {
-        LyricsService.initiliazeLyrics()
+        LyricsService.initiliazeLyrics();
     }
 
-    readonly property string artSource: activePlayer?.trackArtUrl && activePlayer.trackArtUrl !== "" ? activePlayer.trackArtUrl : ""
+    readonly property string artSource: MprisController.artUrl
 
     Item {
         id: artworkItem
@@ -92,10 +92,12 @@ Item {
     }
 
     MouseArea {
+        id: mediaMouseArea
         anchors.fill: parent
+        hoverEnabled: true
         acceptedButtons: Qt.MiddleButton | Qt.BackButton | Qt.ForwardButton | Qt.RightButton | Qt.LeftButton
         cursorShape: Qt.PointingHandCursor
-        onPressed: (event) => {
+        onPressed: event => {
             if (event.button === Qt.MiddleButton) {
                 activePlayer.togglePlaying();
             } else if (event.button === Qt.BackButton) {
@@ -104,10 +106,10 @@ Item {
                 activePlayer.next();
             } else if (event.button === Qt.LeftButton) {
                 var globalPos = root.mapToItem(null, 0, 0);
-                Persistent.states.media.popupRect = Qt.rect(globalPos.x, globalPos.y, root.width, root.height);
+                GlobalStates.mediaPopupRect = Qt.rect(globalPos.x, globalPos.y, root.width, root.height);
                 GlobalStates.mediaControlsOpen = !GlobalStates.mediaControlsOpen;
             }
-        }   
+        }
     }
 
     Item {
@@ -120,7 +122,7 @@ Item {
         ClippedFilledCircularProgress {
             id: mediaCircProg
             anchors.fill: parent
-            visible: !loadingIndLoader.active
+            visible: true
             implicitSize: root.progressButtonSize
 
             lineWidth: Appearance.rounding.unsharpen
@@ -132,7 +134,7 @@ Item {
                 anchors.centerIn: parent
                 width: mediaCircProg.implicitSize
                 height: mediaCircProg.implicitSize
-                
+
                 MaterialSymbol {
                     anchors.centerIn: parent
                     fill: 1
@@ -165,19 +167,19 @@ Item {
     }
 
     Loader {
-        id: lyricsItemLoader 
+        id: lyricsItemLoader
         active: lyricsEnabled
 
         width: artworkEnabled ? parent.width - (artworkItem.width + mediaCircProg.implicitSize * 2) : parent.width - mediaCircProg.implicitSize * 2
         height: parent.height
-        
+
         anchors.left: parent.left
         anchors.leftMargin: artworkEnabled ? mediaCircProg.implicitSize * 1.5 + artworkContentPadding : mediaCircProg.implicitSize * 1.5
 
         sourceComponent: Item {
             id: lyricsItem
             visible: lyricsEnabled
-            
+
             anchors.centerIn: parent
 
             Loader {
@@ -196,10 +198,10 @@ Item {
                 anchors.fill: parent
                 sourceComponent: LyricScroller {
                     id: lyricScroller
-                    
+
                     anchors.fill: parent
                     visible: lyricsStyle == "scroller" && LyricsService.hasSyncedLines
-                    
+
                     defaultLyricsSize: Appearance.font.pixelSize.smallest
                     useGradientMask: root.useGradientMask
                     halfVisibleLines: 1
@@ -208,6 +210,6 @@ Item {
                     gradientDensity: 0.25
                 }
             }
-        }   
+        }
     }
 }

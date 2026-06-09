@@ -22,12 +22,13 @@ RippleButton {
 
     property bool customTheme: false
     readonly property string customThemeFilePath: customThemeDirectory + "/" + colorScheme + ".json"
-    readonly property string customThemeCommand: `jq -r '.primary, .primary_container, .secondary' ${customThemeFilePath}`  
+    readonly property string customThemeCommand: `jq -r '.primary, .primary_container, .secondary' ${customThemeFilePath}`
 
-    readonly property string wallpaperPath: Config.options.background.wallpaperPath
+    readonly property string wallpaperPath: (Config.options && Config.options.background && Config.options.background.wallpaperPath) ? Config.options.background.wallpaperPath : ""
     readonly property string scriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/colors/generate_colors_material.py`)
 
-    property string fullCommand: `python3 ${root.scriptPath} --path ${root.wallpaperPath} --scheme ${root.colorScheme} --preview`
+    readonly property string resolvedScheme: root.colorScheme === "scheme-auto" ? "scheme-tonal-spot" : root.colorScheme
+    property string fullCommand: root.wallpaperPath !== "" ? `${root.scriptPath} --path ${root.wallpaperPath} --scheme ${root.resolvedScheme} --preview` : ""
 
     // these are not actually primary, secondary and tertiary, they are just the three colors we get from the script
     property color primaryColor: "transparent"
@@ -52,23 +53,34 @@ RippleButton {
     onClicked: {
         if (customTheme) {
             Config.options.appearance.palette.type = root.colorScheme;
-            Quickshell.execDetached(["bash", "-c", `cp ${root.customThemeFilePath} ${Directories.generatedMaterialThemePath}`]);
+            const themePath = FileUtils.trimFileProtocol(root.customThemeFilePath);
+            const targetPath = FileUtils.trimFileProtocol(Directories.generatedMaterialThemePath);
+            const script = FileUtils.trimFileProtocol(`${Directories.scriptPath}/colors/recolor_icons.py`);
+            Quickshell.execDetached(["bash", "-c", `cp "${themePath}" "${targetPath}" && python3 "${script}"`]);
         } else if (builtInTheme) {
             Config.options.appearance.palette.type = root.colorScheme;
-            Quickshell.execDetached(["bash", "-c", `cp ${root.builtInThemeFilePath} ${Directories.generatedMaterialThemePath}`]);
+            const themePath = FileUtils.trimFileProtocol(root.builtInThemeFilePath);
+            const targetPath = FileUtils.trimFileProtocol(Directories.generatedMaterialThemePath);
+            const script = FileUtils.trimFileProtocol(`${Directories.scriptPath}/colors/recolor_icons.py`);
+            Quickshell.execDetached(["bash", "-c", `cp "${themePath}" "${targetPath}" && python3 "${script}"`]);
         } else {
             Config.options.appearance.palette.type = root.colorScheme;
-            Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --noswitch`]);
+            Quickshell.execDetached(["bash", "-c", `env -u LD_LIBRARY_PATH -u PYTHONHOME -u PYTHONPATH PATH=$HOME/.local/bin:$HOME/.cargo/bin:$PATH ${Directories.wallpaperSwitchScriptPath} --type ${root.colorScheme} --noswitch > /tmp/switchwall_button.log 2>&1`]);
         }
     }
 
-    property var effectiveCommand:  root.customTheme ? root.customThemeCommand
-                                    : root.builtInTheme ? root.builtInThemeCommand
-                                    : root.fullCommand
+    property var effectiveCommand: root.customTheme ? root.customThemeCommand : root.builtInTheme ? root.builtInThemeCommand : root.fullCommand
 
     onShouldLoadChanged: {
-        if (shouldLoad && !loaded) {
-            colorFetchProcess.running = true
+        if (shouldLoad && !loaded && root.effectiveCommand !== "") {
+            colorFetchProcess.running = true;
+        }
+    }
+
+    onWallpaperPathChanged: {
+        if (shouldLoad && root.effectiveCommand !== "") {
+            loaded = false;
+            colorFetchProcess.running = true;
         }
     }
 
@@ -82,22 +94,22 @@ RippleButton {
                 try {
                     //console.log("[ColorPreviewButton] Command:", root.effectiveCommand)
                     if (root.customTheme || root.builtInTheme) {
-                        const colors = this.text.trim().split("\n")
-                        root.primaryColor   = colors[0] || "transparent"
-                        root.secondaryColor = colors[1] || "transparent"
-                        root.tertiaryColor  = colors[2] || "transparent"
+                        const colors = this.text.trim().split("\n");
+                        root.primaryColor = colors[0] || "transparent";
+                        root.secondaryColor = colors[1] || "transparent";
+                        root.tertiaryColor = colors[2] || "transparent";
                     } else {
-                        const data = JSON.parse(this.text)
+                        const data = JSON.parse(this.text);
 
-                        root.primaryColor   = data.primary   || "transparent"
-                        root.secondaryColor = data.primary_container || "transparent"
-                        root.tertiaryColor  = data.secondary  || "transparent"
+                        root.primaryColor = data.primary || "transparent";
+                        root.secondaryColor = data.primary_container || "transparent";
+                        root.tertiaryColor = data.secondary || "transparent";
                     }
 
-                    root.loaded = true
-                    myCanvas.requestPaint()
+                    root.loaded = true;
+                    myCanvas.requestPaint();
                 } catch (e) {
-                    console.log("[ColorPreviewButton] Parse error:", this.text)
+                    console.log("[ColorPreviewButton] Parse error:", this.text);
                 }
             }
         }

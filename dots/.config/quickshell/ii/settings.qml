@@ -57,9 +57,19 @@ ApplicationWindow {
             component: "modules/settings/InterfaceConfig.qml"
         },
         {
+            name: Translation.tr("Search"),
+            icon: "manage_search",
+            component: "modules/settings/SearchConfig.qml"
+        },
+        {
             name: Translation.tr("Services"),
             icon: "api",
             component: "modules/settings/ServicesConfig.qml"
+        },
+        {
+            name: Translation.tr("Hyprland"),
+            icon: "wysiwyg",
+            component: "modules/settings/HyprlandConfig.qml"
         },
         {
             name: Translation.tr("Advanced"),
@@ -72,22 +82,30 @@ ApplicationWindow {
             component: "modules/settings/About.qml"
         }
     ]
-    
 
     visible: true
     onClosing: Qt.quit()
     title: "illogical-impulse Settings"
-    
+
     Component.onCompleted: {
-        MaterialThemeLoader.reapplyTheme()
-        Config.readWriteDelay = 0 // Settings app always only sets one var at a time so delay isn't needed
+        MaterialThemeLoader.reapplyTheme();
+        Config.readWriteDelay = 0; // Settings app always only sets one var at a time so delay isn't needed
     }
 
     minimumWidth: 750
     minimumHeight: 500
     width: 1100
     height: 750
-    color: Appearance.m3colors.m3background
+    flags: Qt.Window | Qt.FramelessWindowHint
+    color: "transparent"
+
+    Rectangle {
+        anchors.fill: parent
+        color: Appearance.colors.colLayer0
+        radius: Appearance.rounding.windowRounding
+        border.width: 1
+        border.color: Appearance.colors.colLayer0Border
+    }
 
     ColumnLayout {
         anchors {
@@ -95,21 +113,18 @@ ApplicationWindow {
             margins: contentPadding
         }
 
-        Keys.onPressed: (event) => {
+        Keys.onPressed: event => {
             if (event.modifiers === Qt.ControlModifier) {
                 if (event.key === Qt.Key_PageDown) {
-                    root.currentPage = Math.min(root.currentPage + 1, root.pages.length - 1)
+                    root.currentPage = Math.min(root.currentPage + 1, root.pages.length - 1);
                     event.accepted = true;
-                } 
-                else if (event.key === Qt.Key_PageUp) {
-                    root.currentPage = Math.max(root.currentPage - 1, 0)
+                } else if (event.key === Qt.Key_PageUp) {
+                    root.currentPage = Math.max(root.currentPage - 1, 0);
                     event.accepted = true;
-                }
-                else if (event.key === Qt.Key_Tab) {
+                } else if (event.key === Qt.Key_Tab) {
                     root.currentPage = (root.currentPage + 1) % root.pages.length;
                     event.accepted = true;
-                }
-                else if (event.key === Qt.Key_Backtab) {
+                } else if (event.key === Qt.Key_Backtab) {
                     root.currentPage = (root.currentPage - 1 + root.pages.length) % root.pages.length;
                     event.accepted = true;
                 }
@@ -120,7 +135,6 @@ ApplicationWindow {
             Layout.alignment: Qt.AlignCenter
             Layout.fillWidth: true
             Layout.fillHeight: false
-
 
             StyledText {
                 id: titleText
@@ -143,17 +157,42 @@ ApplicationWindow {
 
                 SequentialAnimation {
                     id: noMoreResultsAnim
-                    NumberAnimation { target: searchBox; property: "Layout.leftMargin"; to: -30; duration: 50 }
-                    NumberAnimation { target: searchBox; property: "Layout.leftMargin"; to: 30; duration: 50 }
-                    NumberAnimation { target: searchBox; property: "Layout.leftMargin"; to: -15; duration: 40 }
-                    NumberAnimation { target: searchBox; property: "Layout.leftMargin"; to: 15; duration: 40 }
-                    NumberAnimation { target: searchBox; property: "Layout.leftMargin"; to: 0; duration: 30 }
+                    NumberAnimation {
+                        target: searchBox
+                        property: "Layout.leftMargin"
+                        to: -30
+                        duration: 50
+                    }
+                    NumberAnimation {
+                        target: searchBox
+                        property: "Layout.leftMargin"
+                        to: 30
+                        duration: 50
+                    }
+                    NumberAnimation {
+                        target: searchBox
+                        property: "Layout.leftMargin"
+                        to: -15
+                        duration: 40
+                    }
+                    NumberAnimation {
+                        target: searchBox
+                        property: "Layout.leftMargin"
+                        to: 15
+                        duration: 40
+                    }
+                    NumberAnimation {
+                        target: searchBox
+                        property: "Layout.leftMargin"
+                        to: 0
+                        duration: 30
+                    }
                 }
 
                 MaterialShapeWrappedMaterialSymbol {
                     iconSize: Appearance.font.pixelSize.huge
                     shape: MaterialShape.Shape.Ghostish
-                    text: resultText.show ? "" : "search" 
+                    text: resultText.show ? "" : "search"
                     animateChange: true
 
                     StyledText {
@@ -166,7 +205,8 @@ ApplicationWindow {
                         anchors.centerIn: parent
                         text: (root.lastSearchIndex % root.resultsCount + 1) + "/" + root.resultsCount
 
-                        onShowChanged: if (!show) resultText.visible = false
+                        onShowChanged: if (!show)
+                            resultText.visible = false
                         Timer {
                             id: showTimer
                             interval: 100
@@ -185,18 +225,18 @@ ApplicationWindow {
                     implicitWidth: Appearance.sizes.searchWidth
 
                     Component.onCompleted: {
-                        searchInput.forceActiveFocus()
+                        searchInput.forceActiveFocus();
                     }
 
                     onTextChanged: {
-                        root.lastSearchIndex = -1
-                        root.resultsCount = 0
+                        root.lastSearchIndex = -1;
+                        root.resultsCount = 0;
                     }
 
                     // We may use this in the future, this only searches the best result
                     /* onAccepted: {
                         if (!searchInput.text || searchInput.text.trim() === "") return
-                        
+
                         let normalizedText = searchInput.text.toLowerCase()
                         let bestResult = SearchRegistry.getBestResult(normalizedText)
 
@@ -211,46 +251,44 @@ ApplicationWindow {
                     } */
 
                     onAccepted: {
-                        const result = SearchRegistry.getResultsRanked(searchInput.text)
+                        const result = SearchRegistry.getResultsRanked(searchInput.text);
 
                         if (result == null) {
                             noMoreResultsAnim.restart();
-                            return
+                            return;
                         }
 
-                        let length = SearchRegistry.getResultsRanked(searchInput.text).length
+                        let length = SearchRegistry.getResultsRanked(searchInput.text).length;
 
                         if (length == 0) {
                             noMoreResultsAnim.restart();
-                            return
+                            return;
                         }
-                        
+
                         if (root.lastSearch != searchInput.text) {
-                            root.lastSearchIndex = 0
-                            root.lastSearch = searchInput.text
-                            
+                            root.lastSearchIndex = 0;
+                            root.lastSearch = searchInput.text;
                         } else {
-                            root.lastSearchIndex++
+                            root.lastSearchIndex++;
                             if (SearchRegistry.getResultsRanked(searchInput.text).length === 1) {
-                                noMoreResultsAnim.restart()
+                                noMoreResultsAnim.restart();
                             }
                         }
 
-                        let normalizedText = searchInput.text.toLowerCase()
-                        let results = SearchRegistry.getResultsRanked(normalizedText)
+                        let normalizedText = searchInput.text.toLowerCase();
+                        let results = SearchRegistry.getResultsRanked(normalizedText);
                         if (results.length > 0) {
-                            let index = root.lastSearchIndex % results.length
-                            let result = results[index]
-                            
-                            root.resultsCount = results.length
-                            root.currentPage = result.pageIndex
+                            let index = root.lastSearchIndex % results.length;
+                            let result = results[index];
+
+                            root.resultsCount = results.length;
+                            root.currentPage = result.pageIndex;
                             //root.scrollPos = result.yPos
-                            SearchRegistry.currentSearch = result.matchedString
+                            SearchRegistry.currentSearch = result.matchedString;
                         }
                     }
                 }
             }
-            
 
             Item {
                 Layout.fillWidth: true
@@ -292,7 +330,7 @@ ApplicationWindow {
                     }
                     spacing: 10
                     expanded: root.width > 900
-                    
+
                     NavigationRailExpandButton {
                         focus: root.visible
                     }
@@ -309,7 +347,7 @@ ApplicationWindow {
                         altAction: () => {
                             Quickshell.clipboardText = CF.FileUtils.trimFileProtocol(`${Directories.config}/illogical-impulse/config.json`);
                             fab.justCopied = true;
-                            revertTextTimer.restart()
+                            revertTextTimer.restart();
                         }
 
                         Timer {
@@ -325,27 +363,31 @@ ApplicationWindow {
                         }
                     }
 
-                    NavigationRailTabArray {
-                        currentIndex: root.currentPage
-                        expanded: navRail.expanded
-                        Repeater {
-                            model: root.pages
-                            NavigationRailButton {
-                                required property var index
-                                required property var modelData
-                                toggled: root.currentPage === index
-                                onPressed: root.currentPage = index;
-                                expanded: navRail.expanded
-                                buttonIcon: modelData.icon
-                                buttonIconRotation: modelData.iconRotation || 0
-                                buttonText: modelData.name
-                                showToggledHighlight: false
+                    ScrollView {
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        clip: true
+                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+                        NavigationRailTabArray {
+                            width: parent.width
+                            currentIndex: root.currentPage
+                            expanded: navRail.expanded
+                            Repeater {
+                                model: root.pages
+                                NavigationRailButton {
+                                    required property var index
+                                    required property var modelData
+                                    toggled: root.currentPage === index
+                                    onPressed: root.currentPage = index
+                                    expanded: navRail.expanded
+                                    buttonIcon: modelData.icon
+                                    buttonIconRotation: modelData.iconRotation || 0
+                                    buttonText: modelData.name
+                                    showToggledHighlight: false
+                                }
                             }
                         }
-                    }
-
-                    Item {
-                        Layout.fillHeight: true
                     }
                 }
             }
@@ -353,7 +395,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 color: Appearance.m3colors.m3surfaceContainerLow
-                radius: Appearance.rounding.windowRounding - root.contentPadding
+                radius: Appearance.rounding.windowRounding
 
                 Loader {
                     id: pageLoader
@@ -362,7 +404,7 @@ ApplicationWindow {
 
                     active: Config.ready
                     Component.onCompleted: {
-                        source = root.pages[0].component
+                        source = root.pages[root.currentPage].component;
                     }
 
                     Connections {
@@ -372,8 +414,9 @@ ApplicationWindow {
                             switchAnim.start();
                         }
                         function onScrollPosChanged() {
-                            if (root.scrollPos == -1) return
-                            scrollTimer.start()
+                            if (root.scrollPos == -1)
+                                return;
+                            scrollTimer.start();
                         }
                     }
 
@@ -381,8 +424,8 @@ ApplicationWindow {
                         id: scrollTimer
                         interval: 250
                         onTriggered: {
-                            pageLoader.item.contentY = root.scrollPos
-                            root.scrollPos = -1
+                            pageLoader.item.contentY = root.scrollPos;
+                            root.scrollPos = -1;
                         }
                     }
 

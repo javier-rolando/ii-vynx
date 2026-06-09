@@ -147,9 +147,9 @@ if args.termscheme is not None:
     term_source_colors = json.loads(json_termscheme)['dark' if darkmode else 'light']
 
     try: 
-        primary_color_argb = hex_to_argb(material_colors['primaryPaletteKeyColor'])
+        primary_color_argb = hex_to_argb(material_colors['primary_paletteKeyColor'])
     except KeyError:
-        primary_color_argb = argb
+        primary_color_argb = hex_to_argb("#ffffff")
     
 for color, val in term_source_colors.items():
         if(args.scheme == 'monochrome') :
@@ -163,6 +163,24 @@ for color, val in term_source_colors.items():
             harmonized = harmonize(hex_to_argb(val), primary_color_argb, args.harmonize_threshold, args.harmony)
             harmonized = boost_chroma_tone(harmonized, 1, 1 + (args.term_fg_boost * (1 if darkmode else -1)))
         term_colors[color] = argb_to_hex(harmonized)
+
+# Define high-contrast semantic mappings to prevent invisible text in light mode
+if darkmode:
+    term_colors['term_bg'] = term_colors['term0']
+    term_colors['term_fg'] = term_colors['term7']
+    term_colors['ansi0'] = term_colors['term0']
+    term_colors['ansi7'] = term_colors['term7']
+    term_colors['ansi8'] = term_colors['term8']
+    term_colors['ansi15'] = term_colors['term15']
+else:
+    term_colors['term_bg'] = term_colors['term0']      # light background
+    term_colors['term_fg'] = term_colors['term7']      # dark foreground
+    term_colors['ansi0'] = term_colors['term7']        # dark black
+    term_colors['ansi7'] = term_colors['term0']        # light white
+    term_colors['ansi8'] = term_colors['term8']        # dark grey
+    term_colors['ansi15'] = term_colors['term0']       # light white
+
+
 
 if args.debug == False:
     print(f"$darkmode: {darkmode};")

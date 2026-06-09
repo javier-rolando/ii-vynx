@@ -1,3 +1,4 @@
+import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -10,32 +11,89 @@ import Quickshell.Io
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import "commands"
 
-Scope { // Scope
+Scope {
     id: root
-    property var tabButtonList: [
-        {
-            "icon": "calendar_month",
-            "name": Translation.tr("Timetable")
-        },
-        {
+    property var tabButtonList: {
+        let list = [];
+        if (Config.options.cheatsheet.enableTimetable) {
+            list.push({
+                "icon": "calendar_month",
+                "name": Translation.tr("Timetable")
+            });
+        }
+        list.push({
             "icon": "keyboard",
             "name": Translation.tr("Keybinds")
-        },
-        {
-            "icon": "experiment",
-            "name": Translation.tr("Elements")
-          },
-        
-    ]
+        });
+        if (Config.options.cheatsheet.enablePeriodicTable) {
+            list.push({
+                "icon": "experiment",
+                "name": Translation.tr("Elements")
+            });
+        }
+        if (Config.options.cheatsheet.enableCommands) {
+            list.push({
+                "icon": "terminal",
+                "name": Translation.tr("Commands")
+            });
+        }
+        if (Config.options.cheatsheet.enableGmail) {
+            list.push({
+                "icon": "mail",
+                "name": Translation.tr("Email")
+            });
+        }
+        return list;
+    }
+
+    property bool activeState: false
+
+    Timer {
+        id: closeTimer
+        interval: 400
+        repeat: false
+        onTriggered: {
+            root.activeState = false;
+        }
+    }
+
+    function requestOpen() {
+        closeTimer.stop();
+        root.activeState = true;
+        GlobalStates.cheatsheetOpen = true;
+    }
+
+    function requestClose() {
+        GlobalStates.cheatsheetOpen = false;
+        closeTimer.start();
+    }
+
+    function requestToggle() {
+        if (GlobalStates.cheatsheetOpen) {
+            requestClose();
+        } else {
+            requestOpen();
+        }
+    }
 
     Loader {
         id: cheatsheetLoader
-        active: false
+        active: root.activeState
 
-        sourceComponent: PanelWindow { // Window
+        sourceComponent: PanelWindow {
             id: cheatsheetRoot
-            visible: cheatsheetLoader.active
+            visible: GlobalStates.cheatsheetOpen
+
+            Connections {
+                target: root
+                function onTabButtonListChanged() {
+                    if (swipeView.currentIndex >= root.tabButtonList.length) {
+                        swipeView.currentIndex = 0;
+                    }
+                }
+            }
 
             anchors {
                 top: true
@@ -45,24 +103,53 @@ Scope { // Scope
             }
 
             function hide() {
-                cheatsheetLoader.active = false;
+                root.requestClose();
             }
             exclusiveZone: 0
             implicitWidth: cheatsheetBackground.width + Appearance.sizes.elevationMargin * 2
             implicitHeight: cheatsheetBackground.height + Appearance.sizes.elevationMargin * 2
             WlrLayershell.namespace: "quickshell:cheatsheet"
-            // Setting this value makes it take its sweet time to open
-            // WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.keyboardFocus: GlobalStates.cheatsheetOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
             color: "transparent"
 
             mask: Region {
                 item: cheatsheetBackground
             }
 
+            Timer {
+                id: registerGrabTimer
+                interval: 150
+                repeat: false
+                onTriggered: {
+                    GlobalFocusGrab.addDismissable(cheatsheetRoot);
+                }
+            }
+
+            onVisibleChanged: {
+                if (visible) {
+                    initialFocusTimer.restart();
+                }
+            }
+
+            Timer {
+                id: initialFocusTimer
+                interval: 50
+                repeat: false
+                onTriggered: {
+                    if (swipeView.currentItem && swipeView.currentItem.status === Loader.Ready && swipeView.currentItem.item) {
+                        swipeView.currentItem.item.forceActiveFocus();
+                    } else if (swipeView.currentItem) {
+                        swipeView.currentItem.forceActiveFocus();
+                    }
+                }
+            }
+
             Component.onCompleted: {
-                GlobalFocusGrab.addDismissable(cheatsheetRoot);
+                registerGrabTimer.start();
             }
             Component.onDestruction: {
+                registerGrabTimer.stop();
                 GlobalFocusGrab.removeDismissable(cheatsheetRoot);
             }
             Connections {
@@ -72,7 +159,6 @@ Scope { // Scope
                 }
             }
 
-            // Background
             StyledRectangularShadow {
                 target: cheatsheetBackground
             }
@@ -84,33 +170,41 @@ Scope { // Scope
                 border.color: Appearance.colors.colLayer0Border
                 radius: Appearance.rounding.windowRounding
                 property real padding: 20
-                implicitWidth: cheatsheetColumnLayout.implicitWidth + padding * 2
-                implicitHeight: cheatsheetColumnLayout.implicitHeight + padding * 2
 
-                Keys.onPressed: event => { // Esc to close
+                property real maxBgWidth: cheatsheetRoot.screen ? cheatsheetRoot.screen.width * 0.95 : 1900
+                property real maxBgHeight: cheatsheetRoot.screen ? cheatsheetRoot.screen.height * 0.80 : 1000
+                
+                implicitWidth: Math.min(maxBgWidth, cheatsheetColumnLayout.implicitWidth + padding * 2)
+                implicitHeight: Math.min(maxBgHeight, cheatsheetColumnLayout.implicitHeight + padding * 2)
+
+                Keys.onPressed: event => {
                     if (event.key === Qt.Key_Escape) {
                         cheatsheetRoot.hide();
-                    }
-                    if (event.modifiers === Qt.ControlModifier) {
+                        event.accepted = true;
+                    } else if (event.key === Qt.Key_Slash) {
+                        if (swipeView.currentItem && swipeView.currentItem.item) {
+                            swipeView.currentItem.item.forceActiveFocus();
+                        }
+                        event.accepted = true;
+                    } else if (event.key === Qt.Key_Tab) {
+                        tabBar.setCurrentIndex((tabBar.currentIndex + 1) % root.tabButtonList.length);
+                        event.accepted = true;
+                    } else if (event.key === Qt.Key_Backtab) {
+                        tabBar.setCurrentIndex((tabBar.currentIndex - 1 + root.tabButtonList.length) % root.tabButtonList.length);
+                        event.accepted = true;
+                    } else if (event.modifiers === Qt.ControlModifier) {
                         if (event.key === Qt.Key_PageDown) {
                             tabBar.incrementCurrentIndex();
                             event.accepted = true;
                         } else if (event.key === Qt.Key_PageUp) {
                             tabBar.decrementCurrentIndex();
                             event.accepted = true;
-                        } else if (event.key === Qt.Key_Tab) {
-                            tabBar.setCurrentIndex((tabBar.currentIndex + 1) % root.tabButtonList.length);
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Backtab) {
-                            tabBar.setCurrentIndex((tabBar.currentIndex - 1 + root.tabButtonList.length) % root.tabButtonList.length);
-                            event.accepted = true;
                         }
                     }
                 }
 
-                RippleButton { // Close button
+                RippleButton {
                     id: closeButton
-                    focus: cheatsheetRoot.visible
                     implicitWidth: 40
                     implicitHeight: 40
                     buttonRadius: Appearance.rounding.full
@@ -133,9 +227,11 @@ Scope { // Scope
                     }
                 }
 
-                ColumnLayout { // Real content
+                ColumnLayout {
                     id: cheatsheetColumnLayout
                     anchors.centerIn: parent
+                    width: Math.min(implicitWidth, parent.width - parent.padding * 2)
+                    height: Math.min(implicitHeight, parent.height - parent.padding * 2)
                     spacing: 10
 
                     Toolbar {
@@ -151,22 +247,32 @@ Scope { // Scope
                         }
                     }
 
-                    SwipeView { // Content pages
+                    SwipeView {
                         id: swipeView
                         Layout.topMargin: 5
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        
+                        property real calculatedWidth: cheatsheetRoot.screen ? cheatsheetRoot.screen.width * 0.92 : 1700
+                        property real calculatedHeight: cheatsheetRoot.screen ? cheatsheetRoot.screen.height * 0.75 : 650
+                        
+                        Layout.preferredWidth: Math.min(1800, Math.max(900, calculatedWidth))
+                        Layout.preferredHeight: Math.min(850, Math.max(500, calculatedHeight))
                         spacing: 10
                         currentIndex: Persistent.states.cheatsheet.tabIndex
                         onCurrentIndexChanged: {
                             Persistent.states.cheatsheet.tabIndex = currentIndex;
+                            if (currentItem && currentItem.status === Loader.Ready && currentItem.item) {
+                                currentItem.item.forceActiveFocus();
+                            }
                         }
 
                         implicitWidth: Math.max.apply(null, contentChildren.map(child => child.implicitWidth || 0))
                         implicitHeight: Math.max.apply(null, contentChildren.map(child => child.implicitHeight || 0))
 
                         clip: true
-                        layer.enabled: true
+                        // Disable expensive layer compositing while animating to prevent lag
+                        layer.enabled: !swipeView.moving
                         layer.effect: OpacityMask {
                             maskSource: Rectangle {
                                 width: swipeView.width
@@ -175,10 +281,55 @@ Scope { // Scope
                             }
                         }
 
-                        CheatsheetTimetable {}
-                        CheatsheetKeybinds {}
-                        CheatsheetPeriodicTable {}
-                        
+                        Repeater {
+                            model: root.tabButtonList
+                            delegate: Loader {
+                                id: tabDelegate
+                                required property var modelData
+                                required property int index
+
+                                // Timetable & Email: lazy — load only when first visited
+                                property bool _lazy: modelData.icon === "calendar_month" || modelData.icon === "mail"
+                                property bool _wasSeen: false
+                                active: !_lazy || swipeView.currentIndex === index || _wasSeen
+                                onActiveChanged: if (active)
+                                    _wasSeen = true
+
+                                onStatusChanged: {
+                                    if (status === Loader.Ready && swipeView.currentIndex === index && cheatsheetRoot.visible) {
+                                        item.forceActiveFocus();
+                                    }
+                                }
+
+                                asynchronous: _lazy
+                                source: {
+                                    switch (modelData.icon) {
+                                    case "calendar_month":
+                                        return "CheatsheetTimetable.qml";
+                                    case "keyboard":
+                                        return "CheatsheetKeybinds.qml";
+                                    case "experiment":
+                                        return "CheatsheetPeriodicTable.qml";
+                                    case "terminal":
+                                        return "commands/CheatsheetCommands.qml";
+                                    case "mail":
+                                        return "CheatsheetEmail.qml";
+                                    default:
+                                        return "";
+                                    }
+                                }
+
+                                // Loading indicator for async tabs
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: "transparent"
+                                    visible: tabDelegate._lazy && tabDelegate.status !== Loader.Ready
+                                    MaterialLoadingIndicator {
+                                        anchors.centerIn: parent
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -187,44 +338,38 @@ Scope { // Scope
 
     IpcHandler {
         target: "cheatsheet"
-
         function toggle(): void {
-            cheatsheetLoader.active = !cheatsheetLoader.active;
+            root.requestToggle();
         }
-
         function close(): void {
-            cheatsheetLoader.active = false;
+            root.requestClose();
         }
-
         function open(): void {
-            cheatsheetLoader.active = true;
+            root.requestOpen();
         }
     }
 
     GlobalShortcut {
         name: "cheatsheetToggle"
         description: "Toggles cheatsheet on press"
-
         onPressed: {
-            cheatsheetLoader.active = !cheatsheetLoader.active;
+            root.requestToggle();
         }
     }
 
     GlobalShortcut {
         name: "cheatsheetOpen"
         description: "Opens cheatsheet on press"
-
         onPressed: {
-            cheatsheetLoader.active = true;
+            root.requestOpen();
         }
     }
 
     GlobalShortcut {
         name: "cheatsheetClose"
         description: "Closes cheatsheet on press"
-
         onPressed: {
-            cheatsheetLoader.active = false;
+            root.requestClose();
         }
     }
 }

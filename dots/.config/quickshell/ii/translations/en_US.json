@@ -610,6 +610,14 @@
   "Stroke width": "Stroke width",
   "Use varying shapes for password characters": "Use varying shapes for password characters",
   "Battery full": "Battery full",
+  "Sidebar player": "Sidebar player",
+  "Media": "Media",
+  "One UI": "One UI",
+  "Android 16": "Android 16",
+  "Windows 11": "Windows 11",
   "Pin": "Pin",
-  "Unpin": "Unpin"
+  "Auto Dark Mode (%1 - %2)": "Auto Dark Mode (%1 - %2)",
+  "Unpin": "Unpin",
+  "Scroll gestures": "Scroll gestures",
+  "Enable or disable scrolling on the bar to change volume or brightness": "Enable or disable scrolling on the bar to change volume or brightness"
 }

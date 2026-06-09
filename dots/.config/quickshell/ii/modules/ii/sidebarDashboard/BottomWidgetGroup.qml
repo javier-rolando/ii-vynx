@@ -13,10 +13,12 @@ Rectangle {
     radius: Appearance.rounding.normal
     color: Appearance.colors.colLayer1
     clip: true
-    implicitHeight: collapsed ? collapsedBottomWidgetGroupRow.implicitHeight : 350
+    implicitHeight: effectivelyCollapsed ? collapsedBottomWidgetGroupRow.implicitHeight : 350
     property int selectedTab: Persistent.states.sidebar.bottomGroup.tab
     property int previousIndex: -1
     property bool collapsed: Persistent.states.sidebar.bottomGroup.collapsed
+    property bool forceCollapsed: false
+    readonly property bool effectivelyCollapsed: collapsed || forceCollapsed
     property var tabs: [
         {
             "type": "calendar",
@@ -27,7 +29,7 @@ Rectangle {
         {
             "type": "todo",
             "name": Translation.tr("To Do"),
-            "icon": "done_outline",
+            "icon": "check_circle",
             "widget": "todo/TodoWidget.qml"
         },
         {
@@ -48,25 +50,35 @@ Rectangle {
 
     function setCollapsed(state) {
         Persistent.states.sidebar.bottomGroup.collapsed = state;
-        if (collapsed) {
-            bottomWidgetGroupRow.opacity = 0;
-        } else {
-            collapsedBottomWidgetGroupRow.opacity = 0;
-        }
-        collapseCleanFadeTimer.start();
     }
 
-    Timer {
-        id: collapseCleanFadeTimer
-        interval: Appearance.animation.elementMove.duration / 2
-        repeat: false
-        onTriggered: {
-            if (collapsed)
-                collapsedBottomWidgetGroupRow.opacity = 1;
-            else
-                bottomWidgetGroupRow.opacity = 1;
+    state: effectivelyCollapsed ? "collapsed" : "expanded"
+
+    states: [
+        State {
+            name: "collapsed"
+            PropertyChanges { target: collapsedBottomWidgetGroupRow; opacity: 1 }
+            PropertyChanges { target: bottomWidgetGroupRow; opacity: 0 }
+        },
+        State {
+            name: "expanded"
+            PropertyChanges { target: collapsedBottomWidgetGroupRow; opacity: 0 }
+            PropertyChanges { target: bottomWidgetGroupRow; opacity: 1 }
         }
-    }
+    ]
+
+    transitions: [
+        Transition {
+            from: "*"
+            to: "*"
+            NumberAnimation {
+                properties: "opacity"
+                duration: Appearance.animation.elementMove.duration / 2
+                easing.type: Appearance.animation.elementMove.type
+                easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
+            }
+        }
+    ]
 
     Keys.onPressed: event => {
         if ((event.key === Qt.Key_PageDown || event.key === Qt.Key_PageUp) && event.modifiers === Qt.ControlModifier) {
@@ -82,16 +94,8 @@ Rectangle {
     // The thing when collapsed
     RowLayout {
         id: collapsedBottomWidgetGroupRow
-        opacity: collapsed ? 1 : 0
+        opacity: 0
         visible: opacity > 0
-        Behavior on opacity {
-            NumberAnimation {
-                id: collapsedBottomWidgetGroupRowFade
-                duration: Appearance.animation.elementMove.duration / 2
-                easing.type: Appearance.animation.elementMove.type
-                easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
-            }
-        }
 
         spacing: 15
 
@@ -125,16 +129,8 @@ Rectangle {
     RowLayout {
         id: bottomWidgetGroupRow
 
-        opacity: collapsed ? 0 : 1
+        opacity: 0
         visible: opacity > 0
-        Behavior on opacity {
-            NumberAnimation {
-                id: bottomWidgetGroupRowFade
-                duration: Appearance.animation.elementMove.duration / 2
-                easing.type: Appearance.animation.elementMove.type
-                easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
-            }
-        }
 
         anchors.fill: parent
         // implicitHeight: tabStack.implicitHeight

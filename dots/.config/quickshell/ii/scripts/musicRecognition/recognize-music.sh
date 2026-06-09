@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 INTERVAL=2
 TOTAL_DURATION=30
@@ -47,6 +47,9 @@ SONGREC_PID=$!
 
 while IFS= read -r line; do
     if echo "$line" | grep -q '"matches": \['; then
+        if echo "$line" | grep -q '"matches": \[\]'; then
+            continue
+        fi
         echo "$line"
         exit 0
     fi

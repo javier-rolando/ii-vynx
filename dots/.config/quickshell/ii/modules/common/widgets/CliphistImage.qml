@@ -39,7 +39,11 @@ Rectangle {
         return match ? parseInt(match[2]) : 0;
     }
     property real scale: {
-        return Math.min(root.maxWidth / imageWidth, root.maxHeight / imageHeight, 1);
+        if (imageWidth <= 0 || imageHeight <= 0)
+            return 1;
+        const w = root.maxWidth > 0 ? root.maxWidth : 300;
+        const h = root.maxHeight > 0 ? root.maxHeight : 200;
+        return Math.min(w / imageWidth, h / imageHeight, 1);
     }
 
     color: Appearance.colors.colLayer1
@@ -53,10 +57,10 @@ Rectangle {
 
     Process {
         id: decodeImageProcess
-        command: ["bash", "-c", `[ -f ${imageDecodeFilePath} ] || echo '${StringUtils.shellSingleQuoteEscape(root.entry)}' | ${Cliphist.cliphistBinary} decode > '${imageDecodeFilePath}'`]
+        command: ["bash", "-c", `mkdir -p '${imageDecodePath}' && { [ -f '${imageDecodeFilePath}' ] || echo '${StringUtils.shellSingleQuoteEscape(root.entry)}' | ${Cliphist.cliphistBinary} decode > '${imageDecodeFilePath}'; }`]
         onExited: (exitCode, exitStatus) => {
             if (exitCode === 0) {
-                root.source = imageDecodeFilePath;
+                root.source = "file://" + imageDecodeFilePath;
             } else {
                 console.error("[CliphistImage] Failed to decode image for entry:", root.entry);
                 root.source = "";
@@ -81,7 +85,7 @@ Rectangle {
         id: image
         anchors.fill: parent
 
-        source: Qt.resolvedUrl(root.source)
+        source: root.source
         fillMode: Image.PreserveAspectFit
         antialiasing: true
         asynchronous: true

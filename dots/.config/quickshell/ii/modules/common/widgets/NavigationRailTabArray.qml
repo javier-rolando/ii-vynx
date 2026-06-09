@@ -11,6 +11,7 @@ Item {
     Component.onCompleted: _isInitialized = true
 
     default property alias tabData: tabBarColumn.data  
+
     implicitHeight: tabBarColumn.implicitHeight
     implicitWidth: tabBarColumn.implicitWidth
     Layout.topMargin: 25

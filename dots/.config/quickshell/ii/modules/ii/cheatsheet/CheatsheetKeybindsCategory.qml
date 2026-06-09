@@ -59,25 +59,33 @@ Column {
     })
 
     property var keyBlacklist: ["SUPER_L", "SUPER_R"]
-    property var keySubstitutions: Object.assign({
-        "Super": "",
-        "Mouse_up": "Scroll ↓",    // ikr, weird
-        "Mouse_down": "Scroll ↑",  // trust me bro
-        "Mouse:272": "LMB",
-        "Mouse:273": "RMB",
-        "Mouse:275": "MouseBack",
-        "Slash": "/",
-        "Hash": "#",
-        "Return": "Enter",
-        // "Shift": "",
-      },
-      !!Config.options.cheatsheet.superKey ? {
-          "Super": Config.options.cheatsheet.superKey,
-      }: {},
-      Config.options.cheatsheet.useMacSymbol ? macSymbolMap : {},
-      Config.options.cheatsheet.useFnSymbol ? functionSymbolMap : {},
-      Config.options.cheatsheet.useMouseSymbol ? mouseSymbolMap : {},
-    )
+    property var keySubstitutions: {
+        const _super = Config.options.cheatsheet.superKey;
+        const _mac = Config.options.cheatsheet.useMacSymbol;
+        const _fn = Config.options.cheatsheet.useFnSymbol;
+        const _mouse = Config.options.cheatsheet.useMouseSymbol;
+        return Object.assign({
+            "SUPER": "",
+            "Super": "",
+            "Mouse_up": "Scroll ↓",    // ikr, weird
+            "Mouse_down": "Scroll ↑",  // trust me bro
+            "Mouse:272": "LMB",
+            "Mouse:273": "RMB",
+            "Mouse:275": "MouseBack",
+            "Slash": "/",
+            "Hash": "#",
+            "Return": "Enter",
+            // "Shift": "",
+        },
+        !!_super ? {
+            "SUPER": _super,
+            "Super": _super,
+        }: {},
+        _mac ? macSymbolMap : {},
+        _fn ? functionSymbolMap : {},
+        _mouse ? mouseSymbolMap : {}
+        );
+    }
 
     function modMaskToStringList(modMask: int): list<string> {
         var list = [];
@@ -103,12 +111,7 @@ Column {
     Column {
         spacing: 4
         Repeater {
-            model: {
-                if (!root.isCategorized) {
-                    return HyprlandKeybinds.keybinds.filter(bind => bind.description?.length > 0 && bind.description.indexOf(":") === -1);
-                }
-                return HyprlandKeybinds.keybinds.filter(bind => bind.description?.length > 0 && bind.description.substring(0, bind.description.indexOf(":")) === root.categoryName);
-            }
+            model: root.filteredBinds
             delegate: BindLine {
                 required property var modelData
                 keyData: modelData
@@ -155,6 +158,29 @@ Column {
                     key: {
                         const k = StringUtils.toTitleCase(bindLine.keyData.key)
                         return root.keySubstitutions[k] || k
+                    }
+                    pixelSize: Config.options.cheatsheet.fontSize.key
+                    color: Appearance.colors.colOnLayer0
+                }
+            }
+            Item {
+                anchors.verticalCenter: parent.verticalCenter
+                implicitWidth: commentText.implicitWidth + root.columnSpacing
+                implicitHeight: commentText.implicitHeight
+                StyledText {
+                    id: commentText
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    font.pixelSize: Config.options.cheatsheet.fontSize.comment || Appearance.font.pixelSize.smaller
+                    text: {
+                        const regex = new RegExp("\\s*" + bindLine.categoryName + "\\s*:\\s*");
+                        return bindLine.keyData.description.replace(regex, "");
+                    }
+                }
+            }
+        }
+    }
+}eturn root.keySubstitutions[k] || k
                     }
                     pixelSize: Config.options.cheatsheet.fontSize.key
                     color: Appearance.colors.colOnLayer0

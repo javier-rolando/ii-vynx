@@ -1,9 +1,11 @@
 import QtQuick
 import Quickshell
+import qs
 
 import qs.modules.common
 import qs.modules.ii.background
 import qs.modules.ii.bar
+import qs.modules.ii.bluetoothConnectionPopup
 import qs.modules.ii.cheatsheet
 import qs.modules.ii.dock
 import qs.modules.ii.lock
@@ -23,6 +25,12 @@ import qs.modules.ii.overlay
 import qs.modules.ii.verticalBar
 import qs.modules.ii.wallpaperSelector
 import qs.modules.ii.wrappedFrame
+import qs.modules.ii.colorPickerPopup
+import qs.modules.ii.videoEditor
+import qs.modules.ii.localSendPopup
+import qs.modules.ii.scratchpadOverlay
+import qs.modules.ii.keyboardLayoutTransitionPopup
+import qs.modules.ii.topLayer
 
 Scope {
     property bool barExtraCondition: true
@@ -36,31 +44,107 @@ Scope {
     onBarVertChanged: updateBarExtraCondition()
 
     function updateBarExtraCondition() {
-        if (!usingWrappedFrame) return
-
-        barExtraCondition = false
-        Qt.callLater(() => barExtraCondition = true)
+        if (!usingWrappedFrame)
+            return;
+        barExtraCondition = false;
+        Qt.callLater(() => barExtraCondition = true);
     }
 
-    PanelLoader { extraCondition: !Config.options.bar.vertical && barExtraCondition; component: Bar {} }
-    PanelLoader { extraCondition: Config.options.background.enable; component: Background {} }
-    PanelLoader { component: Cheatsheet {} }
-    PanelLoader { extraCondition: Config.options.dock.enable; component: Dock {} }
-    PanelLoader { component: Lock {} }
-    PanelLoader { component: MediaControls {} }
-    PanelLoader { component: NotificationPopup {} }
-    PanelLoader { component: OnScreenDisplay {} }
-    PanelLoader { component: OnScreenKeyboard {} }
-    PanelLoader { component: Overlay {} }
-    PanelLoader { component: Overview {} }
-    PanelLoader { component: Polkit {} }
-    PanelLoader { component: RegionSelector {} }
-    PanelLoader { component: ScreenCorners {} }
-    PanelLoader { component: ScreenTranslator {} }
-    PanelLoader { component: SessionScreen {} }
-    PanelLoader { component: SidebarPolicies {} }
-    PanelLoader { component: SidebarDashboard {} }
-    PanelLoader { extraCondition: Config.options.bar.vertical && barExtraCondition; component: VerticalBar {} }
-    PanelLoader { component: WallpaperSelector {} }
-    PanelLoader { component: WrappedFrame {} }
+    PanelLoader {
+        extraCondition: !Config.options.bar.vertical && barExtraCondition && !GlobalStates.connectModeActive
+        component: Bar {}
+    }
+    PanelLoader {
+        extraCondition: Config.options.background.enable
+        component: Background {}
+    }
+    PanelLoader {
+        component: Cheatsheet {}
+    }
+    PanelLoader {
+        extraCondition: Config.options.dock.enable
+        component: Dock {}
+    }
+    PanelLoader {
+        component: Lock {}
+    }
+    PanelLoader {
+        component: MediaControls {}
+    }
+    PanelLoader {
+        component: BluetoothConnectionPopup {}
+    }
+    PanelLoader {
+        component: KeyboardLayoutTransitionPopup {}
+    }
+    PanelLoader {
+        component: LocalSendPopup {}
+    }
+    PanelLoader {
+        component: NotificationPopup {}
+    }
+    PanelLoader {
+        component: OnScreenDisplay {}
+    }
+    PanelLoader {
+        component: OnScreenKeyboard {}
+    }
+    PanelLoader {
+        component: Overlay {}
+    }
+    PanelLoader {
+        component: Overview {}
+    }
+    // GNOME-like window scale-out during overview (OverviewWindowTransition)
+    // It's a Scope managing its own Variants/PanelWindows — instantiate directly.
+    OverviewWindowTransition {}
+    PanelLoader {
+        component: Polkit {}
+    }
+    PanelLoader {
+        component: RegionSelector {}
+    }
+    PanelLoader {
+        component: ScreenCorners {}
+    }
+    PanelLoader {
+        component: ScreenTranslator {}
+    }
+    PanelLoader {
+        component: ColorPickerPopup {}
+    }
+    PanelLoader {
+        component: SessionScreen {}
+    }
+    PanelLoader {
+        extraCondition: !GlobalStates.connectModeActive
+        component: SidebarPolicies {}
+    }
+    PanelLoader {
+        extraCondition: !GlobalStates.connectModeActive
+        component: SidebarDashboard {}
+    }
+    PanelLoader {
+        extraCondition: Config.options.bar.vertical && barExtraCondition && !GlobalStates.connectModeActive
+        component: VerticalBar {}
+    }
+    PanelLoader {
+        component: WallpaperSelector {}
+    }
+    PanelLoader {
+        component: WrappedFrame {}
+    }
+    PanelLoader {
+        component: VideoEditorPopup {}
+    }
+    PanelLoader {
+        component: VideoEditor {}
+    }
+    PanelLoader {
+        component: ScratchpadOverlay {}
+    }
+    PanelLoader {
+        extraCondition: GlobalStates.connectModeActive
+        component: TopLayer {}
+    }
 }

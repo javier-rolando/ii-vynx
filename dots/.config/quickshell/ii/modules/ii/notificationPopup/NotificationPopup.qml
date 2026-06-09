@@ -14,7 +14,7 @@ Scope {
     PanelWindow {
         id: root
         visible: (Notifications.popupList.length > 0) && !GlobalStates.screenLocked
-        screen: Quickshell.screens.find(s => Config.options.notifications.forceMonitor.enable ? s.name === Config.options.notifications.forceMonitor.name : s.name === Hyprland.focusedMonitor?.name) ?? null
+        screen: Quickshell.screens.find(s => Config.options.notifications.monitor.enable ? s.name === Config.options.notifications.monitor.name : s.name === Hyprland.focusedMonitor?.name) ?? null
 
         WlrLayershell.namespace: "quickshell:notificationPopup"
         WlrLayershell.layer: WlrLayer.Overlay
@@ -39,8 +39,8 @@ Scope {
                 top: parent.top
                 bottom: parent.bottom
                 right: parent.right
-                rightMargin: 4
-                topMargin: 4
+                rightMargin: Math.max(Appearance.sizes.hyprlandGapsOut, Appearance.rounding.windowRounding * 0.5)
+                topMargin: Math.max(Appearance.sizes.hyprlandGapsOut, Appearance.rounding.windowRounding * 0.5)
             }
             implicitWidth: parent.width - Appearance.sizes.elevationMargin * 2
             popup: true

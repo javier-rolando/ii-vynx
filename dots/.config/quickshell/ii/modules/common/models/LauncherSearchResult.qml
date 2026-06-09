@@ -6,6 +6,7 @@ QtObject {
     enum FontType { Normal, Monospace }
 
     // General stuff
+    property string key: ""  // Stable identity key for ScriptModel tracking
     property string type: ""
     property var fontType: LauncherSearchResult.FontType.Normal
     property string name: ""
@@ -14,6 +15,7 @@ QtObject {
     property var iconType: LauncherSearchResult.IconType.None
     property string verb: ""
     property bool blurImage: false
+    property bool pinned: false
     property var execute: () => {
         print("Not implemented");
     }
@@ -26,6 +28,7 @@ QtObject {
     property bool runInTerminal: false
     property string genericName: ""
     property list<string> keywords: []
+    property bool isMath: false
 
     // Extra stuff to allow for more flexibility
     property string category: type

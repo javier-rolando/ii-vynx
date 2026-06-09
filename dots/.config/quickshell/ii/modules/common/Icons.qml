@@ -1,4 +1,7 @@
 pragma Singleton
+
+// From https://github.com/caelestia-dots/shell (GPLv3)
+
 import Quickshell
 import qs.services
 
@@ -99,6 +102,7 @@ Singleton {
         "395": "snowing"
     })
 
+    
     function getWeatherIcon(code) {
         const key = String(code)
         if (weatherIconMap.hasOwnProperty(key)) {

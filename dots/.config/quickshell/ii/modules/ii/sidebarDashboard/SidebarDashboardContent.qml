@@ -2,13 +2,14 @@ import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.ii.bar as Bar
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 import Quickshell.Bluetooth
 import Quickshell.Hyprland
+import Qt5Compat.GraphicalEffects
 
 import qs.modules.ii.sidebarDashboard.quickToggles
 import qs.modules.ii.sidebarDashboard.quickToggles.classicStyle
@@ -17,6 +18,8 @@ import qs.modules.ii.sidebarDashboard.bluetoothDevices
 import qs.modules.ii.sidebarDashboard.nightLight
 import qs.modules.ii.sidebarDashboard.volumeMixer
 import qs.modules.ii.sidebarDashboard.wifiNetworks
+import qs.modules.ii.sidebarDashboard.darkMode
+import qs.modules.ii.sidebarDashboard.localSend
 
 Item {
     id: root
@@ -28,6 +31,8 @@ Item {
     property bool showBluetoothDialog: false
     property bool showNightLightDialog: false
     property bool showWifiDialog: false
+    property bool showDarkModeDialog: false
+    property bool showLocalSendDialog: false
     property bool editMode: false
 
     Connections {
@@ -38,15 +43,27 @@ Item {
                 root.showBluetoothDialog = false;
                 root.showAudioOutputDialog = false;
                 root.showAudioInputDialog = false;
+                root.showDarkModeDialog = false;
+                root.showLocalSendDialog = false;
             }
         }
     }
 
+    Bar.BarThemes {
+        id: barThemes
+    }
+    readonly property var activeTheme: barThemes.getTheme(Config.options.bar.expressiveColorTheme)
+
     implicitHeight: sidebarRightBackground.implicitHeight
     implicitWidth: sidebarRightBackground.implicitWidth
 
-    StyledRectangularShadow {
-        target: sidebarRightBackground
+    Loader {
+        active: !GlobalStates.connectModeActive
+        sourceComponent: Component {
+            StyledRectangularShadow {
+                target: sidebarRightBackground
+            }
+        }
     }
     Rectangle {
         id: sidebarRightBackground
@@ -54,10 +71,10 @@ Item {
         anchors.fill: parent
         implicitHeight: parent.height - Appearance.sizes.hyprlandGapsOut * 2
         implicitWidth: sidebarWidth - Appearance.sizes.hyprlandGapsOut * 2
-        color: Appearance.colors.colLayer0
-        border.width: 1
-        border.color: Appearance.colors.colLayer0Border
-        radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
+        color: Config.options.bar.expressiveColors ? activeTheme.barBackground : Appearance.colors.colLayer0
+        border.width: GlobalStates.connectModeActive ? 0 : 1
+        border.color: GlobalStates.connectModeActive ? "transparent" : Appearance.colors.colLayer0Border
+        radius: GlobalStates.connectModeActive ? 0 : Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
 
         ColumnLayout {
             anchors.fill: parent
@@ -65,6 +82,7 @@ Item {
             spacing: sidebarPadding
 
             SystemButtonRow {
+                id: headerRow
                 Layout.fillHeight: false
                 Layout.fillWidth: true
                 // Layout.margins: 10
@@ -72,25 +90,15 @@ Item {
                 Layout.bottomMargin: 0
             }
 
-            Loader {
-                id: slidersLoader
-                Layout.fillWidth: true
-                visible: active
-                active: {
-                    const configQuickSliders = Config.options.sidebar.quickSliders
-                    if (!configQuickSliders.enable) return false
-                    if (!configQuickSliders.showMic && !configQuickSliders.showVolume && !configQuickSliders.showBrightness) return false;
-                    return true;
-                }
-                sourceComponent: QuickSliders {}
-            }
 
             LoaderedQuickPanelImplementation {
+                id: classicQuickPanelLoader
                 styleName: "classic"
                 sourceComponent: ClassicQuickPanel {}
             }
 
             LoaderedQuickPanelImplementation {
+                id: androidQuickPanelLoader
                 styleName: "android"
                 sourceComponent: AndroidQuickPanel {
                     editMode: root.editMode
@@ -98,16 +106,25 @@ Item {
             }
 
             CenterWidgetGroup {
+                id: centerGroup
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillHeight: true
                 Layout.fillWidth: true
+                visible: !root.editMode
+            }
+
+            Item {
+                Layout.fillHeight: true
+                visible: root.editMode
             }
 
             BottomWidgetGroup {
+                id: bottomGroup
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillHeight: false
                 Layout.fillWidth: true
                 Layout.preferredHeight: implicitHeight
+                forceCollapsed: root.editMode
             }
         }
     }
@@ -148,10 +165,21 @@ Item {
         shownPropertyString: "showWifiDialog"
         dialog: WifiDialog {}
         onShownChanged: {
-            if (!shown) return;
+            if (!shown)
+                return;
             Network.enableWifi();
             Network.rescanWifi();
         }
+    }
+
+    ToggleDialog {
+        shownPropertyString: "showDarkModeDialog"
+        dialog: DarkModeDialog {}
+    }
+
+    ToggleDialog {
+        shownPropertyString: "showLocalSendDialog"
+        dialog: LocalSendDialog {}
     }
 
     component ToggleDialog: Loader {
@@ -161,7 +189,8 @@ Item {
         readonly property bool shown: root[shownPropertyString]
         anchors.fill: parent
 
-        onShownChanged: if (shown) toggleDialogLoader.active = true;
+        onShownChanged: if (shown)
+            toggleDialogLoader.active = true
         active: shown
         onActiveChanged: {
             if (active) {
@@ -172,11 +201,12 @@ Item {
         Connections {
             target: toggleDialogLoader.item
             function onDismiss() {
-                toggleDialogLoader.item.show = false
+                toggleDialogLoader.item.show = false;
                 root[toggleDialogLoader.shownPropertyString] = false;
             }
             function onVisibleChanged() {
-                if (!toggleDialogLoader.item.visible && !root[toggleDialogLoader.shownPropertyString]) toggleDialogLoader.active = false;
+                if (!toggleDialogLoader.item.visible && !root[toggleDialogLoader.shownPropertyString])
+                    toggleDialogLoader.active = false;
             }
         }
     }
@@ -205,6 +235,12 @@ Item {
             function onOpenWifiDialog() {
                 root.showWifiDialog = true;
             }
+            function onOpenDarkModeDialog() {
+                root.showDarkModeDialog = true;
+            }
+            function onOpenLocalSendDialog() {
+                root.showLocalSendDialog = true;
+            }
         }
     }
 
@@ -221,39 +257,87 @@ Item {
             color: Appearance.colors.colLayer1
             readonly property int fullRadius: Config.options.appearance.sharpMode ? Appearance.rounding.full : height / 2
             radius: fullRadius
-            implicitWidth: uptimeRow.implicitWidth + 24
-            implicitHeight: uptimeRow.implicitHeight + 8
-            
+
+            visible: Config.options.sidebar.dashboardHeader.profileImageType !== "none" || Config.options.sidebar.dashboardHeader.textMode !== "none"
+
+            property int rowLeftMargin: Config.options.sidebar.dashboardHeader.profileImageType === "custom" ? 6 : 14
+
+            implicitWidth: uptimeRow.implicitWidth + rowLeftMargin + 14
+            implicitHeight: Math.max(32, uptimeRow.implicitHeight + (Config.options.sidebar.dashboardHeader.profileImageType === "custom" ? 4 : 12))
+
             Row {
                 id: uptimeRow
-                anchors.centerIn: parent
+                anchors {
+                    left: parent.left
+                    verticalCenter: parent.verticalCenter
+                    leftMargin: uptimeContainer.rowLeftMargin
+                }
                 spacing: 8
-                CustomIcon {
-                    id: distroIcon
+
+                // PROFILE PICTURE
+                Item {
+                    id: profilePicContainer
+
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 25
-                    height: 25
-                    source: SystemInfo.distroIcon
-                    colorize: true
+                    width: Config.options.sidebar.dashboardHeader.profileImageType === "distro" ? 24 : 40
+                    height: Config.options.sidebar.dashboardHeader.profileImageType === "distro" ? 24 : 40
+                    visible: Config.options.sidebar.dashboardHeader.profileImageType !== "none"
+
+                    Loader {
+                        anchors.fill: parent
+                        active: Config.options.sidebar.dashboardHeader.profileImageType === "distro"
+                        sourceComponent: CustomIcon {
+                            anchors.centerIn: parent
+                            width: 24
+                            height: 24
+                            source: SystemInfo.distroIcon
+                            colorize: true
+                            color: Appearance.colors.colOnLayer1
+                        }
+                    }
+
+                    Image {
+                        id: profilePicSource
+                        anchors.fill: parent
+                        source: Config.options.sidebar.dashboardHeader.profileImageType === "custom" ? Config.options.sidebar.dashboardHeader.profileImagePath : ""
+                        sourceSize.width: parent.width
+                        sourceSize.height: parent.height
+                        fillMode: Image.PreserveAspectCrop
+                        visible: false
+                    }
+
+                    Rectangle {
+                        id: profilePicMask
+                        anchors.fill: parent
+                        radius: width / 2
+                        visible: false
+                    }
+
+                    OpacityMask {
+                        anchors.fill: parent
+                        source: profilePicSource
+                        maskSource: profilePicMask
+                        visible: Config.options.sidebar.dashboardHeader.profileImageType === "custom"
+                    }
+                }
+
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: Appearance.font.pixelSize.small
                     color: Appearance.colors.colOnLayer0
-                }
-                ColumnLayout {
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: -4
-                    StyledText {
-                        font.pixelSize: Appearance.font.pixelSize.small
-                        color: Appearance.colors.colOnLayer0
-                        text: Translation.tr("Up")
-                        textFormat: Text.MarkdownText
+                    text: {
+                        const mode = Config.options.sidebar.dashboardHeader.textMode;
+                        if (mode === "username")
+                            return "Hello, " + SystemInfo.username;
+                        if (mode === "uptime")
+                            return Translation.tr("Uptime") + ": " + DateTime.uptime;
+                        if (mode === "custom")
+                            return Config.options.sidebar.dashboardHeader.customText;
+                        return "";
                     }
-                    StyledText {
-                        font.pixelSize: Appearance.font.pixelSize.smaller
-                        color: Appearance.colors.colSubtext
-                        text: DateTime.uptime
-                        textFormat: Text.MarkdownText
-                    }
+                    font.bold: true
+                    visible: Config.options.sidebar.dashboardHeader.textMode !== "none"
                 }
-                
             }
         }
 
@@ -273,14 +357,14 @@ Item {
                 buttonIcon: "edit"
                 onClicked: root.editMode = !root.editMode
                 StyledToolTip {
-                    text: Translation.tr("Edit quick toggles") + (root.editMode ? Translation.tr("\nLMB to enable/disable\nRMB to toggle size\nScroll to swap position") : "")
+                    text: Translation.tr("Edit quick toggles") + (root.editMode ? Translation.tr("\nLMB to enable/disable\nDrag handles to resize\nDrag icon to swap position") : "")
                 }
             }
             QuickToggleButton {
                 toggled: false
                 buttonIcon: "restart_alt"
                 onClicked: {
-                    Quickshell.execDetached(["hyprctl", "reload"])
+                    Quickshell.execDetached(["hyprctl", "reload"]);
                     Quickshell.reload(true);
                 }
                 StyledToolTip {
@@ -298,33 +382,7 @@ Item {
                     text: Translation.tr("Settings")
                 }
             }
-            QuickToggleButton {
-                id: updateButton
-                toggled: confirm
-                property bool confirm: false
-                buttonIcon: confirm ? "check" : "download"
-                Timer {
-                    id: confirmTimer
-                    interval: 2000
-                    onTriggered: {
-                        confirmTimer.stop();
-                        updateButton.confirm = false
-                    }
-                }
-                onClicked: {
-                    if (confirm) {
-                        Quickshell.execDetached([Directories.cliPath, "update", "--no-confirm", "--no-backup"]);
-                        GlobalStates.sidebarRightOpen = false;
-                    } else {
-                        confirm = true
-                        confirmTimer.start()
-                    }
-                    
-                }
-                StyledToolTip {
-                    text: Translation.tr("Update the ii-vynx, make sure you have the vynx-cli installed")
-                }
-            }
+
             QuickToggleButton {
                 toggled: false
                 buttonIcon: "power_settings_new"

@@ -8,8 +8,18 @@ Item {
     required property string iconName
     required property double percentage
     property int warningThreshold: 100
-    implicitHeight: resourceProgress.implicitHeight
+    property bool shown: true
+    visible: shown && height > 0
+    implicitHeight: shown ? resourceProgress.implicitHeight : 0
     implicitWidth: Appearance.sizes.verticalBarWidth
+
+    Behavior on implicitHeight {
+        NumberAnimation {
+            duration: Appearance.animation.elementMove.duration
+            easing.type: Appearance.animation.elementMove.type
+            easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
+        }
+    }
 
     property bool warning: percentage * 100 >= warningThreshold
 

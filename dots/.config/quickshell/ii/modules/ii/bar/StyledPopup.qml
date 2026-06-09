@@ -10,9 +10,25 @@ LazyLoader {
     id: root
     property Item hoverTarget
     default property Item contentItem
+
+    readonly property real screenWidth: root.item ? root.item.screenWidth : 0
+    readonly property real screenHeight: root.item ? root.item.screenHeight : 0
+    readonly property bool isScreenSmall: screenHeight > 0 && screenHeight < 800
+
+    readonly property real layoutScale: {
+        if (screenHeight <= 0 || !root.contentItem) return 1.0;
+        var barSpace = Config.options.bar.vertical ? 0 : Appearance.sizes.barHeight;
+        var maxAllowedHeight = screenHeight - barSpace - Appearance.sizes.elevationMargin * 2 - 40;
+        var naturalHeight = root.contentItem.implicitHeight + 20; // 10 margin * 2
+        if (naturalHeight > maxAllowedHeight) {
+            return Math.max(0.6, maxAllowedHeight / naturalHeight);
+        }
+        return 1.0;
+    }
     property real popupBackgroundMargin: 0
     property int popupRadius: Appearance.rounding.large
     property bool animate: true
+    property bool animateHeight: true
     property bool stickyHover: false
 
     property bool _popupHovered: false
@@ -34,7 +50,8 @@ LazyLoader {
     }
 
     function _evaluateStickyState() {
-        if (!stickyHover) return;
+        if (!stickyHover)
+            return;
 
         if (_targetHovered || _popupHovered) {
             _stickyActive = true;
@@ -115,10 +132,12 @@ LazyLoader {
 
         property real animProgress: 0.0
         readonly property Item heroItem: {
-            if (!root.contentItem) return null;
+            if (!root.contentItem)
+                return null;
             for (let i = 0; i < root.contentItem.children.length; i++) {
                 let child = root.contentItem.children[i];
-                if (child.visible && child.width > 0) return child;
+                if (child.visible && child.width > 0)
+                    return child;
             }
             return null;
         }
@@ -129,7 +148,7 @@ LazyLoader {
             from: 0
             to: 1
             running: true
-            duration: Appearance.animation.elementMove.duration 
+            duration: Appearance.animation.elementMove.duration
             easing.type: Appearance.animation.elementMove.type
             easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
         }
@@ -137,9 +156,9 @@ LazyLoader {
         Rectangle {
             id: popupBackground
             readonly property real margin: 10
-            
-            readonly property real targetWidth: (root.contentItem?.implicitWidth ?? 0) + margin * 2
-            readonly property real targetHeight: (root.contentItem?.implicitHeight ?? 0) + margin * 2
+
+            readonly property real targetWidth: ((root.contentItem?.implicitWidth ?? 0) + margin * 2) * root.layoutScale
+            readonly property real targetHeight: ((root.contentItem?.implicitHeight ?? 0) + margin * 2) * root.layoutScale
 
             property bool isVertical: Config.options.bar.vertical
             property bool isBottom: Config.options.bar.bottom
@@ -160,14 +179,16 @@ LazyLoader {
 
             onTargetHeightChanged: {
                 if (popupWindow.animProgress >= 1.0 && popupBackground._heightReady)
-                    heightCommit.restart()
+                    heightCommit.restart();
                 else
-                    _commitHeight = targetHeight
+                    _commitHeight = targetHeight;
             }
 
             Component.onCompleted: {
-                _commitHeight = targetHeight
-                Qt.callLater(function() { popupBackground._heightReady = true })
+                _commitHeight = targetHeight;
+                Qt.callLater(function () {
+                    popupBackground._heightReady = true;
+                });
             }
 
             Behavior on _commitHeight {
@@ -192,42 +213,51 @@ LazyLoader {
                 verticalCenter: isVertical ? parent.verticalCenter : undefined
                 horizontalCenter: !isVertical ? parent.horizontalCenter : undefined
             }
-            
+
             width: targetWidth
             height: {
-                if (!root.animate || !root.contentItem || !heroItem || targetHeight <= heroHeight + margin * 2) return _commitHeight;
+                if (!root.animate || !root.contentItem || !heroItem || targetHeight <= heroHeight + margin * 2)
+                    return _commitHeight;
                 return (heroHeight + margin * 2) + (_commitHeight - (heroHeight + margin * 2)) * popupWindow.animProgress;
             }
 
-            color: Appearance.m3colors.m3surfaceContainer
+            color: Config.options.appearance.transparency.popups ? Appearance.colors.colLayer0 : Appearance.m3colors.m3surfaceContainer
             radius: root.popupRadius
-            
+
             Item {
                 id: contentContainer
-                anchors.fill: parent
-                anchors.margins: popupBackground.margin
-                clip: true
+                anchors.centerIn: parent
+                width: root.contentItem ? root.contentItem.implicitWidth : 0
+                height: root.contentItem ? root.contentItem.implicitHeight : 0
+
+                scale: root.layoutScale
+                transformOrigin: Item.Center
+                clip: false
 
                 Component.onCompleted: {
                     if (root.contentItem) {
                         root.contentItem.parent = contentContainer;
                         root.contentItem.anchors.centerIn = undefined;
-                        root.contentItem.anchors.top = contentContainer.top;
-                        root.contentItem.anchors.left = contentContainer.left;
-                        root.contentItem.anchors.right = contentContainer.right;
+                        root.contentItem.anchors.top = undefined;
+                        root.contentItem.anchors.bottom = undefined;
+                        root.contentItem.anchors.left = undefined;
+                        root.contentItem.anchors.right = undefined;
+                        root.contentItem.anchors.fill = contentContainer;
 
                         for (let i = 0; i < root.contentItem.children.length; i++) {
                             let child = root.contentItem.children[i];
 
                             child.opacity = Qt.binding(() => {
-                                if (!root.animate) return 1.0;
+                                if (!root.animate)
+                                    return 1.0;
                                 let normalizedDelay = child.y / popupBackground.targetHeight;
                                 let progress = (popupWindow.animProgress - normalizedDelay) / (1.0 - normalizedDelay);
                                 return Math.max(0, Math.min(1.0, progress));
                             });
 
                             child.scale = Qt.binding(() => {
-                                if (!root.animate) return 1.0;
+                                if (!root.animate)
+                                    return 1.0;
                                 let normalizedDelay = child.y / popupBackground.targetHeight;
                                 let progress = (popupWindow.animProgress - normalizedDelay) / (1.0 - normalizedDelay);
                                 return 0.85 + (0.15 * Math.max(0, Math.min(1.0, progress)));
